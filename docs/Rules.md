@@ -35,11 +35,12 @@
   - A building can have up to **3 standard lifts** and a maximum of **1 executive lift**.
 - **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating.
 
-## Building Mechanics & Revenue Models
-- **Hotels:** Income based on daily room occupancy.
-- **Apartments:** Income based on long-term rooms rented.
-- **Office Towers:** Income based on entire floors rented to corporate tenants.
-- **F&B (Food Courts/Restaurants):** Income based on daily sales volume.
+## Building Mechanics, Uniqueness & Synergy
+Each building possesses unique traits, and strategic placement on the map unlocks **Synergy Bonuses**:
+- **Hotels:** Income based on daily room occupancy. Synergizes well with nearby Malls.
+- **Apartments:** Steady income based on long-term rooms rented. Acts as a population driver for nearby businesses.
+- **Office Towers:** Massive income based on entire floors rented to corporate tenants. Generates high daytime foot traffic.
+- **F&B (Food Courts/Restaurants):** Income based on daily sales volume. *Synergy Example:* Placing an F&B building surrounded by Offices or Apartments will drastically boost its daily sales traffic and profit.
 - **Underground Parking:** Generates daily revenue based on visitor traffic. High-attraction buildings will generate massive parking revenue. 
 
 ## Tenant & Visitor Management
