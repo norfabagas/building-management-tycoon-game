@@ -2,7 +2,7 @@
 
 ## Game State & Data Models
 - **TimeManager:** Tracks the current `Day` and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing).
-- **CBD Area (Root):** Holds the `areaName`, total funds, and a 2D layout of `Building` objects on the land.
+- **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
 - **Building:** Attributes include `id`, `type`, `luxuryLevel`. 
   - **Immutable Physical Attributes:** `footprintWidth`, `footprintLength`, `totalFloors`, `roomsPerFloor`. These are set once during construction.
 - **Floor:** Represents a vertical level (can be negative for underground). Contains a list of `Room`/`Facility` objects.
@@ -13,7 +13,8 @@
 `TimeManager` | `Area` -> `Building` (X, Y on land) -> `Floor` (Z axis relative to building) -> `Room` -> `Tenant/Customer`
 
 ## Revenue & Expense Calculation Logic
-During the **Noon (Closing the book)** phase, the game calculates net profit: `Net = Gross Revenue - Maintenance - Tax`.
+The player's Dollar balance is strictly updated on a daily basis. Throughout the day phases, transactions are simulated, but the actual funds are only modified during the **Noon (Closing the book)** phase.
+- **Closing The Books (Noon Phase):** `Net = Gross Revenue - Maintenance - Tax`. The Net is then committed (added to or subtracted from the player's total `dollars`).
 - **Gross Revenue (Polymorphic):**
   - *Hotel Logic:* `Daily Revenue = Occupied Rooms * Room Rate (Scaled by luxuryLevel)`.
   - *Apartment Logic:* `Daily Revenue = Rented Rooms * Rent Rate (Scaled by luxuryLevel)`.
@@ -29,7 +30,7 @@ During the **Noon (Closing the book)** phase, the game calculates net profit: `N
 - **Offline Calculation:** 
   1. Determine elapsed real time since `lastSavedTime` and convert to in-game Days.
   2. Iterate the Revenue & Expense Calculation Logic (including maintenance and taxes) for the missed days.
-  3. Deduct expenses from revenues to award net offline earnings upon next launch.
+  3. Batch-commit the calculated Net Profit/Loss for all missed days to the player's Dollar balance upon next launch.
 
 ## Placement & Construction Logic
 - **Area Grid System:** The CBD is a 2D coordinate grid (X, Y).
@@ -37,4 +38,4 @@ During the **Noon (Closing the book)** phase, the game calculates net profit: `N
   1. Player selects building type.
   2. Player drags and drops on the grid to define `footprintWidth` and `footprintLength`.
   3. Player inputs `totalFloors` and `roomsPerFloor`.
-  4. System calculates the massive initial capital required. If funds are sufficient, the building is instantiated with permanently locked physical dimensions.
+  4. System calculates the massive initial capital required. If `dollars` are sufficient, the building is instantiated with permanently locked physical dimensions.

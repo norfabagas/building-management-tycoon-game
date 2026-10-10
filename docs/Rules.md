@@ -2,10 +2,10 @@
 
 ## The Core Loop
 1. **Name Your Area:** At the start of a new game, the player names their CBD area.
-2. **Develop Land:** Start with an empty plot of land and accumulate enough funds to build the first building.
+2. **Initial Capital:** The player starts with a decent amount of starting funds in **Dollars ($)** to construct their first building.
 3. **Build & Expand:** Plan and construct new buildings on the map.
 4. **Floor Management:** Manage the internal facilities and tenants within the established floors.
-5. **Earn & Reinvest:** Collect revenue (minus taxes and maintenance) at the end of each in-game day and reinvest into new buildings or upgrades.
+5. **Earn & Reinvest:** Collect daily net profit or cover losses at the end of each in-game day (Noon phase) and reinvest into new buildings or upgrades.
 
 ## Time System
 - Progression is calculated in **Days**.
@@ -14,10 +14,10 @@
   2. **Day:** Peak activity for offices and certain F&B.
   3. **Afternoon:** Shift in activity, preparations for evening.
   4. **Night:** Peak activity for hotels and residential areas.
-  5. **Noon (Closing the book):** The final phase of the day where daily financial calculations (revenue, maintenance, tax) are finalized.
+  5. **Noon (Closing the book):** The final phase of the day where daily financial calculations (revenue, maintenance, tax) are finalized and profits/losses are committed to the player's balance.
 
 ## Economy & Finances
-- **Soft Currency (Coins):** Earned through rent, sales, and occupancy. Used for construction, upgrades, and paying expenses.
+- **Primary Currency (Dollars $):** The main currency used for construction, upgrades, and paying expenses. The player's balance is strictly updated on a daily basis; no money is added or subtracted during the day until the books are closed at Noon.
 - **Hard Currency (Gems):** Earned via achievements (no online monetization dependencies). Used to speed up wait times or buy premium decorations.
 - **Maintenance Fees:** Calculated daily using a complex formula specific to each building type (e.g., Hotels have high daily upkeep for cleaning; Offices have high utility costs).
 - **Taxes:** Assessed dynamically based on the building's overall value and daily CBD revenue.
