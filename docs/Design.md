@@ -1,22 +1,25 @@
 # Design Document
 
 ## Visual Style
-- **Perspective:** Strictly 2D view (X and Y axis only). E.g., a cross-section or side-view of a building.
-- **Art Direction:** Clean, colorful, and slightly stylized (cartoony but structured). Easy to distinguish different room types at a glance.
-- **Animations:** Idle animations for tenants, construction dust for building new rooms, coin pop-ups for revenue collection.
+- **Perspective:** Strictly 2D view. 
+  - *Macro View:* Top-down or isometric 2D view of the entire CBD area grid (showing empty land and building exteriors).
+  - *Micro View:* Side-view (cross-section) of a selected building to see floors (underground and above ground) along the Y-axis.
+- **Art Direction:** Clean, colorful, and slightly stylized (cartoony but structured). Easy to distinguish different building types and floor facilities at a glance.
+- **Animations:** Idle animations for tenants walking on floors, construction dust for building new rooms/floors, coin pop-ups for revenue collection.
 - **Orientation:** UI and gameplay must gracefully adapt to both Portrait and Landscape orientations on mobile devices and web browsers.
 
 ## User Interface (UI)
-- **Responsive Layout:**
-  - *Portrait:* Menus stacked at the bottom or collapsible from the side.
-  - *Landscape / Web:* Wider viewing area, with menus potentially docked on the left/right edges or horizontally across the bottom.
+- **Start Screen:** A prompt for the user to enter the name of their new CBD Area.
+- **Navigation Flow:**
+  1. **Area Map:** View the CBD, select empty land to construct buildings, or tap existing buildings.
+  2. **Building View:** Zoom into a building to view its floors (scroll up for high levels, down for underground). Tap a floor to manage it.
+  3. **Floor/Tenant View:** Manage specific rooms and tenants on a selected floor.
 - **HUD:** 
-  - Top bar: Current funds, premium currency, building level.
-  - Bottom/Side bar: Build menu, Staff menu, Upgrades menu.
-- **Pop-ups:** Detail screens for individual rooms or tenants when tapped.
+  - Top bar: Area Name, Current funds, premium currency.
+  - Bottom/Side bar: Build menu (Buildings/Floors), Tenant menu, Upgrades menu.
 
 ## Audio & Music
-- **BGM:** Upbeat, relaxing elevator/bossa nova style music that evolves as the building grows.
+- **BGM:** Upbeat, relaxing elevator/bossa nova style music that evolves as the CBD grows.
 - **SFX:** 
   - Cash register 'ka-ching' for money collection.
   - Construction sounds (hammering, drilling) when building.
