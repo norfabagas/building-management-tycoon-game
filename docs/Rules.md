@@ -30,8 +30,9 @@ Regardless of the type of building constructed, the following constraints **alwa
 - **Executive Lift Limit:** A building can have a maximum of **1 executive lift**.
 
 ## Building Construction & Upgrades
-- **Custom Construction:** When purchasing a new building, the player selects the Type, defines the Land Area (as stated above), and specifies the total number of *above-ground* floors and rooms per floor.
-- **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, rooms per floor) is **locked** once constructed.
+- **Custom Construction:** When purchasing a new building, the player selects the Type, defines the Land Area, and specifies the total number of *above-ground* floors. 
+  - **Unit Density Check:** For partitioned buildings like **Hotels and Apartments**, the total number of units/rooms per floor is **automatically calculated and determined** by the physical size (land area footprint) of the building.
+- **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, max unit capacity) is **locked** once constructed.
 - **Underground Parking Expansion:** Through upgrades, players can excavate lower ground floors up to the universal max of 3 levels deep. These are strictly used for parking.
 - **Vertical Logistics:** Buildings have stairs by default. Lifts must be purchased as upgrades (up to the universal limits) to improve efficiency.
 - **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating.

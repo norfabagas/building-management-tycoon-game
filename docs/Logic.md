@@ -41,7 +41,8 @@ The player's Dollar balance is strictly updated on a daily basis. Throughout the
 ## Placement & Construction Logic
 - **Area Grid System:** The CBD is a 2D coordinate grid (X, Y).
 - **Construction Wizard:**
-  1. Player selects building type.
+  1. Player selects building type (e.g., Hotel, Office).
   2. Player drags and drops on the grid to define `footprintWidth` and `footprintLength`.
-  3. Player inputs `aboveGroundFloors` and `roomsPerFloor`.
-  4. System calculates the initial capital required. 
+  3. Player inputs `aboveGroundFloors`.
+  4. **Unit Capacity Check:** System calculates `roomsPerFloor`. For Hotels and Apartments, this is mathematically derived based on the total area (`footprintWidth * footprintLength`), capping the number of units that can fit on a single floor.
+  5. System calculates the initial capital required. 
