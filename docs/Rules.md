@@ -22,17 +22,18 @@
 - **Maintenance Fees:** Calculated daily using a complex formula specific to each building type. Installing lifts will add heavy maintenance fees.
 - **Taxes:** Assessed dynamically based on the building's overall value and daily CBD revenue.
 
+## Universal Building Constants
+Regardless of the type of building constructed, the following constraints **always** apply without exception:
+- **Land Area Requirement:** Every new building requires the player to manually define its physical footprint via a **drag-and-drop tool on the CBD map** before construction.
+- **Underground Depth Limit:** No building can exceed a maximum of **3 underground levels**.
+- **Standard Lift Limit:** A building can have a maximum of **3 standard lifts**.
+- **Executive Lift Limit:** A building can have a maximum of **1 executive lift**.
+
 ## Building Construction & Upgrades
-- **Custom Construction:** When purchasing a new building, the player must specify its design:
-  - **Type:** Choose between Hotel, Office Tower, Apartment, F&B, etc.
-  - **Land Area:** Use a drag-and-drop tool on the map to define the building's footprint (width and length).
-  - **Floors & Rooms:** Specify the total number of *above-ground* floors and rooms per floor.
+- **Custom Construction:** When purchasing a new building, the player selects the Type, defines the Land Area (as stated above), and specifies the total number of *above-ground* floors and rooms per floor.
 - **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, rooms per floor) is **locked** once constructed.
-- **Underground Parking Expansion:** Through upgrades, players can excavate and build lower ground floors up to a maximum of **3 levels deep**. These lower grounds are **strictly used for parking only**.
-- **Vertical Logistics (Stairs & Lifts):** 
-  - By default, all buildings only have **stairs**. 
-  - Players must purchase **Lifts** as upgrades to improve building efficiency and tenant happiness.
-  - A building can have up to **3 standard lifts** and a maximum of **1 executive lift**.
+- **Underground Parking Expansion:** Through upgrades, players can excavate lower ground floors up to the universal max of 3 levels deep. These are strictly used for parking.
+- **Vertical Logistics:** Buildings have stairs by default. Lifts must be purchased as upgrades (up to the universal limits) to improve efficiency.
 - **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating.
 
 ## Building Mechanics, Uniqueness & Synergy
@@ -44,6 +45,6 @@ Each building possesses unique traits, and strategic placement on the map unlock
 - **Underground Parking:** Generates daily revenue based on visitor traffic. High-attraction buildings will generate massive parking revenue. 
 
 ## Tenant & Visitor Management
-- **The Parking Quota Hard Limit:** The total parking quota dictates the maximum possible occupancy of a building. If a building lacks sufficient parking, it cannot take in more tenants or visitors, severely capping its revenue potential.
+- **The Parking Quota Hard Limit:** The total parking quota dictates the maximum possible occupancy of a building. If a building lacks sufficient parking, it cannot take in more tenants or visitors.
 - Players must actively manage tenants. A lack of lifts in high-rises will drastically reduce tenant happiness.
 - If tenant needs are not met, occupancy, rentals, and sales will decrease.
