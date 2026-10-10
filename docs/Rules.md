@@ -17,18 +17,23 @@
   5. **Noon (Closing the book):** The final phase of the day where daily financial calculations (revenue, maintenance, tax) are finalized and profits/losses are committed to the player's balance.
 
 ## Economy & Finances
-- **Primary Currency (Dollars $):** The main currency used for construction, upgrades, and paying expenses. The player's balance is strictly updated on a daily basis; no money is added or subtracted during the day until the books are closed at Noon.
+- **Primary Currency (Dollars $):** The main currency used for construction, upgrades, and paying expenses. The player's balance is strictly updated on a daily basis.
 - **Hard Currency (Gems):** Earned via achievements (no online monetization dependencies). Used to speed up wait times or buy premium decorations.
-- **Maintenance Fees:** Calculated daily using a complex formula specific to each building type (e.g., Hotels have high daily upkeep for cleaning; Offices have high utility costs).
+- **Maintenance Fees:** Calculated daily using a complex formula specific to each building type. Installing lifts will add heavy maintenance fees.
 - **Taxes:** Assessed dynamically based on the building's overall value and daily CBD revenue.
 
 ## Building Construction & Upgrades
 - **Custom Construction:** When purchasing a new building, the player must specify its design:
   - **Type:** Choose between Hotel, Office Tower, Apartment, F&B, etc.
   - **Land Area:** Use a drag-and-drop tool on the map to define the building's footprint (width and length).
-  - **Floors & Rooms:** Specify the total number of floors and the estimated number of rooms per floor.
-- **Permanent Sizing:** The physical size of a building (land area, total floors, rooms per floor) is **locked** once constructed and cannot be expanded or rebuilt later.
-- **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating. This allows them to charge higher rates (making them more expensive and profitable) but does not change the physical dimensions.
+  - **Floors & Rooms:** Specify the total number of *above-ground* floors and rooms per floor.
+- **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, rooms per floor) is **locked** once constructed.
+- **Underground Expansion:** Through upgrades, players can excavate and build underground/lower ground floors up to a maximum of **3 levels deep**.
+- **Vertical Logistics (Stairs & Lifts):** 
+  - By default, all buildings only have **stairs**. 
+  - Players must purchase **Lifts** as upgrades to improve building efficiency and tenant happiness.
+  - A building can have up to **3 standard lifts** and a maximum of **1 executive lift**.
+- **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating.
 
 ## Building Mechanics & Revenue Models
 - **Hotels:** Income based on daily room occupancy.
@@ -38,5 +43,5 @@
 - **Parking Areas:** Provides necessary capacity/support for other buildings.
 
 ## Tenant Management
-- Players must actively manage tenants and daily operations based on the building type.
+- Players must actively manage tenants. A lack of lifts in high-rises will drastically reduce tenant happiness.
 - If tenant needs are not met, occupancy, rentals, and sales will decrease.

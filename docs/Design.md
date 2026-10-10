@@ -5,7 +5,10 @@
   - *Macro View:* Top-down or isometric 2D view of the entire CBD area grid (showing empty land and building exteriors).
   - *Micro View:* Side-view (cross-section) of a selected building to see floors (underground and above ground) along the Y-axis.
 - **Art Direction:** Clean, colorful, and slightly stylized (cartoony but structured). Easy to distinguish different building types and luxury levels at a glance.
-- **Animations:** Idle animations for tenants walking on floors, construction dust for building new rooms/floors, coin pop-ups for revenue collection.
+- **Animations:** 
+  - Idle animations for tenants walking on floors or climbing stairs.
+  - Lift carriages moving vertically up and down shafts (if purchased).
+  - Construction dust for building new rooms/floors, coin pop-ups for revenue collection.
 - **Orientation:** UI and gameplay must gracefully adapt to both Portrait and Landscape orientations on mobile devices and web browsers.
 
 ## Controls & Interaction
@@ -21,7 +24,7 @@
 - **Navigation Flow:**
   1. **Area Map:** View the CBD, pan the camera, or tap existing buildings.
   2. **Construction Wizard:** Triggered when building on empty land. Prompts for Building Type -> Drag & Drop Land Area -> Input Floors & Rooms -> Confirm Cost.
-  3. **Building View:** Zoom into a building to view its floors (drag up for high levels, drag down for underground). Tap a floor to manage it or trigger Luxury Upgrades.
+  3. **Building View:** Zoom into a building to view its floors (drag up for high levels, drag down for underground). Tap a floor to manage it or trigger Luxury Upgrades (including purchasing Lifts and Underground Expansion).
   4. **Floor/Tenant View:** Manage specific rooms and tenants on a selected floor via tap menus.
 - **HUD:** 
   - Top bar: Area Name, Current funds, premium currency.
@@ -30,6 +33,7 @@
 ## Audio & Music
 - **BGM:** Upbeat, relaxing elevator/bossa nova style music that evolves as the CBD grows.
 - **SFX:** 
+  - Lift ding sound when elevators arrive at a floor.
   - Cash register 'ka-ching' for money collection.
   - Construction sounds (hammering, drilling) when building.
   - Murmurs and ambient city noises.
