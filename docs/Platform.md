@@ -1,16 +1,16 @@
 # Platform & Tech Stack
 
 ## Target Platform
-- **Primary OS:** Android (Mobile and Tablet)
-- **Distribution:** Google Play Store
+- **Primary OS:** Android (Mobile and Tablet) & Web
+- **Distribution:** Google Play Store, Web Hosting
+- **Orientation:** Supports both Portrait and Landscape modes
 
 ## Technology Stack
-- **Engine/Framework:** Android Native (Kotlin) / Unity / Godot (To be finalized based on team preference, assuming Android-focused).
-- **Language:** Kotlin / C# (depending on engine).
-- **Version Control:** Git & GitHub.
-- **Architecture:** MVVM or MVP for native, Component-based for engine.
+- **Engine/Framework:** Flutter
+- **Language:** Dart
+- **Version Control:** Git & GitHub
+- **Architecture:** MVVM or BLoC for state management
 
-## Third-Party Integrations
-- **Analytics:** Firebase Analytics (to track player progression and retention).
-- **Monetization:** Google Play Billing (In-App Purchases for premium currency), AdMob (for rewarded video ads).
-- **Cloud Save:** Google Play Games Services for cross-device cloud saving.
+## Offline Constraints
+- **Connectivity:** This game is strictly offline. No active internet connection is required to play.
+- **Data Storage:** Local storage (e.g., Hive, SharedPreferences, or sqflite) for saving game states, player progression, and offline earnings. No cloud sync, analytics, or server-side logic dependencies.

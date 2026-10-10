@@ -1,14 +1,18 @@
 # Design Document
 
 ## Visual Style
-- **Perspective:** Isometric or 2D side-view (like an ant farm/cross-section of a building).
+- **Perspective:** Strictly 2D view (X and Y axis only). E.g., a cross-section or side-view of a building.
 - **Art Direction:** Clean, colorful, and slightly stylized (cartoony but structured). Easy to distinguish different room types at a glance.
 - **Animations:** Idle animations for tenants, construction dust for building new rooms, coin pop-ups for revenue collection.
+- **Orientation:** UI and gameplay must gracefully adapt to both Portrait and Landscape orientations on mobile devices and web browsers.
 
 ## User Interface (UI)
+- **Responsive Layout:**
+  - *Portrait:* Menus stacked at the bottom or collapsible from the side.
+  - *Landscape / Web:* Wider viewing area, with menus potentially docked on the left/right edges or horizontally across the bottom.
 - **HUD:** 
   - Top bar: Current funds, premium currency, building level.
-  - Bottom bar: Build menu, Staff menu, Upgrades menu.
+  - Bottom/Side bar: Build menu, Staff menu, Upgrades menu.
 - **Pop-ups:** Detail screens for individual rooms or tenants when tapped.
 
 ## Audio & Music
