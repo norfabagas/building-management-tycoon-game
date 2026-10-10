@@ -4,12 +4,12 @@
 - **SaveManager:** Handles local serialization for up to **5 distinct Profile slots**.
 - **TimeManager:** Tracks the current `Day` and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile.
 - **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
-- **Building:** Attributes include `id`, `type`, `luxuryLevel`. 
+- **Building:** Attributes include `id`, `type`, `luxuryLevel`, `parkingQuota` (calculated from underground levels). 
   - **Immutable Attributes:** `footprintWidth`, `footprintLength`, `aboveGroundFloors`, `roomsPerFloor`.
   - **Upgradeable Attributes:** 
-    - `undergroundFloors`: Starts at 0, upgradable up to a maximum of 3.
-    - `standardLifts`: Starts at 0, upgradable up to a maximum of 3.
-    - `executiveLifts`: Starts at 0, upgradable up to a maximum of 1.
+    - `undergroundFloors`: Starts at 0, upgradable up to a max of 3. Strictly dedicated to Parking.
+    - `standardLifts`: Starts at 0, upgradable up to a max of 3.
+    - `executiveLifts`: Starts at 0, upgradable up to a max of 1.
     - `hasStairs`: `true` by default.
 - **Floor:** Represents a vertical level (can be negative for underground). Contains a list of `Room`/`Facility` objects.
 - **Room/Facility:** The usable space. Attributes vary heavily by building type.
@@ -22,10 +22,11 @@
 The player's Dollar balance is strictly updated on a daily basis. Throughout the day phases, transactions are simulated, but the actual funds are only modified during the **Noon (Closing the book)** phase.
 - **Closing The Books (Noon Phase):** `Net = Gross Revenue - Maintenance - Tax`. The Net is then committed.
 - **Gross Revenue (Polymorphic):**
-  - *Hotel Logic:* `Daily Revenue = Occupied Rooms * Room Rate`.
-  - *Apartment Logic:* `Daily Revenue = Rented Rooms * Rent Rate`.
-  - *Office Tower Logic:* `Daily Revenue = Floors Rented * Floor Rate`.
-  - *F&B Logic:* `Daily Revenue = Simulated Sales per Phase * Item Price`.
+  - *Hotel Logic:* `Daily Revenue = Occupied Rooms * Room Rate`. (Occupied Rooms constrained by `parkingQuota`).
+  - *Apartment Logic:* `Daily Revenue = Rented Rooms * Rent Rate`. (Rented Rooms constrained by `parkingQuota`).
+  - *Office Tower Logic:* `Daily Revenue = Floors Rented * Floor Rate`. (Floors Rented constrained by `parkingQuota`).
+  - *F&B Logic:* `Daily Revenue = Simulated Sales per Phase * Item Price`. (Sales traffic constrained by `parkingQuota`).
+  - *Parking Logic:* `Daily Revenue = Min(Visitor/Tenant Traffic, parkingQuota) * Daily Parking Fee`.
 - **Maintenance Logic:** Each building type utilizes a complex formula. Base cost + Room maintenance + **Lift Maintenance** (Elevators incur high daily fees).
 - **Tax Logic:** Evaluated based on the area's overall valuation, building types, and daily gross revenue.
 

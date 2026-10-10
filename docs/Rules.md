@@ -28,7 +28,7 @@
   - **Land Area:** Use a drag-and-drop tool on the map to define the building's footprint (width and length).
   - **Floors & Rooms:** Specify the total number of *above-ground* floors and rooms per floor.
 - **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, rooms per floor) is **locked** once constructed.
-- **Underground Expansion:** Through upgrades, players can excavate and build underground/lower ground floors up to a maximum of **3 levels deep**.
+- **Underground Parking Expansion:** Through upgrades, players can excavate and build lower ground floors up to a maximum of **3 levels deep**. These lower grounds are **strictly used for parking only**.
 - **Vertical Logistics (Stairs & Lifts):** 
   - By default, all buildings only have **stairs**. 
   - Players must purchase **Lifts** as upgrades to improve building efficiency and tenant happiness.
@@ -40,8 +40,9 @@
 - **Apartments:** Income based on long-term rooms rented.
 - **Office Towers:** Income based on entire floors rented to corporate tenants.
 - **F&B (Food Courts/Restaurants):** Income based on daily sales volume.
-- **Parking Areas:** Provides necessary capacity/support for other buildings.
+- **Underground Parking:** Generates daily revenue based on visitor traffic. High-attraction buildings will generate massive parking revenue. 
 
-## Tenant Management
+## Tenant & Visitor Management
+- **The Parking Quota Hard Limit:** The total parking quota dictates the maximum possible occupancy of a building. If a building lacks sufficient parking, it cannot take in more tenants or visitors, severely capping its revenue potential.
 - Players must actively manage tenants. A lack of lifts in high-rises will drastically reduce tenant happiness.
 - If tenant needs are not met, occupancy, rentals, and sales will decrease.
