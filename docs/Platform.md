@@ -11,6 +11,7 @@
 - **Version Control:** Git & GitHub
 - **Architecture:** MVVM or BLoC for state management
 
-## Offline Constraints
+## Offline Constraints & Data Storage
 - **Connectivity:** This game is strictly offline. No active internet connection is required to play.
-- **Data Storage:** Local storage (e.g., Hive, SharedPreferences, or sqflite) for saving game states, player progression, and offline earnings. No cloud sync, analytics, or server-side logic dependencies.
+- **Profiles:** The game supports up to **5 local player profiles (save slots)**. 
+- **Data Storage:** Data for each of the 5 profiles is saved entirely on the local device (using local storage solutions like Hive, SharedPreferences, or sqflite). There is no cloud sync, analytics, or server-side logic dependencies.

@@ -16,7 +16,8 @@
 - **Restriction:** No virtual analog sticks or on-screen directional pads are used.
 
 ## User Interface (UI)
-- **Start Screen:** A prompt for the user to enter the name of their new CBD Area.
+- **Main Menu / Profile Selection:** Upon launching the game, the player is presented with up to 5 profile save slots. They can load an existing CBD or start a new one.
+- **Start Screen (New Profile):** A prompt for the user to enter the name of their new CBD Area.
 - **Navigation Flow:**
   1. **Area Map:** View the CBD, pan the camera, or tap existing buildings.
   2. **Construction Wizard:** Triggered when building on empty land. Prompts for Building Type -> Drag & Drop Land Area -> Input Floors & Rooms -> Confirm Cost.

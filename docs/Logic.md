@@ -1,16 +1,17 @@
 # Game Logic & Architecture
 
 ## Game State & Data Models
-- **TimeManager:** Tracks the current `Day` and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing).
+- **SaveManager:** Handles local serialization for up to **5 distinct Profile slots**.
+- **TimeManager:** Tracks the current `Day` and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile.
 - **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
 - **Building:** Attributes include `id`, `type`, `luxuryLevel`. 
   - **Immutable Physical Attributes:** `footprintWidth`, `footprintLength`, `totalFloors`, `roomsPerFloor`. These are set once during construction.
 - **Floor:** Represents a vertical level (can be negative for underground). Contains a list of `Room`/`Facility` objects.
 - **Room/Facility:** The usable space. Attributes vary heavily by building type.
-- **Persistence:** All models must be serializable for strictly local storage.
+- **Persistence:** All state models are serialized strictly to local storage into one of the 5 profile slots.
 
 ## Hierarchy
-`TimeManager` | `Area` -> `Building` (X, Y on land) -> `Floor` (Z axis relative to building) -> `Room` -> `Tenant/Customer`
+`SaveManager` -> `Profile (1-5)` -> `TimeManager` | `Area` -> `Building` (X, Y on land) -> `Floor` (Z axis relative to building) -> `Room` -> `Tenant/Customer`
 
 ## Revenue & Expense Calculation Logic
 The player's Dollar balance is strictly updated on a daily basis. Throughout the day phases, transactions are simulated, but the actual funds are only modified during the **Noon (Closing the book)** phase.
@@ -28,7 +29,7 @@ The player's Dollar balance is strictly updated on a daily basis. Throughout the
 ## Offline Idle Generation Logic
 - The game relies on the local device clock to simulate the passage of in-game **Days** while offline.
 - **Offline Calculation:** 
-  1. Determine elapsed real time since `lastSavedTime` and convert to in-game Days.
+  1. Determine elapsed real time since `lastSavedTime` for the loaded profile and convert to in-game Days.
   2. Iterate the Revenue & Expense Calculation Logic (including maintenance and taxes) for the missed days.
   3. Batch-commit the calculated Net Profit/Loss for all missed days to the player's Dollar balance upon next launch.
 
