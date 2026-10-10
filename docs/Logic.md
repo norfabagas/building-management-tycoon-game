@@ -3,32 +3,38 @@
 ## Game State & Data Models
 - **TimeManager:** Tracks the current `Day` and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing).
 - **CBD Area (Root):** Holds the `areaName`, total funds, and a 2D layout of `Building` objects on the land.
-- **Building:** Attributes include `id`, `type`, `footprint`, and a list of `Floor` objects.
+- **Building:** Attributes include `id`, `type`, `luxuryLevel`. 
+  - **Immutable Physical Attributes:** `footprintWidth`, `footprintLength`, `totalFloors`, `roomsPerFloor`. These are set once during construction.
 - **Floor:** Represents a vertical level (can be negative for underground). Contains a list of `Room`/`Facility` objects.
 - **Room/Facility:** The usable space. Attributes vary heavily by building type.
-- **Persistence:** All models must be serializable for strictly local storage (e.g., JSON to Hive/sqflite).
+- **Persistence:** All models must be serializable for strictly local storage.
 
 ## Hierarchy
 `TimeManager` | `Area` -> `Building` (X, Y on land) -> `Floor` (Z axis relative to building) -> `Room` -> `Tenant/Customer`
 
-## Revenue Calculation Logic
-Because different buildings operate uniquely, revenue calculation uses polymorphic logic triggered during the day and finalized during the **Noon (Closing the book)** phase:
-- **Hotel Logic:** Algorithm simulates daily check-ins/check-outs. `Daily Revenue = Occupied Rooms * Room Rate`.
-- **Apartment Logic:** Stable income. `Daily Revenue = Rented Rooms * Rent Rate`. (Requires maintaining tenant happiness to prevent move-outs).
-- **Office Tower Logic:** Macro-scale income. `Daily Revenue = Floors Rented * Floor Rate`.
-- **F&B Logic:** Transactional income. `Daily Revenue = Simulated Sales per Phase (Morning -> Night) * Item Price`. Influenced heavily by building traffic and day phases.
+## Revenue & Expense Calculation Logic
+During the **Noon (Closing the book)** phase, the game calculates net profit: `Net = Gross Revenue - Maintenance - Tax`.
+- **Gross Revenue (Polymorphic):**
+  - *Hotel Logic:* `Daily Revenue = Occupied Rooms * Room Rate (Scaled by luxuryLevel)`.
+  - *Apartment Logic:* `Daily Revenue = Rented Rooms * Rent Rate (Scaled by luxuryLevel)`.
+  - *Office Tower Logic:* `Daily Revenue = Floors Rented * Floor Rate (Scaled by luxuryLevel)`.
+  - *F&B Logic:* `Daily Revenue = Simulated Sales per Phase * Item Price`.
+- **Maintenance Logic:** Each building type utilizes a complex formula. Examples:
+  - *Hotels:* Base cost + (Occupied rooms * Cleaning cost) + (Total Floors * Utility factor).
+  - *Offices:* Fixed high utility and security costs based on total physical footprint.
+- **Tax Logic:** Evaluated based on the area's overall valuation, building types, and daily gross revenue.
 
 ## Offline Idle Generation Logic
 - The game relies on the local device clock to simulate the passage of in-game **Days** while offline.
 - **Offline Calculation:** 
-  1. Determine how much real time has passed since `lastSavedTime`.
-  2. Convert elapsed real time into elapsed in-game Days and Phases.
-  3. Iterate the Revenue Calculation Logic for the number of missed days.
-  4. Summarize and award total offline earnings upon next launch.
+  1. Determine elapsed real time since `lastSavedTime` and convert to in-game Days.
+  2. Iterate the Revenue & Expense Calculation Logic (including maintenance and taxes) for the missed days.
+  3. Deduct expenses from revenues to award net offline earnings upon next launch.
 
-## Placement & Validation Logic
-- **Area Grid System:** The CBD is a 2D coordinate grid (X, Y) where Buildings are placed.
-- **Floor Construction:** 
-  1. Check if the building type allows the floor expansion.
-  2. Check if the player has sufficient funds.
-  3. Validate structural limits.
+## Placement & Construction Logic
+- **Area Grid System:** The CBD is a 2D coordinate grid (X, Y).
+- **Construction Wizard:**
+  1. Player selects building type.
+  2. Player drags and drops on the grid to define `footprintWidth` and `footprintLength`.
+  3. Player inputs `totalFloors` and `roomsPerFloor`.
+  4. System calculates the massive initial capital required. If funds are sufficient, the building is instantiated with permanently locked physical dimensions.

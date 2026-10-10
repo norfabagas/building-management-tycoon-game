@@ -3,9 +3,9 @@
 ## The Core Loop
 1. **Name Your Area:** At the start of a new game, the player names their CBD area.
 2. **Develop Land:** Start with an empty plot of land and accumulate enough funds to build the first building.
-3. **Build & Expand:** Construct new buildings (Hotels, Apartments, F&B/Food Courts, Parking, Office Towers, Malls).
-4. **Floor Management:** Within each building, construct and configure specific floors (underground and above ground) and fill them with appropriate facilities or tenants.
-5. **Earn & Reinvest:** Collect revenue at the end of each in-game day and reinvest into more advanced buildings.
+3. **Build & Expand:** Plan and construct new buildings on the map.
+4. **Floor Management:** Manage the internal facilities and tenants within the established floors.
+5. **Earn & Reinvest:** Collect revenue (minus taxes and maintenance) at the end of each in-game day and reinvest into new buildings or upgrades.
 
 ## Time System
 - Progression is calculated in **Days**.
@@ -14,20 +14,29 @@
   2. **Day:** Peak activity for offices and certain F&B.
   3. **Afternoon:** Shift in activity, preparations for evening.
   4. **Night:** Peak activity for hotels and residential areas.
-  5. **Noon (Closing the book):** The final phase of the day where daily financial calculations are finalized and books are closed.
+  5. **Noon (Closing the book):** The final phase of the day where daily financial calculations (revenue, maintenance, tax) are finalized.
 
-## Economy & Currency
-- **Soft Currency (Coins):** Earned through rent, sales, and occupancy. Used for construction, expanding floors, and basic upgrades.
+## Economy & Finances
+- **Soft Currency (Coins):** Earned through rent, sales, and occupancy. Used for construction, upgrades, and paying expenses.
 - **Hard Currency (Gems):** Earned via achievements (no online monetization dependencies). Used to speed up wait times or buy premium decorations.
+- **Maintenance Fees:** Calculated daily using a complex formula specific to each building type (e.g., Hotels have high daily upkeep for cleaning; Offices have high utility costs).
+- **Taxes:** Assessed dynamically based on the building's overall value and daily CBD revenue.
+
+## Building Construction & Upgrades
+- **Custom Construction:** When purchasing a new building, the player must specify its design:
+  - **Type:** Choose between Hotel, Office Tower, Apartment, F&B, etc.
+  - **Land Area:** Use a drag-and-drop tool on the map to define the building's footprint (width and length).
+  - **Floors & Rooms:** Specify the total number of floors and the estimated number of rooms per floor.
+- **Permanent Sizing:** The physical size of a building (land area, total floors, rooms per floor) is **locked** once constructed and cannot be expanded or rebuilt later.
+- **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating. This allows them to charge higher rates (making them more expensive and profitable) but does not change the physical dimensions.
 
 ## Building Mechanics & Revenue Models
-Different buildings have distinct logic for how revenue is generated:
-- **Hotels:** Income is calculated based on how many *rooms are occupied* each day.
-- **Apartments:** Income is calculated based on how many *rooms are rented* by long-term tenants.
-- **Office Towers:** Very expensive. Income is calculated based on how many *entire floors are rented* to corporate tenants.
-- **F&B (Food Courts/Restaurants):** Income is calculated based on *daily sales volume* (fluctuating based on foot traffic and time of day).
-- **Parking Areas:** Provides necessary capacity/support for other buildings' tenants and customers.
+- **Hotels:** Income based on daily room occupancy.
+- **Apartments:** Income based on long-term rooms rented.
+- **Office Towers:** Income based on entire floors rented to corporate tenants.
+- **F&B (Food Courts/Restaurants):** Income based on daily sales volume.
+- **Parking Areas:** Provides necessary capacity/support for other buildings.
 
 ## Tenant Management
 - Players must actively manage tenants and daily operations based on the building type.
-- If tenant needs are not met (e.g., lack of parking), occupancy, rentals, and sales will decrease.
+- If tenant needs are not met, occupancy, rentals, and sales will decrease.
