@@ -17,6 +17,8 @@ The user approved the latest design on 2026-10-11. The initial project uses **MV
 
 See [Setup.md](Setup.md) for commands, architecture, dependency choices, validation and limitations. The release Web build packages renderer resources and fonts on its own origin and installs an offline cache after the first load. Android backup/transfer exclusions retain local-only profile data. No backend or runtime network service is configured.
 
+Web hosting is being configured on a new Netlify project at the user's request. See [Deployment.md](Deployment.md) for hosting/build configuration, live deployment status and origin-specific save behavior. Netlify serves static application files; gameplay and saves remain local.
+
 ## Offline Constraints & Data Storage
 - **Connectivity:** This game is strictly offline. No active internet connection is required to play.
 - **Profiles:** The game supports up to **5 local player profiles (save slots)**. 

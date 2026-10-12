@@ -1,5 +1,6 @@
 # Local SDK and generated Flutter output
 .tools/
+.netlify/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies

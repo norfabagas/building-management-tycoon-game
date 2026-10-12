@@ -1,0 +1,2 @@
+# Netlify runs this entry point with Bash on Linux.
+tool/*.sh text eol=lf

@@ -1,0 +1,16 @@
+[build]
+  command = "bash tool/build_netlify.sh"
+  publish = "build/web"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Flutter output names are stable across builds. Revalidate on the host;
+# the app's versioned service worker controls offline caching separately.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    X-Content-Type-Options = "nosniff"
