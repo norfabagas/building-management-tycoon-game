@@ -1,6 +1,6 @@
 # Netlify Web deployment
 
-The user requested a new Netlify project and Web deployment on 2026-10-12. Publish the existing Flutter application and approved assets as a static HTTPS site. Hosting does not introduce accounts, a game backend, analytics or cloud saves. Apartment Sunday billing and automatic roads remain documented future gameplay work.
+The user requested a new Netlify project and Web deployment on 2026-10-12, then explicitly **skipped Netlify deployment** before authorizing the account connection. No project or deployment was created. The configuration below is retained as inactive preparation for a future request; do not resume authorization or publish automatically. Apartment Sunday billing and automatic roads remain documented future gameplay work.
 
 ## Build and hosting configuration
 
@@ -12,7 +12,7 @@ The user requested a new Netlify project and Web deployment on 2026-10-12. Publi
 
 ## Local upload
 
-After linking the intended project and building the Web release:
+Only after a new explicit deployment request, authorize/link the intended project and build the Web release:
 
 ```powershell
 ./.tools/flutter/bin/cache/dart-sdk/bin/dart.exe run tool/build_web.dart
@@ -27,6 +27,6 @@ The first visit needs connectivity to install the app's resources. Later reloads
 
 ## Deployment status
 
-Configuration is prepared. Bash syntax, TOML parsing, all 48 local Web manifest paths and the `.netlify/` ignore rule pass checks. The user must authorize the Netlify CLI account connection before project creation/publication can finish; the authorization ticket is still pending. No Netlify project or live deploy has been confirmed. Do not interpret a prepared config as a successful deployment.
+**Skipped at the user's request.** The account authorization request is no longer being pursued. No Netlify project, live deployment or GitHub continuous-deployment connection was created. Previously verified preparation: Bash syntax, TOML parsing, all 48 local Web manifest paths and the `.netlify/` ignore rule. These checks do not indicate a published site. Local Android and Web builds and the GitHub source repository remain available.
 
 Primary references: [Netlify file configuration](https://docs.netlify.com/build/configure-builds/file-based-configuration/), [headers](https://docs.netlify.com/manage/routing/headers/) and [CLI deployments](https://docs.netlify.com/cli/get-started/).
