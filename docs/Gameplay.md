@@ -27,3 +27,5 @@ On 2026-10-12, formatting, Flutter analysis and all **28 tests** passed. Coverag
 Browser review on the local Web build confirmed saved-profile reload, elapsed-time catch-up, the running calendar, fast-drag 2 × 4 planning, six derived rooms, sixteen B1 bays, the $20,000 quote, complete-quote reservation and automatic roads. The original fast-drag selection issue was corrected using pointer release coordinates. Construction markers retain their source aspect ratio, and the selected ground outline renders beneath the actual one-floor exterior. A prepared in-memory operational fixture was inspected for geometry/room composition; it is not seeded into real games. No Android device was available for execution.
 
 Production publication and hosting checks are recorded in [Deployment.md](Deployment.md). The complete hotel/office/F&B and upgrade systems remain outside this explicitly approved starter release. Audio integration is still pending.
+
+![Deployed apartment starter after confirming the occupied plot and road ring](images/gameplay-starter.png)

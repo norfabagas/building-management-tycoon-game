@@ -17,7 +17,7 @@ enum GamePhase {
   final String label;
 }
 
-/// A clock value only. Simulation timing and balancing are not defined yet.
+/// Phase-order value. DistrictSimulation handles elapsed time and closings.
 class GameClock {
   GameClock({this.day = 1, this.phase = GamePhase.morning}) {
     if (day < 1) throw ArgumentError.value(day, 'day');

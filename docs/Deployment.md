@@ -1,6 +1,6 @@
 # Netlify Web deployment
 
-The Web app is published at [building-management-tycoon-game.netlify.app](https://building-management-tycoon-game.netlify.app). The user resumed deployment on 2026-10-12 and authorized the Netlify CLI. A new project was created in the `norfabagas` team and the validated Web release was uploaded to production. Apartment Sunday billing and automatic roads remain documented future gameplay work.
+The Web app is published at [building-management-tycoon-game.netlify.app](https://building-management-tycoon-game.netlify.app). The user resumed deployment on 2026-10-12 and authorized the Netlify CLI. The latest release replaces the empty-canvas bootstrap with the approved apartment starter: construction, automatic roads, local full-game saves, tenant rooms, Sunday rent and daily finances. See [Gameplay.md](Gameplay.md) for scope and remaining building/upgrade systems.
 
 ## Build and hosting configuration
 
@@ -33,14 +33,20 @@ The first visit needs connectivity to install the app's resources. Later reloads
 - Project ID: `326e5871-656b-4f7b-87c1-664e001d4ac4`.
 - Production URL: [Open the game](https://building-management-tycoon-game.netlify.app).
 - Dashboard: [Netlify project](https://app.netlify.com/projects/building-management-tycoon-game).
-- Deploy ID: `6accd3213b81fa43c5ced96c`, confirmed `ready` by the Netlify API.
-- Deploy details: [Production deployment](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6accd3213b81fa43c5ced96c).
-- Uploaded release: source checkout `341bf18`, using `netlify deploy --prod --dir build/web --no-build`.
+- Deploy ID: `6acce2a358f934c48bbcf515`.
+- Deploy details: [Production deployment](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acce2a358f934c48bbcf515).
+- Uploaded release: source checkout `3c3d0ba`, using `netlify deploy --prod --dir build/web --no-build`.
 - Deployment mode: manual CLI upload. GitHub continuous deployment is **not connected**; future pushes alone do not publish the site. Build locally and run the upload command above for updates, or explicitly connect Git builds later.
 - Local project linkage remains in ignored `.netlify/state.json`; credentials are stored by the CLI outside tracked project files.
 
-Before upload, formatting (19 files unchanged), Flutter analysis, all 14 tests, the 158-file runtime catalog validator and the release Web build passed. All 201 offline-cache resources exist in the output, including all 158 runtime assets.
+Before upload, formatting (31 files), Flutter analysis, all **28 tests**, the 158-file runtime catalog validator, Android debug and release Web builds passed. Construction UI tests run with semantics enabled at phone, landscape and desktop sizes. All 201 offline-cache resources exist in the output, including all 158 runtime assets.
 
-After publication, the HTTPS profile screen displayed the BM mark, approved district illustration and five empty slots. The root page and client-navigation fallback returned HTTP 200. Published runtime manifest contents match the repository's 158-asset catalog. HTTP checks confirmed the offline cache manifest/worker, main bundle, bootstrap, CanvasKit Wasm, logo, character animation and music resource with their expected content types. Host cache revalidation and `nosniff` headers are present. Local offline reload was verified during initial setup; a disconnected reload on this live origin has not been repeated. The page displays Netlify's hosting badge. Current gameplay limitations remain in [Setup.md](Setup.md) and [Project.md](Project.md).
+After publication, the production main JavaScript SHA-256 matched the validated build. On the deploy-permalink origin, browser review with accessibility enabled verified profile creation, $40,000 initialization, a fast-drag 2 × 4 footprint, six derived rooms, sixteen B1 bays, the $20,000 cost review, confirmation/reservation and the automatically saved road ring. Review data is isolated from the main origin's player saves. The semantic canvas interception found during the first upload was fixed forward in this release.
+
+The local host was stopped and the app reloaded successfully from its final offline cache. The saved district loaded with its paid order, roads and correct construction/calendar progression; the purchase was not charged a second time. This verifies local offline reload, not a disconnected reload against the live HTTPS origin. The hosting badge remains provided by Netlify. Other gameplay limits are in Setup.md and Project.md.
+
+## Loading a newer release
+
+Updates wait for existing game tabs to close so an active session keeps a consistent code/cache version. Refresh once to check for and download the new cache, allow the download to finish, then close all tabs on the game origin and reopen it. A desktop hard refresh (Ctrl+Shift+R) can load the new hosted bundle directly. Keep browser site data intact to retain existing local profiles and game snapshots.
 
 Primary references: [Netlify file configuration](https://docs.netlify.com/build/configure-builds/file-based-configuration/), [headers](https://docs.netlify.com/manage/routing/headers/) and [CLI deployments](https://docs.netlify.com/cli/get-started/).
