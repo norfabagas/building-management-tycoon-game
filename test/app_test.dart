@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/memory_save_store.dart';
+import 'helpers/game_test_store.dart';
 
 void main() {
   for (final size in [
@@ -21,7 +22,9 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final model = ProfileViewModel(SaveManager(MemorySaveStore()));
-      await tester.pumpWidget(TycoonApp(profiles: model));
+      await tester.pumpWidget(
+        TycoonApp(profiles: model, games: testGameRepository()),
+      );
       await tester.pumpAndSettle();
       for (var slot = 1; slot <= 5; slot++) {
         expect(find.byKey(ValueKey('profile-slot-$slot')), findsOneWidget);
@@ -41,7 +44,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final store = MemorySaveStore();
     final model = ProfileViewModel(SaveManager(store));
-    await tester.pumpWidget(TycoonApp(profiles: model));
+    await tester.pumpWidget(
+      TycoonApp(profiles: model, games: testGameRepository()),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('New').first);
     await tester.pumpAndSettle();

@@ -44,7 +44,7 @@ On another workstation, use the version in `toolchain.json`, install the Android
 ./.tools/flutter/bin/cache/dart-sdk/bin/dart.exe run tool/build_web.dart
 ```
 
-For a global SDK, use `dart` and `flutter` in the equivalent commands. GitHub Actions runs format, analyze, tests, the offline Web build, and an Android debug build. Store signing and deployment are not configured.
+For a global SDK, use `dart` and `flutter` in the equivalent commands. GitHub Actions runs format, analyze, tests, the offline Web build, and an Android debug build. Store signing is not configured. Manual Netlify Web hosting is recorded in [Deployment.md](Deployment.md).
 
 Web output is `build/web/`. Serve that entire directory from HTTPS, or localhost during development. `tool/build_web.dart` disables the Flutter resource CDN, generates a versioned offline asset manifest, and includes a service worker. After the initial load and cache installation, the app can reload without the host being reachable. Updates wait for the previous service worker's clients to close. Direct `flutter build web` omits this offline packaging step. Local profiles are tied to the browser origin and can be removed by browser storage clearing.
 
@@ -57,20 +57,20 @@ The setup uses MVVM with Flutter `ChangeNotifier`, without an extra state-manage
 | Location | Responsibility |
 | --- | --- |
 | `lib/app/` | App composition, generated runtime asset catalog, approved paths and shared theme |
-| `lib/domain/` | Profile metadata, building-type identifiers, documented limits and phase order |
-| `lib/data/` | Versioned local storage and `SaveManager` |
+| `lib/domain/` | Profiles, starter catalog, footprint/roads, full snapshots and deterministic district simulation |
+| `lib/data/` | Profile metadata plus transactional SQLite/IndexedDB game repository |
 | `lib/features/profiles/` | Five-slot view model, profile selection and naming |
-| `lib/features/district/` | Empty isometric canvas with drag-to-pan |
+| `lib/features/district/` | District view model, HUD, unbounded map, build review, building rooms and finances |
 | `lib/shared/widgets/` | Defined BM title lockup and shared actions |
-| `test/` | Save safety, concurrency, phase order and responsive profile flow |
+| `test/` | Save safety, concurrent reservations, clock/construction/rent, offline parity and responsive build/room flows |
 
-`PreferencesSaveStore` uses `SharedPreferencesAsync`, one JSON key and schema version 1. It currently stores **profile metadata only**: slot, trimmed district name and creation time. Read-modify-write operations serialize, occupied slots reject replacement, and failed writes never publish success in the view model. Unreadable or unsupported saves remain untouched and block creation until a successful read. No reset/delete operation exists in this setup. Before storing complete game progress, choose and document a durable snapshot/transaction strategy; the [package documentation](https://pub.dev/packages/shared_preferences) does not guarantee durable writes for critical data.
+`PreferencesSaveStore` retains **profile metadata only**: slot, trimmed district name and creation time, under the existing schema/key. Its serialized slot-creation rules and corrupt-data preservation remain. `GameRepository` now stores complete version-1 game records separately in Sembast transactions, backed by SQLite on Android and IndexedDB on Web. Each transaction loads the latest snapshot, applies elapsed phases and a validated action, then commits before the view model publishes it. The wallet, rent ledger, closing ID, orders, buildings and watermark are saved together. Road tiles are derived deterministically from saved plots. Existing metadata-only profiles initialize an empty $40,000 game once at first gameplay load. No reset/delete action exists. See [Gameplay.md](Gameplay.md) for persistence, migration and browser storage limitations.
 
 ## Current application scope
 
-Implemented: branded responsive launch/profile screen, approved illustration and BM icons, exactly five local slots, name validation, metadata persistence, loading an existing slot, retryable save/read failures and an empty district canvas that pans by dragging. A new district contains no sample buildings. The launch illustration is promotional artwork and is never loaded as saved game state.
+Implemented: branded responsive profiles, exactly five local slots, district naming, legacy profile preservation, transactional full-game saves, a $40,000 wallet, unbounded pannable land, manual apartment footprint selection with road preview, cost review and reservations, automatic road rings, queued Noon payment, two-day shell plus one-day B1 construction, parking-gated Morning admissions, room vacancy management, Sunday apartment rent, daily parking/upkeep/tax, finance statements and uncapped offline catch-up. A new district contains no sample buildings; launch art stays promotional only.
 
-The canvas is a visual bootstrap, not a construction system. Its eight-by-eight drawing is an illustrative viewport, not a decided district size. It has no placement, wallet, occupancy, upgrades, financial simulation or offline income calculation yet. The clock object preserves Morning, Day, Afternoon, Night and Noon; it does not run a timer or commit dollars.
+The original eight-by-eight visual bootstrap has been replaced. The approved starter uses unbounded integer land, one above-ground apartment floor with stairs, and a free one-tile road ring including corners. The running clock preserves Morning, Day, Afternoon, Night and Noon, one minute each. Dollars change at Noon; unconfirmed plans have no saved plot or road. Map textures follow actual saved geometry. Occupied rooms play catalog-driven resident idle frames with reduced-motion support. Audio and the remaining walk/stair/lift/effect integration are pending.
 
 ## Fonts and artwork
 
@@ -80,11 +80,11 @@ The reference uses Trebuchet MS. No redistributable application font file was su
 
 ## Next implementation gates
 
-The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent paid weekly at in-game Sunday Noon and other income daily at Noon. Follow [Economy.md](Economy.md) for starting funds, time/capacity formulas, reservations, initial parking, taxes and offline billing. These rules are documented but not implemented. Before gameplay implementation, finalize prices/weekly rents, upkeep coefficients, happiness/demand tuning, unlock thresholds and the other remaining gates in [DesignKit.md](DesignKit.md), and choose durable full-game persistence. Keep above-ground sizing immutable. Underground remains parking only, with maximum three levels, three standard lifts and one executive lift. Offices lease whole floors.
+The approved apartment starter catalog and selected Relaxed idle rules are implemented; see [Economy.md](Economy.md) and [Gameplay.md](Gameplay.md). Hotel/office/F&B prices and demand, lift/happiness formulas, additional parking/luxury upgrades, synergy, unlocks, achievements and decorations still need their catalogs. These features are unavailable in the starter UI. Above-ground sizing stays immutable; universal future limits remain three parking basements, three standard lifts and one executive lift. Offices will lease whole floors.
 
 Every implementation change must update the documentation and retain these constraints.
 
-The user additionally confirmed that occupying empty land with a building automatically creates a road around its footprint. This is documented in Rules.md/Logic.md but not implemented in the current empty canvas. Before placement implementation, define road width/corners, edge handling and any cost/upkeep; validate road space and save it with the occupied plot without changing room/parking capacity.
+Automatic surrounding roads are implemented with the approved free one-tile ring, including corners, on unbounded land. Validate building and road conflicts together; shared road tiles merge and unpaid cancellation retains other plots' shared segments. Roads add no room or parking capacity.
 
 ## Validation on 2026-10-12
 
@@ -111,3 +111,9 @@ The source handoff includes the approved BM assets/design references, Flutter ap
 - Android debug APK and release Web rebuilds pass. Package inspection confirms all 158 resources and the current catalog in both outputs. The Web offline manifest now includes **201 local resources**; every game asset is covered. These are build/package checks; the earlier offline-launch review remains the app's browser validation, and no Android device execution was performed.
 - The CI workflow now installs the pinned asset-tool dependency and runs `design/production/validate.mjs` before Flutter checks. This workflow update has not been verified remotely in this local pass.
 - Engine animation/composition, sound playback/mute settings, construction, weekly apartment settlement and automatic road generation remain their documented gameplay implementation tasks. Asset creation did not add or decide prices, road width, land bounds, capacity rules or future mall/VIP content.
+
+## Playable apartment starter validation — 2026-10-12
+
+The later user-approved starter release implements apartment construction and daily/weekly simulation; it supersedes the bootstrap-only scope in the historical checks above. Full game storage now uses locked Sembast 3.8.11, SQLite adapter 2.2.3/sqflite 2.4.4+1 on Android, IndexedDB adapter 2.4.6 on Web and path_provider 2.1.6. Android's existing backup/transfer exclusions cover the database. The Android toolchain installed CMake 3.22.1 from the SDK's already accepted license while building the new native dependencies.
+
+Formatting, analysis and all 28 tests pass. The four gameplay UI tests were repeated after final map fixes. Both final Android debug and offline release Web builds pass. The asset validator still passes all 158 resources/124 referenced frames; no BM master or production asset bytes changed. Browser review confirmed real pointer planning, price review, reservations, roads and saved-game reload/catch-up. An in-memory mature-building review fixture checked one-floor facade/roof and room composition. See [Gameplay.md](Gameplay.md) for coverage and remaining release limits. Android execution remains untested without a connected device; remote CI was not verified in this local pass.

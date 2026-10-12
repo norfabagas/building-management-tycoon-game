@@ -1,6 +1,6 @@
 # Game Rules & Mechanics
 
-The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent paid **weekly on Sunday at Noon** and other income paid **daily at Noon**. [Economy.md](Economy.md) defines the selected model and billing conventions; [EconomyOptions.md](EconomyOptions.md) preserves the original alternatives. Economy simulation is not implemented yet.
+The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent paid **weekly on Sunday at Noon** and other income paid **daily at Noon**. The user subsequently approved an apartment starter catalog, one-floor starter restriction and automatic-road geometry. [Economy.md](Economy.md) defines these selected rules; [Gameplay.md](Gameplay.md) records their implementation. Hotel, office, F&B, lifts, luxury and other catalogs remain pending. [EconomyOptions.md](EconomyOptions.md) preserves the original alternatives.
 
 ## The Core Loop
 1. **Name Your Area:** At the start of a new game, the player names their CBD area.
@@ -26,7 +26,7 @@ The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent 
 - **Hard Currency (Gems):** Earned via achievements (no online monetization dependencies). Used to speed up wait times or buy premium decorations.
 - **Income schedule:** Apartment rent accrues for occupied days and is paid at Sunday Noon, prorated for partial weeks. Hotels, offices, F&B and parking pay daily at Noon, including parking attached to apartments.
 - **Spending:** Purchases reserve funds immediately and settle once at the next Noon. Pending apartment rent and projected income are not spendable cash.
-- **Maintenance Fees:** Low fixed coefficients by building type, floors, occupancy, parking, lifts and luxury, charged daily. Installing lifts adds heavy daily fees. Exact coefficients remain catalog work.
+- **Maintenance Fees:** Daily fixed coefficients. Starter apartments use $40 per completed floor plus $40 per completed basement; other types, lifts and luxury remain catalog work.
 - **Taxes:** Daily tax is **0.05% of completed building valuation + 2% of cash gross received at that closing**. Apartment revenue tax is paid with Sunday rent; valuation tax remains daily. See Economy.md for rounding and valuation scope.
 
 ## Universal Building Constants
@@ -41,7 +41,7 @@ Regardless of the type of building constructed, the following constraints **alwa
   - **Unit Density Check:** For partitioned buildings like **Hotels and Apartments**, the total number of units/rooms per floor is **automatically calculated and determined** by the physical size (land area footprint) of the building.
 - **Automatic Surrounding Roads:** As confirmed by the user on 2026-10-12, when a new building occupies previously empty land, the game automatically creates a road around the occupied footprint. The player does not need to draw or place that road manually. Create it when the plot becomes an occupied construction site, not during an unconfirmed placement preview.
   - Roads sit outside the building footprint; they do not add room capacity or underground parking quota. Reuse compatible existing road segments instead of duplicating them, and never overwrite another building.
-  - Placement review must preview the surrounding road and validate both the building footprint and required road space. Road width, district-edge handling and any road cost/upkeep still need definition; do not silently add a charge or assume roads may extend outside the district.
+  - Placement review previews and validates both the footprint and surrounding road. The approved starter uses a free one-tile rectangular ring including corners on unbounded land, merging shared road segments. Existing roads cannot become building footprints; road rings cannot overwrite occupied plots.
 - **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, max unit capacity) is **locked** once constructed.
 - **Underground Parking Expansion:** Through upgrades, players can excavate lower ground floors up to the universal max of 3 levels deep. These are strictly used for parking.
 - **Vertical Logistics:** Buildings have stairs by default. Lifts must be purchased as upgrades (up to the universal limits) to improve efficiency.

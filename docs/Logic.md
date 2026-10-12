@@ -2,7 +2,7 @@
 
 ## Implementation status
 
-The initial Flutter setup uses MVVM with `ChangeNotifier`. The domain layer defines the five-slot limit, building-type identifiers, universal upgrade limits and the documented phase order. `SaveManager` persists versioned local **profile metadata** with serialized writes and preserves unsupported/corrupt data. The profile view model reports success only after persistence succeeds. Full building snapshots, construction, financial commits and offline income are not implemented yet. See [Setup.md](Setup.md) for the concrete layout and open implementation gates; this document's game rules remain the contract.
+The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements the approved apartment starter catalog, five one-minute phases, queued purchases, sequential shell/B1 construction, Morning admissions, Sunday rent, daily parking/expenses/tax and chronological offline catch-up. `GameRepository` reads, simulates and writes a full versioned snapshot in a Sembast transaction (SQLite on Android; IndexedDB on Web) before the district view model publishes success. `SaveManager` retains the five-slot legacy/profile metadata store. Unsupported or corrupt snapshots are preserved. See [Gameplay.md](Gameplay.md) and [Setup.md](Setup.md) for implementation details and the remaining building/upgrade catalogs.
 
 ## Game State & Data Models
 - **SaveManager:** Handles local serialization for up to **5 distinct Profile slots**.
@@ -35,7 +35,7 @@ The player's Dollar balance is strictly updated on a daily basis. Throughout the
   - *Office Tower Logic:* `Daily Revenue = Floors Rented * Floor Rate * synergyModifier`. (Floors Rented constrained by `parkingQuota`).
   - *F&B Logic:* `Daily Revenue = Simulated Sales per Phase * Item Price * synergyModifier`. (Sales traffic constrained by `parkingQuota`).
   - *Parking Logic:* Daily tenant-bay fees plus per-admitted-visit fees. Reserve tenant bays first; cap simultaneous visitor admissions by remaining bays. Phase turnover can produce more daily visits than physical bays without exceeding simultaneous capacity. Apartment parking still pays daily.
-- **Maintenance Logic:** Daily fixed coefficients for type, floors, occupancy, parking, lifts and luxury. Lifts incur high daily fees; exact coefficients remain unfinished.
+- **Maintenance Logic:** Starter apartments use $40 per completed floor plus $40 per completed basement daily. Other type/lift/luxury coefficients remain unfinished.
 - **Tax Logic:** `Tax = 0.0005 * completedBuildingValuation + 0.02 * CashGross`, with valuation/revenue components separately rounded to cents. Apartment pending rent is excluded from cash gross until Sunday; daily valuation tax and upkeep continue throughout the week.
 
 ### Apartment billing and save state
@@ -62,4 +62,4 @@ Persist weekly rent, pending daily accruals, completed closing IDs and the game-
 
 ### Automatic road generation
 
-Roads are generated around the occupied footprint rather than carved out of its usable floor area. They do not alter immutable building dimensions or parking capacity. Save/reload and retry must preserve the same road layout without adding duplicate segments. Road width, corner geometry, boundary behavior and any costs/upkeep remain explicit implementation decisions; automatic roads are now a required mechanic, while manual road tools and traffic/pathfinding simulation have not been added to scope.
+Roads are generated around the occupied footprint rather than carved out of its usable floor area. They do not alter immutable building dimensions or parking capacity. The approved starter uses a one-tile ring including corners, free of cost/upkeep, on unbounded land. A set union of saved occupied-plot rings derives the road layout, so shared tiles appear once and canceling an unpaid plot removes only its unshared road tiles. Saving plots atomically also saves the full information needed to reconstruct roads. Manual road tools and traffic/pathfinding simulation are outside this release.

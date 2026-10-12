@@ -5,14 +5,20 @@ import 'package:flutter/material.dart';
 import '../../app/game_assets.dart';
 import '../../app/game_theme.dart';
 import '../../domain/local_profile.dart';
+import '../../data/game_repository.dart';
 import '../../shared/widgets/game_brand.dart';
 import '../../shared/widgets/game_button.dart';
 import '../district/district_screen.dart';
 import 'profile_view_model.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, required this.viewModel});
+  const ProfileScreen({
+    super.key,
+    required this.viewModel,
+    required this.games,
+  });
   final ProfileViewModel viewModel;
+  final GameRepository games;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -35,7 +41,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _open(LocalProfile profile) => Navigator.of(context).push<void>(
-    MaterialPageRoute(builder: (_) => DistrictScreen(profile: profile)),
+    MaterialPageRoute(
+      builder: (_) =>
+          DistrictScreen(profile: profile, repository: widget.games),
+    ),
   );
 
   @override

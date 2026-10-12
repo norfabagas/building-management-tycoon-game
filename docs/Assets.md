@@ -36,11 +36,11 @@ Text-source hashes normalize CRLF to LF so Windows/Linux checkouts validate iden
 
 ## Geometry and game rules
 
-Road art supports every four-way connectivity combination, with bits 1/2/4/8 representing north/east/south/west in the tile's local plane. Use the shared projection and pivots to join segments without seams. The tile's 256-by-128 art plane does **not** define the still-open gameplay road width or land cost. Roads remain outside a building's capacity footprint, as specified in [Rules.md](Rules.md).
+Road art supports every four-way connectivity combination, with bits 1/2/4/8 representing north/east/south/west in the tile's local plane. The apartment starter renders all road masks using the shared 256-by-128 art plane and pivots. Gameplay uses the user-approved free one-tile ring on unbounded land; this rule comes from [Economy.md](Economy.md), rather than the art dimensions. Roads remain outside a building's capacity footprint.
 
 Exterior structural pieces repeat with a 48-pixel floor step. Room, parking and lift assets use front cutaway projection. Canonical completed/luxury images are previews; actual footprint/floor count must be composed from saved geometry. Draw B1/B2/B3 labels and capacity numbers natively. Parking illustration bay counts are not the quota formula.
 
-Empty backgrounds contain no buildings or roads; populated district art is only for menu/promotional use. The eight-by-eight drawn viewport is illustrative, not a district-bound decision. Phase tint layers apply to world artwork, leaving HUD text readable. The Day overlay is intentionally fully transparent.
+Empty backgrounds contain no buildings or roads; populated district art is only for menu/promotional use. The original eight-by-eight bootstrap viewport has been replaced with a pannable unbounded tile plane. Phase tint layers apply to world artwork, leaving HUD text readable. The Day overlay is intentionally fully transparent.
 
 Decorations and luxury visuals do not establish prices, unlocks, income boosts or upkeep coefficients. Malls, VIP tenants and broader city content remain future scope. No accounts, backend, ads or online purchases were introduced.
 
@@ -54,6 +54,6 @@ See [production-tool README](../design/production/README.md) for regeneration co
 
 The asset validator checks source/output hashes, image decoding, manifest paths, Flutter declarations, frame indices, empty/clipped character frames, all road masks, building modules, phase coverage and PCM audio format/peaks. Flutter also tests loading every catalog file through `rootBundle` to catch packaging omissions. The CI workflow runs the asset validator before Flutter checks.
 
-Contact sheets and the local gallery provide visual/motion review; data validation alone does not prove animation quality. Android/Web builds and final review results are recorded in Setup.md after the asset integration checks complete. Gameplay animation, road generation, building composition and audio playback still need their corresponding systems; this request completes repository resources, not those gameplay features.
+Contact sheets and the local gallery provide visual/motion review; data validation alone does not prove animation quality. The apartment starter now composes one-floor exteriors from approved roof/facade textures, draws road connectivity and phase overlays, and plays resident idle frames from catalog timing in occupied rooms. Respect reduced motion. Full walk/stair/lift/effect and audio integration remain pending. Gameplay and validation are recorded in [Gameplay.md](Gameplay.md) and Setup.md.
 
 ![Asset library overview](../design/production/previews/asset-overview.png)

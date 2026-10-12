@@ -2,7 +2,7 @@
 
 An offline 2D building management tycoon for Android and Web, built with Flutter and Dart.
 
-[Open the Web app](https://building-management-tycoon-game.netlify.app). The current release includes profile setup and the empty district canvas; management and economy gameplay are still pending. Netlify deployment details and update commands are in [Deployment.md](docs/Deployment.md).
+[Open the Web app](https://building-management-tycoon-game.netlify.app). The apartment starter release replaces the empty canvas with construction, automatic roads, room management, weekly rent and daily finances. Netlify deployment details and update commands are in [Deployment.md](docs/Deployment.md).
 
 ## Run the project
 
@@ -13,7 +13,7 @@ An offline 2D building management tycoon for Android and Web, built with Flutter
 
 Use `./tool/flutter.ps1 devices` and `./tool/flutter.ps1 run -d <android-device-id>` for Android. Flutter 3.47.7 and Dart 3.13.5 are pinned in `toolchain.json`.
 
-The initial app includes the approved branding, five local profile slots, district naming and an empty map that pans by dragging. The selected economy is Relaxed idle (Option 1): apartment rent pays weekly at in-game Sunday Noon; hotel, office, F&B and parking income pay daily at Noon. This economy is documented and awaits implementation. See [setup, architecture and validation](docs/Setup.md) for build commands, offline Web packaging and current limitations.
+The app includes the approved branding, five local slots, district naming, an unbounded pannable map, apartment planning and cost review, automatic surrounding roads, construction, tenant rooms and finance statements. Apartment rent pays weekly at in-game Sunday Noon; parking pays daily. Full snapshots and missed-time settlement remain local. Other building types and upgrades await their catalogs. See [gameplay](docs/Gameplay.md) and [setup](docs/Setup.md) for commands and limitations.
 
 ## Documentation
 - [Project and scope](docs/Project.md)
@@ -21,6 +21,7 @@ The initial app includes the approved branding, five local profile slots, distri
 - [Rules and mechanics](docs/Rules.md)
 - [Game logic](docs/Logic.md)
 - [Selected economy and Sunday apartment billing](docs/Economy.md)
+- [Playable apartment starter and local game saves](docs/Gameplay.md)
 - [Original three economy alternatives](docs/EconomyOptions.md)
 - [Platforms and offline storage](docs/Platform.md)
 - [Canva component specification and design setup](docs/DesignKit.md)

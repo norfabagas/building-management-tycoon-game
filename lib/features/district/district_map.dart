@@ -1,0 +1,555 @@
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
+
+import '../../app/game_theme.dart';
+import '../../app/production_assets.dart';
+import '../../domain/district_game.dart';
+
+class DistrictMap extends StatefulWidget {
+  const DistrictMap({
+    super.key,
+    required this.game,
+    required this.drawing,
+    required this.onFootprint,
+    required this.onSelect,
+    this.preview,
+    this.selected,
+    this.reset = 0,
+  });
+  final DistrictGame game;
+  final bool drawing;
+  final Footprint? preview;
+  final int? selected;
+  final int reset;
+  final ValueChanged<Footprint> onFootprint;
+  final ValueChanged<int> onSelect;
+  @override
+  State<DistrictMap> createState() => _DistrictMapState();
+}
+
+class _DistrictMapState extends State<DistrictMap> {
+  Offset _pan = Offset.zero;
+  LandCell? _start;
+  int? _drawingPointer;
+  Map<String, ui.Image> _images = {};
+  static Future<Map<String, ui.Image>>? _art;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final images = await (_art ??= _loadImages());
+      if (mounted) setState(() => _images = images);
+    } catch (_) {
+      _art = null;
+      // The native grid remains usable when an image fails to decode.
+    }
+  }
+
+  static Future<Map<String, ui.Image>> _loadImages() async {
+    final paths = [
+      ProductionAssets.tilesLand,
+      ProductionAssets.buildingsApartmentLobby,
+      ProductionAssets.buildingsApartmentRoof,
+      ProductionAssets.buildingsConstructionFenced,
+      ProductionAssets.buildingsConstructionFrame,
+      for (var i = 0; i < 16; i++)
+        'assets/game/tiles/road-${i.toRadixString(2).padLeft(4, '0')}.png',
+    ];
+    final images = await Future.wait(
+      paths.map((path) async {
+        final bytes = await rootBundle.load(path);
+        final codec = await ui.instantiateImageCodec(
+          bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+        );
+        final frame = await codec.getNextFrame();
+        codec.dispose();
+        return MapEntry(path, frame.image);
+      }),
+    );
+    return Map.fromEntries(images);
+  }
+
+  @override
+  void didUpdateWidget(DistrictMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.reset != widget.reset) _pan = Offset.zero;
+  }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final size = constraints.biggest;
+      final projection = MapProjection(size, _pan);
+      return Semantics(
+        label: widget.drawing
+            ? 'Draw apartment footprint by dragging on the map.'
+            : 'District map. Drag to pan; tap a building to manage it.',
+        child: Listener(
+          onPointerDown: (event) {
+            if (widget.drawing && _drawingPointer == null) {
+              _drawingPointer = event.pointer;
+              _start = projection.cellAt(event.localPosition);
+              widget.onFootprint(Footprint.between(_start!, _start!));
+            }
+          },
+          onPointerMove: (event) {
+            if (_drawingPointer == event.pointer && _start != null) {
+              widget.onFootprint(
+                Footprint.between(
+                  _start!,
+                  projection.cellAt(event.localPosition),
+                ),
+              );
+            }
+          },
+          onPointerUp: (event) {
+            if (_drawingPointer == event.pointer && _start != null) {
+              widget.onFootprint(
+                Footprint.between(
+                  _start!,
+                  projection.cellAt(event.localPosition),
+                ),
+              );
+              _start = null;
+              _drawingPointer = null;
+            }
+          },
+          onPointerCancel: (event) {
+            if (_drawingPointer == event.pointer) {
+              _start = null;
+              _drawingPointer = null;
+            }
+          },
+          child: GestureDetector(
+            dragStartBehavior: DragStartBehavior.down,
+            key: const ValueKey('district-map'),
+            behavior: HitTestBehavior.opaque,
+            onPanUpdate: (details) {
+              if (!widget.drawing && _drawingPointer == null) {
+                setState(() => _pan += details.delta);
+              }
+            },
+            onTapUp: (details) {
+              final cell = projection.cellAt(details.localPosition);
+              if (!widget.drawing) {
+                for (final building in widget.game.buildings.reversed) {
+                  if (building.footprint.contains(cell)) {
+                    widget.onSelect(building.id);
+                    break;
+                  }
+                }
+              }
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ColoredBox(
+                    color: GameColors.surface,
+                    child: CustomPaint(
+                      painter: _DistrictPainter(
+                        widget.game,
+                        projection,
+                        _images,
+                        widget.preview,
+                        widget.selected,
+                      ),
+                    ),
+                  ),
+                  IgnorePointer(
+                    child: Image.asset(
+                      const [
+                        ProductionAssets.backgroundsPhaseMorning,
+                        ProductionAssets.backgroundsPhaseDay,
+                        ProductionAssets.backgroundsPhaseAfternoon,
+                        ProductionAssets.backgroundsPhaseNight,
+                        ProductionAssets.backgroundsPhaseNoon,
+                      ][widget.game.phaseIndex],
+                      fit: BoxFit.fill,
+                      excludeFromSemantics: true,
+                    ),
+                  ),
+                  Positioned(
+                    left: 14,
+                    top: 12,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: GameColors.surface,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          widget.drawing
+                              ? 'Drag across land to choose the footprint'
+                              : 'Drag to pan · Tap a building',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: GameColors.ink,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class MapProjection {
+  MapProjection(this.size, this.pan);
+  final Size size;
+  final Offset pan;
+  double get tile => size.width < 500 ? 54 : 80;
+  Offset get origin =>
+      Offset(size.width / 2, size.height / 2 - tile * 1.5) + pan;
+  Offset point(num x, num y) =>
+      origin + Offset((x - y) * tile / 2, (x + y) * tile / 4);
+  LandCell cellAt(Offset screen) {
+    final local = screen - origin;
+    return LandCell(
+      (local.dx / tile + 2 * local.dy / tile).floor(),
+      (2 * local.dy / tile - local.dx / tile).floor(),
+    );
+  }
+
+  Path footprint(Footprint site, [double lift = 0]) {
+    final points = [
+      point(site.x, site.y),
+      point(site.x + site.width, site.y),
+      point(site.x + site.width, site.y + site.length),
+      point(site.x, site.y + site.length),
+    ].map((p) => p - Offset(0, lift)).toList();
+    return Path()..addPolygon(points, true);
+  }
+}
+
+class _DistrictPainter extends CustomPainter {
+  _DistrictPainter(
+    this.game,
+    this.projection,
+    this.images,
+    this.preview,
+    this.selected,
+  );
+  final DistrictGame game;
+  final MapProjection projection;
+  final Map<String, ui.Image> images;
+  final Footprint? preview;
+  final int? selected;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final corners = [
+      Offset.zero,
+      Offset(size.width, 0),
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+    ].map(projection.cellAt).toList();
+    final minX = corners.map((c) => c.x).reduce(math.min) - 2;
+    final maxX = corners.map((c) => c.x).reduce(math.max) + 2;
+    final minY = corners.map((c) => c.y).reduce(math.min) - 2;
+    final maxY = corners.map((c) => c.y).reduce(math.max) + 2;
+    final roads = game.roads;
+    final scale = projection.tile / 256;
+    for (var diagonal = minX + minY; diagonal <= maxX + maxY; diagonal++) {
+      for (var x = minX; x <= maxX; x++) {
+        final y = diagonal - x;
+        if (y < minY || y > maxY) continue;
+        final cell = LandCell(x, y);
+        final top = projection.point(x, y);
+        if (top.dx < -projection.tile ||
+            top.dx > size.width + projection.tile ||
+            top.dy < -projection.tile ||
+            top.dy > size.height + projection.tile) {
+          continue;
+        }
+        var path = ProductionAssets.tilesLand;
+        if (roads.contains(cell)) {
+          var mask = 0;
+          if (roads.contains(LandCell(x, y - 1))) mask |= 1;
+          if (roads.contains(LandCell(x + 1, y))) mask |= 2;
+          if (roads.contains(LandCell(x, y + 1))) mask |= 4;
+          if (roads.contains(LandCell(x - 1, y))) mask |= 8;
+          path =
+              'assets/game/tiles/road-${mask.toRadixString(2).padLeft(4, '0')}.png';
+        }
+        final image = images[path];
+        if (image != null) {
+          canvas.drawImageRect(
+            image,
+            Rect.fromLTWH(
+              0,
+              0,
+              image.width.toDouble(),
+              image.height.toDouble(),
+            ),
+            Rect.fromLTWH(
+              top.dx - 130 * scale,
+              top.dy - 4 * scale,
+              260 * scale,
+              148 * scale,
+            ),
+            Paint()..filterQuality = FilterQuality.low,
+          );
+        } else {
+          final tile = projection.footprint(Footprint(x, y, 1, 1));
+          canvas.drawPath(
+            tile,
+            Paint()
+              ..color = roads.contains(cell)
+                  ? const Color(0xFF626F70)
+                  : GameColors.land,
+          );
+          canvas.drawPath(
+            tile,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..color = const Color(0xFF97B675),
+          );
+        }
+      }
+    }
+    final buildings = game.buildings.toList()
+      ..sort(
+        (a, b) =>
+            (a.footprint.x +
+                    a.footprint.y +
+                    a.footprint.width +
+                    a.footprint.length)
+                .compareTo(
+                  b.footprint.x +
+                      b.footprint.y +
+                      b.footprint.width +
+                      b.footprint.length,
+                ),
+      );
+    for (final building in buildings) {
+      final site = building.footprint;
+      final path = projection.footprint(site);
+      canvas.drawPath(path, Paint()..color = const Color(0xFFE6D5B5));
+      if (building.id == selected) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4
+            ..color = GameColors.primary,
+        );
+      }
+      if (building.shellComplete &&
+          images.containsKey(ProductionAssets.buildingsApartmentLobby)) {
+        _apartment(canvas, site);
+      } else {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3
+            ..color = GameColors.ink,
+        );
+        final image =
+            images[building.stage == ConstructionStage.shell
+                ? ProductionAssets.buildingsConstructionFrame
+                : ProductionAssets.buildingsConstructionFenced];
+        if (image != null) {
+          final center = projection.point(
+            site.x + site.width / 2,
+            site.y + site.length / 2,
+          );
+          final width = math.min(
+            (site.width + site.length) * projection.tile / 2,
+            180.0,
+          );
+          final height = width * image.height / image.width;
+          canvas.drawImageRect(
+            image,
+            Rect.fromLTWH(
+              0,
+              0,
+              image.width.toDouble(),
+              image.height.toDouble(),
+            ),
+            Rect.fromLTWH(
+              center.dx - width / 2,
+              center.dy - height / 2,
+              width,
+              height,
+            ),
+            Paint()..filterQuality = FilterQuality.low,
+          );
+        }
+      }
+      final center = projection.point(
+        site.x + site.width / 2,
+        site.y + site.length / 2,
+      );
+      final label = TextPainter(
+        text: TextSpan(
+          text: 'Apartment ${building.id}',
+          style: const TextStyle(
+            color: GameColors.ink,
+            fontSize: 13,
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final position = center + Offset(-label.width / 2, projection.tile * .5);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            position.dx - 6,
+            position.dy - 3,
+            label.width + 12,
+            label.height + 6,
+          ),
+          const Radius.circular(6),
+        ),
+        Paint()..color = GameColors.surface,
+      );
+      label.paint(canvas, position);
+    }
+    if (preview case final site?) {
+      final valid = DistrictSimulation.placementError(game, site) == null;
+      final color = valid ? GameColors.primary : GameColors.danger;
+      for (final cell in site.roadRing) {
+        final path = projection.footprint(Footprint(cell.x, cell.y, 1, 1));
+        canvas.drawPath(path, Paint()..color = color.withValues(alpha: .18));
+        canvas.drawPath(
+          path,
+          Paint()
+            ..color = color
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1,
+        );
+      }
+      canvas.drawPath(
+        projection.footprint(site),
+        Paint()..color = color.withValues(alpha: .3),
+      );
+      canvas.drawPath(
+        projection.footprint(site),
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+    }
+  }
+
+  /// Map approved roof/facade textures onto the actual saved rectangular site.
+  void _apartment(Canvas canvas, Footprint site) {
+    final floorHeight = projection.tile * .55;
+    final top = projection.point(site.x, site.y);
+    final right = projection.point(site.x + site.width, site.y);
+    final front = projection.point(site.x + site.width, site.y + site.length);
+    final left = projection.point(site.x, site.y + site.length);
+    final lift = Offset(0, floorHeight);
+    final lobby = images[ProductionAssets.buildingsApartmentLobby]!;
+    _surface(
+      canvas,
+      lobby,
+      [left - lift, front - lift, front, left],
+      const [Offset(8, 68), Offset(128, 128), Offset(128, 176), Offset(8, 116)],
+    );
+    _surface(
+      canvas,
+      lobby,
+      [front - lift, right - lift, right, front],
+      const [
+        Offset(128, 128),
+        Offset(248, 68),
+        Offset(248, 116),
+        Offset(128, 176),
+      ],
+    );
+    final roof = images[ProductionAssets.buildingsApartmentRoof];
+    if (roof != null) {
+      _surface(
+        canvas,
+        roof,
+        [top - lift, right - lift, front - lift, left - lift],
+        const [
+          Offset(128, 8),
+          Offset(248, 68),
+          Offset(128, 128),
+          Offset(8, 68),
+        ],
+      );
+    }
+  }
+
+  void _surface(
+    Canvas canvas,
+    ui.Image image,
+    List<Offset> target,
+    List<Offset> source,
+  ) {
+    final vertices = ui.Vertices(
+      ui.VertexMode.triangles,
+      target,
+      textureCoordinates: source,
+      indices: const [0, 1, 2, 0, 2, 3],
+    );
+    canvas.drawVertices(
+      vertices,
+      BlendMode.srcOver,
+      Paint()
+        ..shader = ImageShader(
+          image,
+          TileMode.clamp,
+          TileMode.clamp,
+          Float64List.fromList([
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+          ]),
+          filterQuality: FilterQuality.low,
+        ),
+    );
+    vertices.dispose();
+  }
+
+  @override
+  bool shouldRepaint(_DistrictPainter oldDelegate) =>
+      oldDelegate.game != game ||
+      oldDelegate.images != images ||
+      oldDelegate.projection.size != projection.size ||
+      oldDelegate.projection.pan != projection.pan ||
+      oldDelegate.preview != preview ||
+      oldDelegate.selected != selected;
+}

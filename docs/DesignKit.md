@@ -4,6 +4,8 @@
 
 The user approved this latest artwork and design on **2026-10-11**. Treat it as the visual source for the Flutter application. Project bootstrap status, runtime font fallback and feature boundaries are in [Setup.md](Setup.md).
 
+The user approved the apartment starter catalog on 2026-10-12. Runtime build/finance/room screens now use these controls and assets, with weekly Sunday rent and automatic roads. See [Gameplay.md](Gameplay.md) and [Economy.md](Economy.md). The Canva boards remain design references; their illustrative numbers do not override the new catalog.
+
 Rebuilt from page 01 on 2026-10-11. Sources: Project.md, Design.md, Platform.md, Rules.md and Logic.md. The user rejected the previous asset quality and requested deleting the current Canva pages before rebuilding every board. The replacement follows the documented colorful, structured 2D tycoon art direction.
 
 Current Canva kit: [Building Management Tycoon — Artwork and Game Design](https://www.canva.com/d/51ESDDCqVSdEOVT). [View the kit](https://www.canva.com/d/mhgdvu1vWz5pQbO). Design ID: `DAHXnq3BVcM`. Canva confirms **16 pages**, all **1600 × 1000**, with **320 editable text elements** and **74 image instances**. All header logos resolve to the same BM asset, `MAHXtwLStL4`.
