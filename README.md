@@ -25,6 +25,6 @@ The initial app includes the approved branding, five local profile slots, distri
 - [BM tower icon and title artwork](design/brand/README.md)
 - [Project setup and architecture](docs/Setup.md)
 - [Runtime assets and animation specification](docs/Assets.md)
-- [Web hosting status — Netlify skipped](docs/Deployment.md)
+- [Web hosting and Netlify deployment status](docs/Deployment.md)
 
 The game component inventory and shared visual rules are in `docs/DesignKit.md`. The user approved the current [Canva design system](https://www.canva.com/d/51ESDDCqVSdEOVT) on 2026-10-11. It contains 16 rebuilt tycoon boards, ordered 01–16, with the defined BM logo on every page. Artwork, native controls, editable export and previews are in `design/tycoon/`. The app reuses these assets; the full gameplay screens remain design references until their features are implemented.

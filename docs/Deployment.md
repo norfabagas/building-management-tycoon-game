@@ -1,6 +1,6 @@
 # Netlify Web deployment
 
-The user requested a new Netlify project and Web deployment on 2026-10-12, then explicitly **skipped Netlify deployment** before authorizing the account connection. No project or deployment was created. The configuration below is retained as inactive preparation for a future request; do not resume authorization or publish automatically. Apartment Sunday billing and automatic roads remain documented future gameplay work.
+The user resumed creating a new Netlify project and deploying the Web app on 2026-10-12. The CLI still reports the previous account authorization as pending, so a fresh authorization link has been requested. No project or deployment has been created yet. Apartment Sunday billing and automatic roads remain documented future gameplay work.
 
 ## Build and hosting configuration
 
@@ -12,7 +12,7 @@ The user requested a new Netlify project and Web deployment on 2026-10-12, then 
 
 ## Local upload
 
-Only after a new explicit deployment request, authorize/link the intended project and build the Web release:
+Authorize/link the intended project and build the Web release:
 
 ```powershell
 ./.tools/flutter/bin/cache/dart-sdk/bin/dart.exe run tool/build_web.dart
@@ -27,6 +27,6 @@ The first visit needs connectivity to install the app's resources. Later reloads
 
 ## Deployment status
 
-**Skipped at the user's request.** The account authorization request is no longer being pursued. No Netlify project, live deployment or GitHub continuous-deployment connection was created. Previously verified preparation: Bash syntax, TOML parsing, all 48 local Web manifest paths and the `.netlify/` ignore rule. These checks do not indicate a published site. Local Android and Web builds and the GitHub source repository remain available.
+**Resumed; waiting for Netlify account authorization.** No Netlify project, live deployment or GitHub continuous-deployment connection has been created. On 2026-10-12, formatting (19 files unchanged), Flutter analysis, all 14 tests, the 158-file runtime catalog validator and the release Web build passed. All 201 offline-cache resources exist in the output, including all 158 runtime assets. `.netlify/` remains ignored. The release is ready for upload once account authorization completes; these checks do not indicate a published site. Local Android and Web builds and the GitHub source repository remain available.
 
 Primary references: [Netlify file configuration](https://docs.netlify.com/build/configure-builds/file-based-configuration/), [headers](https://docs.netlify.com/manage/routing/headers/) and [CLI deployments](https://docs.netlify.com/cli/get-started/).

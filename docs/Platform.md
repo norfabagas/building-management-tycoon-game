@@ -17,7 +17,7 @@ The user approved the latest design on 2026-10-11. The initial project uses **MV
 
 See [Setup.md](Setup.md) for commands, architecture, dependency choices, validation and limitations. The release Web build packages renderer resources and fonts on its own origin and installs an offline cache after the first load. Android backup/transfer exclusions retain local-only profile data. No backend or runtime network service is configured.
 
-The user skipped Netlify deployment before account authorization. No hosted project or deployment was created. See [Deployment.md](Deployment.md) for the retained inactive hosting configuration and origin-specific save behavior. Android and Web builds remain available locally; gameplay and saves remain local.
+The user resumed Netlify deployment on 2026-10-12; the CLI account authorization is still pending. No hosted project or deployment has been created yet. See [Deployment.md](Deployment.md) for hosting status and origin-specific save behavior. Android and Web builds remain available locally; gameplay and saves remain local.
 
 ## Offline Constraints & Data Storage
 - **Connectivity:** This game is strictly offline. No active internet connection is required to play.
