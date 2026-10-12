@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Building Management Tycoon — BM tower</title>
+  <desc id="desc">A single architectural BM monogram. Two inset window openings define the B; a peaked tower crown defines the M. Ivory on an evergreen square.</desc>
+  <rect width="512" height="512" fill="#203B3A"/>
+  <path fill="#F5F3EB" fill-rule="evenodd" d="M96 104H188L232 148V228L208 252L232 276V356L188 400H96ZM144 152V220H172L184 208V164L172 152ZM144 284V352H172L184 340V296L172 284Z"/>
+  <path fill="#F5F3EB" d="M232 104H280L324 168L368 104H416V400H368V192L324 256L280 192V400H232Z"/>
+</svg>

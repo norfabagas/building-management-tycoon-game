@@ -1,9 +1,14 @@
 # Game Logic & Architecture
 
+## Implementation status
+
+The initial Flutter setup uses MVVM with `ChangeNotifier`. The domain layer defines the five-slot limit, building-type identifiers, universal upgrade limits and the documented phase order. `SaveManager` persists versioned local **profile metadata** with serialized writes and preserves unsupported/corrupt data. The profile view model reports success only after persistence succeeds. Full building snapshots, construction, financial commits and offline income are not implemented yet. See [Setup.md](Setup.md) for the concrete layout and open implementation gates; this document's game rules remain the contract.
+
 ## Game State & Data Models
 - **SaveManager:** Handles local serialization for up to **5 distinct Profile slots**.
-- **TimeManager:** Tracks the current `Day` and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile.
+- **TimeManager:** Tracks the current `Day`, in-game weekday and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile. One day is five real minutes. Day 1 is Monday; `(day - 1) % 7 == 6` identifies Sunday.
 - **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
+- **Road layout:** Tracks generated road segments outside building footprints. A confirmed occupied construction plot creates its surrounding road automatically; compatible shared segments are represented once. Road layout is part of full local game state, not profile metadata.
 - **Building:** Attributes include `id`, `type`, `luxuryLevel`, `parkingQuota` (calculated from underground levels). 
   - **Immutable Attributes:** `footprintWidth`, `footprintLength`, `aboveGroundFloors`, `roomsPerFloor`, `gridCoordinates`.
   - **Upgradeable Attributes:** 
@@ -19,30 +24,42 @@
 `SaveManager` -> `Profile (1-5)` -> `TimeManager` | `Area` -> `Building` (X, Y on land) -> `Floor` (Z axis relative to building) -> `Room` -> `Tenant/Customer`
 
 ## Revenue & Expense Calculation Logic
+
+The selected model is **Option 1: Relaxed idle**, with weekly apartment rent at Sunday Noon and daily settlement for other income. [Economy.md](Economy.md) defines current formulas and billing conventions. [EconomyOptions.md](EconomyOptions.md) is the original comparison; its daily-equivalent apartment figures do not describe the selected payment schedule.
 The player's Dollar balance is strictly updated on a daily basis. Throughout the day phases, transactions are simulated, but the actual funds are only modified during the **Noon (Closing the book)** phase.
-- **Synergy Multiplier:** Before calculating revenue, the Area iterates through all buildings to calculate a `synergyModifier` based on adjacent `gridCoordinates`. (e.g., F&B next to Office = +30% Sales Modifier).
-- **Closing The Books (Noon Phase):** `Net = Gross Revenue - Maintenance - Tax`. The Net is then committed.
+- **Synergy Multiplier:** Calculate eligible adjacent bonuses, sum them and cap the bonus at 15%. Individual bonuses/adjacency distance remain catalog work; the former +30% example is not a selected value.
+- **Closing The Books (Noon Phase):** `OperatingNet = CashGross - Maintenance - Tax`; `balanceAfter = balanceBefore + OperatingNet - queuedPurchaseCosts`. Settle reserved purchases once and show them separately from operating costs.
 - **Gross Revenue (Polymorphic):**
   - *Hotel Logic:* `Daily Revenue = Occupied Rooms * Room Rate * synergyModifier`. (Occupied Rooms constrained by `parkingQuota`).
-  - *Apartment Logic:* `Daily Revenue = Rented Rooms * Rent Rate * synergyModifier`. (Rented Rooms constrained by `parkingQuota`).
+  - *Apartment Logic:* Add the occupied day's portion of weekly rent, with that day's eligible synergy, to a pending ledger. `ApartmentCashGross = pendingRentIncludingToday` only on Sunday; otherwise it is zero. Transfer and clear the ledger in the same Sunday transaction. Occupancy is constrained by parking; leaving tenants retain any already-earned pending rent.
   - *Office Tower Logic:* `Daily Revenue = Floors Rented * Floor Rate * synergyModifier`. (Floors Rented constrained by `parkingQuota`).
   - *F&B Logic:* `Daily Revenue = Simulated Sales per Phase * Item Price * synergyModifier`. (Sales traffic constrained by `parkingQuota`).
-  - *Parking Logic:* `Daily Revenue = Min(Visitor/Tenant Traffic, parkingQuota) * Daily Parking Fee`.
-- **Maintenance Logic:** Each building type utilizes a complex formula. Base cost + Room maintenance + **Lift Maintenance** (Elevators incur high daily fees).
-- **Tax Logic:** Evaluated based on the area's overall valuation, building types, and daily gross revenue.
+  - *Parking Logic:* Daily tenant-bay fees plus per-admitted-visit fees. Reserve tenant bays first; cap simultaneous visitor admissions by remaining bays. Phase turnover can produce more daily visits than physical bays without exceeding simultaneous capacity. Apartment parking still pays daily.
+- **Maintenance Logic:** Daily fixed coefficients for type, floors, occupancy, parking, lifts and luxury. Lifts incur high daily fees; exact coefficients remain unfinished.
+- **Tax Logic:** `Tax = 0.0005 * completedBuildingValuation + 0.02 * CashGross`, with valuation/revenue components separately rounded to cents. Apartment pending rent is excluded from cash gross until Sunday; daily valuation tax and upkeep continue throughout the week.
+
+### Apartment billing and save state
+
+Persist weekly rent, pending daily accruals, completed closing IDs and the game-day/phase remainder alongside the wallet and order queue. Use actual occupied days for partial weeks, with deterministic integer-cent allocation as defined in Economy.md. Accrue Sunday's occupied-day rent before collecting the ledger. Do not reprice past accruals after upgrades or count collection as a second earning for unlocks. The finance panel shows pending apartment rent and next Sunday payment separately from spendable dollars.
 
 ## Offline Idle Generation Logic
 - The game relies on the local device clock to simulate the passage of in-game **Days** while offline.
 - **Offline Calculation:** 
-  1. Determine elapsed real time since `lastSavedTime` for the loaded profile and convert to in-game Days.
-  2. Iterate the Revenue & Expense Calculation Logic (including maintenance and taxes) for the missed days.
-  3. Batch-commit the calculated Net Profit/Loss for all missed days to the player's Dollar balance upon next launch.
+  1. Determine nonnegative elapsed time from the saved device-clock watermark; retain the game-day/phase remainder and convert at five real minutes per game day. Do not use real-world Sundays for rent billing.
+  2. Simulate missed phases and closings chronologically without a cap, including construction, rent accrual, daily receipts, maintenance, taxes and purchases. Collect apartment rent at each crossed in-game Sunday Noon; retain it pending when no Sunday is crossed.
+  3. Save the resulting wallet, pending rent, closing IDs, orders and clock together, then publish the already-applied summary. Retrying/loading the same result must not duplicate rent. Backward device-clock changes add no elapsed time and must not lower the saved watermark.
 
 ## Placement & Construction Logic
 - **Area Grid System:** The CBD is a 2D coordinate grid (X, Y).
 - **Construction Wizard:**
   1. Player selects building type (e.g., Hotel, Office).
   2. Player drags and drops on the grid to define `footprintWidth` and `footprintLength`.
+     - Derive a surrounding-road preview outside the selected footprint. Validate its required space alongside footprint collisions/bounds; do not generate saved roads while the player is only drawing or canceling a preview.
   3. Player inputs `aboveGroundFloors`.
   4. **Unit Capacity Check:** System calculates `roomsPerFloor`. For Hotels and Apartments, this is mathematically derived based on the total area (`footprintWidth * footprintLength`), capping the number of units that can fit on a single floor.
   5. System calculates the initial capital required. 
+  6. On successful confirmation, reserve the purchase funds and mark the selected empty plot as occupied by a construction site. Generate its surrounding road in the same saved placement operation, merging compatible existing road segments without overwriting buildings. A failed/canceled placement leaves neither a site nor orphan roads. Payment and construction start still follow the selected Noon/Morning schedule.
+
+### Automatic road generation
+
+Roads are generated around the occupied footprint rather than carved out of its usable floor area. They do not alter immutable building dimensions or parking capacity. Save/reload and retry must preserve the same road layout without adding duplicate segments. Road width, corner geometry, boundary behavior and any costs/upkeep remain explicit implementation decisions; automatic roads are now a required mechanic, while manual road tools and traffic/pathfinding simulation have not been added to scope.

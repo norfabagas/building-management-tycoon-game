@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="794" height="74" viewBox="0 0 794 74"><title>Building Management Tycoon — Interaction states</title><rect width="794" height="74" fill="#F5F3EB"/><g transform="translate(16 15) scale(0.0859375)"><rect width="512" height="512" fill="#203B3A"/>
+  <path fill="#F5F3EB" fill-rule="evenodd" d="M96 104H188L232 148V228L208 252L232 276V356L188 400H96ZM144 152V220H172L184 208V164L172 152ZM144 284V352H172L184 340V296L172 284Z"/>
+  <path fill="#F5F3EB" d="M232 104H280L324 168L368 104H416V400H368V192L324 256L280 192V400H232Z"/>
+</g><text x="76" y="43.3" fill="#203B3A" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700">Building Management Tycoon</text><text x="778" y="41" text-anchor="end" fill="#203B3A" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700">02 · Interaction states</text></svg>

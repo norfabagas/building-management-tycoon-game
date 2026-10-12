@@ -19,3 +19,7 @@ Casual to mid-core players who enjoy simulation, strategy, and purely offline id
 ## Scope
 - Minimum Viable Product (MVP): A single CBD area where the player can place initial buildings, manage floors (above/underground), and handle basic tenant mechanics. Playable on Web and Android.
 - Future Updates: Broader city integration, VIP tenants, events, and deeper economic customization.
+
+## Current milestone
+
+The initial Flutter Android/Web project setup is complete. It includes the approved BM branding and artwork, MVVM structure, five-slot local profile metadata, district naming and an empty pannable canvas. Formatting, analysis, 13 tests, the Android debug build and release Web build pass. Offline Web reload was checked in the browser. The user selected **Relaxed idle (Option 1)** on 2026-10-12, with apartment rent paid weekly at in-game Sunday Noon and other income daily at Noon; see [Economy.md](Economy.md). The playable management/economy MVP remains the next implementation milestone. Finalize the remaining catalogs/tuning and durable game persistence before adding those systems. See [Setup.md](Setup.md) for commands and boundaries.

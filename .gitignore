@@ -1,0 +1,27 @@
+# Local SDK and generated Flutter output
+.tools/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+coverage/
+
+# Editor and machine configuration
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Android local configuration and build output
+android/local.properties
+android/key.properties
+android/.gradle/
+android/.kotlin/
+android/captures/
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.jks
+*.keystore
