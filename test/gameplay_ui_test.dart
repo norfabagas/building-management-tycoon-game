@@ -26,67 +26,72 @@ void main() {
     testWidgets('draw, review, reserve and cancel apartment at $size', (
       tester,
     ) async {
-      tester.view.physicalSize = size;
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      final repository = testGameRepository();
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildGameTheme(),
-          home: DistrictScreen(profile: localProfile, repository: repository),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('Dollars'), findsOneWidget);
-      await tester.tap(find.text('Build'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Choose apartment'));
-      await tester.tap(find.text('Choose apartment'));
-      await tester.pumpAndSettle();
-      final map = tester.getRect(find.byKey(const ValueKey('district-map')));
-      final projection = MapProjection(map.size, Offset.zero);
-      final gesture = await tester.startGesture(
-        map.topLeft + projection.point(3.5, 3.5),
-      );
-      await gesture.moveTo(map.topLeft + projection.point(4.5, 4.5));
-      await gesture.up();
-      await tester.pumpAndSettle();
-      expect(find.text('2 × 2 tiles'), findsOneWidget);
-      await tester.ensureVisible(find.text('Review cost'));
-      await tester.tap(find.text('Review cost'));
-      await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('Confirm construction'));
-      await tester.tap(find.text('Confirm construction'));
-      await tester.pumpAndSettle();
-      final saved = (await tester.runAsync(
-        () => repository.update(
-          localProfile,
-          DateTime.now().millisecondsSinceEpoch,
-        ),
-      ))!;
-      expect(saved.buildings.length, 1);
-      expect(saved.balance, 4000000);
-      expect(saved.reserved, 1000000);
-      expect(saved.roads.length, 12);
-      expect(find.text('Payment at Noon'), findsOneWidget);
-      await tester.ensureVisible(find.text('Cancel unpaid order'));
-      await tester.tap(find.text('Cancel unpaid order'));
-      await tester.pumpAndSettle();
-      final canceled = (await tester.runAsync(
-        () => repository.update(
-          localProfile,
-          DateTime.now().millisecondsSinceEpoch,
-        ),
-      ))!;
-      expect(canceled.buildings, isEmpty);
-      expect(canceled.roads, isEmpty);
-      expect(canceled.available, 4000000);
-      await tester.tap(find.text('Finances'));
-      await tester.pumpAndSettle();
-      expect(find.text('First closing is still ahead'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
+      final semantics = tester.ensureSemantics();
+      try {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final repository = testGameRepository();
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildGameTheme(),
+            home: DistrictScreen(profile: localProfile, repository: repository),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Dollars'), findsOneWidget);
+        await tester.tap(find.text('Build'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Choose apartment'));
+        await tester.tap(find.text('Choose apartment'));
+        await tester.pumpAndSettle();
+        final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+        final projection = MapProjection(map.size, Offset.zero);
+        final gesture = await tester.startGesture(
+          map.topLeft + projection.point(3.5, 3.5),
+        );
+        await gesture.moveTo(map.topLeft + projection.point(4.5, 4.5));
+        await gesture.up();
+        await tester.pumpAndSettle();
+        expect(find.text('2 × 2 tiles'), findsOneWidget);
+        await tester.ensureVisible(find.text('Review cost'));
+        await tester.tap(find.text('Review cost'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Confirm construction'));
+        await tester.tap(find.text('Confirm construction'));
+        await tester.pumpAndSettle();
+        final saved = (await tester.runAsync(
+          () => repository.update(
+            localProfile,
+            DateTime.now().millisecondsSinceEpoch,
+          ),
+        ))!;
+        expect(saved.buildings.length, 1);
+        expect(saved.balance, 4000000);
+        expect(saved.reserved, 1000000);
+        expect(saved.roads.length, 12);
+        expect(find.text('Payment at Noon'), findsOneWidget);
+        await tester.ensureVisible(find.text('Cancel unpaid order'));
+        await tester.tap(find.text('Cancel unpaid order'));
+        await tester.pumpAndSettle();
+        final canceled = (await tester.runAsync(
+          () => repository.update(
+            localProfile,
+            DateTime.now().millisecondsSinceEpoch,
+          ),
+        ))!;
+        expect(canceled.buildings, isEmpty);
+        expect(canceled.roads, isEmpty);
+        expect(canceled.available, 4000000);
+        await tester.tap(find.text('Finances'));
+        await tester.pumpAndSettle();
+        expect(find.text('First closing is still ahead'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      } finally {
+        semantics.dispose();
+      }
     });
   }
 

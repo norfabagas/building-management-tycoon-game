@@ -280,7 +280,7 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _map(DistrictGame game) => DistrictMap(
     game: game,
-    drawing: _drawing && !_review && !_model.busy && _model.error == null,
+    drawing: _drawing && !_review && _model.error == null,
     preview: _preview,
     selected: _selected,
     reset: _reset,

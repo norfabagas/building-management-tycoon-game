@@ -131,6 +131,7 @@ class _DistrictMapState extends State<DistrictMap> {
             }
           },
           child: GestureDetector(
+            excludeFromSemantics: true,
             dragStartBehavior: DragStartBehavior.down,
             key: const ValueKey('district-map'),
             behavior: HitTestBehavior.opaque,

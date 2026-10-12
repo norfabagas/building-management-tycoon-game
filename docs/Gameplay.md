@@ -16,6 +16,8 @@ The game watermark starts at first snapshot creation, not the old metadata creat
 
 This fixed-price catalog is versioned as `catalog: 1`. Occupied room IDs determine daily accrual; earned cents are retained in an aggregate pending ledger per building, including vacated rooms' past accruals. Future catalog changes need an explicit migration rather than silently repricing the current save. The view model persists every ten seconds, at phase boundaries and on player actions; any elapsed remainder since the last save is recovered from the watermark on reload. Fast drags use pointer-down/move/up positions, including the final release cell.
 
+Map drawing remains available while a background snapshot commits; saved mutations still wait for an available transaction. The canvas retains its descriptive semantic label but excludes automatic gesture-button semantics, which otherwise intercept pointer events on Flutter Web. Building selection and room actions remain available as accessible native panel controls.
+
 References: [Sembast transactions](https://pub.dev/packages/sembast), [SQLite adapter](https://pub.dev/packages/sembast_sqflite), [IndexedDB adapter](https://pub.dev/packages/sembast_web).
 
 ## Validation status
