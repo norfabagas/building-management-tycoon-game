@@ -14,6 +14,7 @@
 ## Controls & Interaction
 - **Input Method:** Strictly touch/click-based (Tapping and Dragging).
 - **Navigation:** Map-like behavior. Players pan around the CBD area or scroll up/down building floors by dragging/swiping across the screen. 
+- **Map zoom:** Place native **− / +** buttons at the map's bottom-right, with a percentage between them. Each click changes scale by 25 percentage points between 50% and 200%, starting at 100%. Keep the world point under the viewport centre fixed. Zoom applies to artwork and pointer hit testing; it does not change footprint dimensions or capacity. The controls sit outside map drawing/panning gesture handling and above the page footer.
 - **Selection:** Tapping on a plot of land, building, or room selects it and opens relevant context menus.
 - **Drag & Drop:** Used specifically during the building planning phase to draw and estimate the land area footprint (width and length) on the grid.
 - **Automatic roads:** Preview a road around the drawn building footprint. After successful placement occupies the empty plot, create the surrounding road automatically. Use the approved district artwork/style, distinguish road space from usable building land and show road conflicts in placement feedback. The player does not manually draw these roads.

@@ -114,6 +114,8 @@ The source handoff includes the approved BM assets/design references, Flutter ap
 
 ## Playable apartment starter validation — 2026-10-12
 
+The subsequent mouse navigation update adds native bottom-right map zoom controls (50%–200%). Formatting, analysis, all 32 tests and Android debug/offline Web builds pass. Projection, panning and zoom use `MapCameraViewModel`; drawing/picking remain tied to saved world geometry. See Gameplay.md for limits, session behavior and test coverage.
+
 The later user-approved starter release implements apartment construction and daily/weekly simulation; it supersedes the bootstrap-only scope in the historical checks above. Full game storage now uses locked Sembast 3.8.11, SQLite adapter 2.2.3/sqflite 2.4.4+1 on Android, IndexedDB adapter 2.4.6 on Web and path_provider 2.1.6. Android's existing backup/transfer exclusions cover the database. The Android toolchain installed CMake 3.22.1 from the SDK's already accepted license while building the new native dependencies.
 
 Formatting, analysis and all 28 tests pass. The four gameplay UI tests were repeated after final map fixes. Both final Android debug and offline release Web builds pass. The asset validator still passes all 158 resources/124 referenced frames; no BM master or production asset bytes changed. Browser review confirmed real pointer planning, price review, reservations, roads and saved-game reload/catch-up. An in-memory mature-building review fixture checked one-floor facade/roof and room composition. See [Gameplay.md](Gameplay.md) for coverage and remaining release limits. Android execution remains untested without a connected device; remote CI was not verified in this local pass.

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import '../../app/game_theme.dart';
 import '../../app/production_assets.dart';
 import '../../domain/district_game.dart';
+import 'map_camera_view_model.dart';
 
 class DistrictMap extends StatefulWidget {
   const DistrictMap({
@@ -33,7 +34,7 @@ class DistrictMap extends StatefulWidget {
 }
 
 class _DistrictMapState extends State<DistrictMap> {
-  Offset _pan = Offset.zero;
+  final _camera = MapCameraViewModel();
   LandCell? _start;
   int? _drawingPointer;
   Map<String, ui.Image> _images = {};
@@ -82,145 +83,220 @@ class _DistrictMapState extends State<DistrictMap> {
   @override
   void didUpdateWidget(DistrictMap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.reset != widget.reset) _pan = Offset.zero;
+    if (oldWidget.reset != widget.reset) _camera.center();
   }
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final size = constraints.biggest;
-      final projection = MapProjection(size, _pan);
-      return Semantics(
-        label: widget.drawing
-            ? 'Draw apartment footprint by dragging on the map.'
-            : 'District map. Drag to pan; tap a building to manage it.',
-        child: Listener(
-          onPointerDown: (event) {
-            if (widget.drawing && _drawingPointer == null) {
-              _drawingPointer = event.pointer;
-              _start = projection.cellAt(event.localPosition);
-              widget.onFootprint(Footprint.between(_start!, _start!));
-            }
-          },
-          onPointerMove: (event) {
-            if (_drawingPointer == event.pointer && _start != null) {
-              widget.onFootprint(
-                Footprint.between(
-                  _start!,
-                  projection.cellAt(event.localPosition),
-                ),
-              );
-            }
-          },
-          onPointerUp: (event) {
-            if (_drawingPointer == event.pointer && _start != null) {
-              widget.onFootprint(
-                Footprint.between(
-                  _start!,
-                  projection.cellAt(event.localPosition),
-                ),
-              );
-              _start = null;
-              _drawingPointer = null;
-            }
-          },
-          onPointerCancel: (event) {
-            if (_drawingPointer == event.pointer) {
-              _start = null;
-              _drawingPointer = null;
-            }
-          },
-          child: GestureDetector(
-            excludeFromSemantics: true,
-            dragStartBehavior: DragStartBehavior.down,
-            key: const ValueKey('district-map'),
-            behavior: HitTestBehavior.opaque,
-            onPanUpdate: (details) {
-              if (!widget.drawing && _drawingPointer == null) {
-                setState(() => _pan += details.delta);
-              }
-            },
-            onTapUp: (details) {
-              final cell = projection.cellAt(details.localPosition);
-              if (!widget.drawing) {
-                for (final building in widget.game.buildings.reversed) {
-                  if (building.footprint.contains(cell)) {
-                    widget.onSelect(building.id);
-                    break;
+  void dispose() {
+    _camera.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _camera,
+    builder: (context, _) => LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
+        final projection = MapProjection(size, _camera.pan, zoom: _camera.zoom);
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Semantics(
+              label: widget.drawing
+                  ? 'Draw apartment footprint by dragging on the map.'
+                  : 'District map. Drag to pan; tap a building to manage it.',
+              child: Listener(
+                onPointerDown: (event) {
+                  if (widget.drawing && _drawingPointer == null) {
+                    _drawingPointer = event.pointer;
+                    _start = projection.cellAt(event.localPosition);
+                    widget.onFootprint(Footprint.between(_start!, _start!));
                   }
-                }
-              }
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ColoredBox(
-                    color: GameColors.surface,
-                    child: CustomPaint(
-                      painter: _DistrictPainter(
-                        widget.game,
-                        projection,
-                        _images,
-                        widget.preview,
-                        widget.selected,
+                },
+                onPointerMove: (event) {
+                  if (_drawingPointer == event.pointer && _start != null) {
+                    widget.onFootprint(
+                      Footprint.between(
+                        _start!,
+                        projection.cellAt(event.localPosition),
                       ),
-                    ),
-                  ),
-                  IgnorePointer(
-                    child: Image.asset(
-                      const [
-                        ProductionAssets.backgroundsPhaseMorning,
-                        ProductionAssets.backgroundsPhaseDay,
-                        ProductionAssets.backgroundsPhaseAfternoon,
-                        ProductionAssets.backgroundsPhaseNight,
-                        ProductionAssets.backgroundsPhaseNoon,
-                      ][widget.game.phaseIndex],
-                      fit: BoxFit.fill,
-                      excludeFromSemantics: true,
-                    ),
-                  ),
-                  Positioned(
-                    left: 14,
-                    top: 12,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: GameColors.surface,
-                        borderRadius: BorderRadius.circular(8),
+                    );
+                  }
+                },
+                onPointerUp: (event) {
+                  if (_drawingPointer == event.pointer && _start != null) {
+                    widget.onFootprint(
+                      Footprint.between(
+                        _start!,
+                        projection.cellAt(event.localPosition),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                    );
+                    _start = null;
+                    _drawingPointer = null;
+                  }
+                },
+                onPointerCancel: (event) {
+                  if (_drawingPointer == event.pointer) {
+                    _start = null;
+                    _drawingPointer = null;
+                  }
+                },
+                child: GestureDetector(
+                  excludeFromSemantics: true,
+                  dragStartBehavior: DragStartBehavior.down,
+                  key: const ValueKey('district-map'),
+                  behavior: HitTestBehavior.opaque,
+                  onPanUpdate: (details) {
+                    if (!widget.drawing && _drawingPointer == null) {
+                      _camera.panBy(details.delta);
+                    }
+                  },
+                  onTapUp: (details) {
+                    final cell = projection.cellAt(details.localPosition);
+                    if (!widget.drawing) {
+                      for (final building in widget.game.buildings.reversed) {
+                        if (building.footprint.contains(cell)) {
+                          widget.onSelect(building.id);
+                          break;
+                        }
+                      }
+                    }
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ColoredBox(
+                          color: GameColors.surface,
+                          child: CustomPaint(
+                            painter: _DistrictPainter(
+                              widget.game,
+                              projection,
+                              _images,
+                              widget.preview,
+                              widget.selected,
+                            ),
+                          ),
                         ),
-                        child: Text(
-                          widget.drawing
-                              ? 'Drag across land to choose the footprint'
-                              : 'Drag to pan · Tap a building',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: GameColors.ink,
+                        IgnorePointer(
+                          child: Image.asset(
+                            const [
+                              ProductionAssets.backgroundsPhaseMorning,
+                              ProductionAssets.backgroundsPhaseDay,
+                              ProductionAssets.backgroundsPhaseAfternoon,
+                              ProductionAssets.backgroundsPhaseNight,
+                              ProductionAssets.backgroundsPhaseNoon,
+                            ][widget.game.phaseIndex],
+                            fit: BoxFit.fill,
+                            excludeFromSemantics: true,
+                          ),
+                        ),
+                        Positioned(
+                          left: 14,
+                          top: 12,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: GameColors.surface,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              child: Text(
+                                widget.drawing
+                                    ? 'Drag across land to choose the footprint'
+                                    : 'Drag to pan · Tap a building',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: GameColors.ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 12,
+              bottom: 12,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: const [
+                    BoxShadow(color: GameColors.ink, offset: Offset(0, 3)),
+                  ],
+                ),
+                child: Material(
+                  color: GameColors.surface,
+                  clipBehavior: Clip.antiAlias,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: GameColors.ink, width: 2),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: const ValueKey('map-zoom-out'),
+                        tooltip: 'Zoom out',
+                        constraints: const BoxConstraints.tightFor(
+                          width: 48,
+                          height: 48,
+                        ),
+                        onPressed: _camera.canZoomOut ? _camera.zoomOut : null,
+                        icon: const Icon(Icons.remove),
+                      ),
+                      SizedBox(
+                        width: 54,
+                        child: Semantics(
+                          label: 'Map zoom ${_camera.percent} percent',
+                          excludeSemantics: true,
+                          child: Text(
+                            '${_camera.percent}%',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      IconButton(
+                        key: const ValueKey('map-zoom-in'),
+                        tooltip: 'Zoom in',
+                        constraints: const BoxConstraints.tightFor(
+                          width: 48,
+                          height: 48,
+                        ),
+                        onPressed: _camera.canZoomIn ? _camera.zoomIn : null,
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
-      );
-    },
+          ],
+        );
+      },
+    ),
   );
 }
 
 class MapProjection {
-  MapProjection(this.size, this.pan);
+  MapProjection(this.size, this.pan, {this.zoom = 1});
   final Size size;
   final Offset pan;
-  double get tile => size.width < 500 ? 54 : 80;
+  final double zoom;
+  double get tile => (size.width < 500 ? 54 : 80) * zoom;
   Offset get origin =>
       Offset(size.width / 2, size.height / 2 - tile * 1.5) + pan;
   Offset point(num x, num y) =>
@@ -379,7 +455,7 @@ class _DistrictPainter extends CustomPainter {
           );
           final width = math.min(
             (site.width + site.length) * projection.tile / 2,
-            180.0,
+            180.0 * projection.zoom,
           );
           final height = width * image.height / image.width;
           canvas.drawImageRect(
@@ -551,6 +627,7 @@ class _DistrictPainter extends CustomPainter {
       oldDelegate.images != images ||
       oldDelegate.projection.size != projection.size ||
       oldDelegate.projection.pan != projection.pan ||
+      oldDelegate.projection.zoom != projection.zoom ||
       oldDelegate.preview != preview ||
       oldDelegate.selected != selected;
 }

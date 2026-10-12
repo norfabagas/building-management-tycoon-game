@@ -8,6 +8,12 @@ Load an existing district or create one of the five local slots. Existing metada
 
 Payment waits for Noon, construction starts next Morning, shell construction lasts two game days and B1 lasts one. Occupancy starts at the next Morning after B1 completion. Apartments accumulate rent for actual occupied days and pay at in-game Sunday Noon. Parking, expenses and taxes settle daily. The finance panel shows available dollars, reservations, pending apartment rent, next Sunday payment and the last closing. Select a building to view rooms and parking; vacating a room preserves accrued rent.
 
+## Map navigation
+
+Map navigation includes bottom-right **− / +** controls for mouse/touch users. Start at 100%, step by 25 percentage points and disable the relevant button at 50%/200%. The viewport centre remains on the same world point after zooming. Terrain, roads, buildings, previews and picking share one scaled projection. Button clicks never draw land or select a building. Camera zoom/pan belong to a presentation view model and last for the current district screen session; they are not game-save data. Center map clears panning while keeping the chosen zoom.
+
+Zoom validation on 2026-10-12: formatting, analysis, all **32 tests**, Android debug and offline Web builds passed. Tests cover focal-point preservation after panning, both zoom limits/disabled buttons, mouse footprint selection at 125%, building picking at 75%, and control clicks that do not create selections. Portrait, landscape and desktop construction flows now run at 125% with semantics enabled. Zoom controls are 48-pixel native button targets in a separate overlay, twelve pixels from the map's bottom/right edges, above the page toolbar/hosting footer.
+
 ## Local persistence
 
 Full snapshots use Sembast transactions with SQLite on Android (`sembast_sqflite`/`sqflite`) and IndexedDB on Web (`sembast_web`). One versioned record per profile stores the wallet, buildings/orders, road layout derived from occupied plots, clock/watermark, rent ledger and closing ID together. Read latest state inside each transaction, advance elapsed time, validate the requested mutation and commit before publishing it. Preserve unsupported/corrupt records and show a retryable error. SharedPreferences continues to hold only legacy/profile metadata.

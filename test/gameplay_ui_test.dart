@@ -46,8 +46,11 @@ void main() {
         await tester.ensureVisible(find.text('Choose apartment'));
         await tester.tap(find.text('Choose apartment'));
         await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('map-zoom-in')));
+        await tester.pumpAndSettle();
+        expect(find.text('125%'), findsOneWidget);
         final map = tester.getRect(find.byKey(const ValueKey('district-map')));
-        final projection = MapProjection(map.size, Offset.zero);
+        final projection = MapProjection(map.size, Offset.zero, zoom: 1.25);
         final gesture = await tester.startGesture(
           map.topLeft + projection.point(3.5, 3.5),
         );
