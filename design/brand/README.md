@@ -8,4 +8,6 @@ Use the square beside the title **Building Management Tycoon**. Preserve the asp
 
 The Flutter project also uses this exact source for Android launcher/splash and Web icons. `export-app-icons.mjs` creates the eleven PNG exports with Sharp available. Set `RUNTIME_NODE_MODULES` to the directory containing Sharp when using the bundled runtime. This export step is optional for normal Flutter builds; the generated icons are checked in.
 
+The production pipeline also exports the unchanged mark at eight runtime sizes to `assets/game/brand/` and combines it with an outlined title using the bundled Roboto fallback. The SVG master and existing platform icons remain unchanged; see [Assets.md](../../docs/Assets.md).
+
 Run `node design/brand/generate-headers.mjs` from the repository root to regenerate the 16 SVG title headers. Each uses the same monogram, game title, colors, and spacing with a board-specific label. Compact headers accommodate existing content; wide pages scale the vector artwork proportionally. `title-preview.png` is a preview of the foundations header.

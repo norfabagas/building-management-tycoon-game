@@ -29,6 +29,8 @@ The defined square BM logo remains unchanged. Headers, titles, fields, buttons, 
 - `overview.png`: ascending board overview.
 - `output/Building-Management-Tycoon-r5.pptx`: editable source transport file.
 
+The current [production export pipeline](../production/README.md) retains these originals and supplies individual runtime sprites, modular pieces, roads, character animation sheets, icons, effects, backgrounds and audio in `assets/game/`. See [Assets.md](../../docs/Assets.md) for the complete catalog; the five original atlases are no longer bundled as large runtime sheets.
+
 ## Regeneration
 
 Use the bundled Node executable and a fresh revision, for example `node design/tycoon/build.mjs r6`. Paths in the builder reflect this workstation's runtime. The builder renders every page, reuses identical media parts, and validates the PPTX. Review the renders before importing or replacing Canva pages. Keep private build/validation files in `.build/`.

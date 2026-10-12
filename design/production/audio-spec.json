@@ -1,0 +1,85 @@
+{
+  "sampleRate": 22050,
+  "assets": [
+    {
+      "name": "music-small-district",
+      "seconds": 20.0,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": true,
+      "peak": 0.12915
+    },
+    {
+      "name": "music-growing-district",
+      "seconds": 20.0,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": true,
+      "peak": 0.12915
+    },
+    {
+      "name": "music-busy-district",
+      "seconds": 20.0,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": true,
+      "peak": 0.12901
+    },
+    {
+      "name": "lift-ding",
+      "seconds": 1.2,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": false,
+      "peak": 0.121
+    },
+    {
+      "name": "financial-closing",
+      "seconds": 0.9,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": false,
+      "peak": 0.16396
+    },
+    {
+      "name": "ui-confirm",
+      "seconds": 0.34997732426303857,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": false,
+      "peak": 0.12352
+    },
+    {
+      "name": "ui-error",
+      "seconds": 0.4,
+      "channels": 2,
+      "sampleRate": 22050,
+      "loop": false,
+      "peak": 0.08688
+    },
+    {
+      "name": "construction-hammer",
+      "seconds": 1.4,
+      "channels": 1,
+      "sampleRate": 22050,
+      "loop": false,
+      "peak": 0.30291
+    },
+    {
+      "name": "construction-drill",
+      "seconds": 1.5,
+      "channels": 1,
+      "sampleRate": 22050,
+      "loop": false,
+      "peak": 0.13177
+    },
+    {
+      "name": "city-ambience",
+      "seconds": 12.0,
+      "channels": 1,
+      "sampleRate": 22050,
+      "loop": true,
+      "peak": 0.04398
+    }
+  ]
+}

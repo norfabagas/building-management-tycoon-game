@@ -21,8 +21,18 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - design/brand/bm-tower.png
-    - design/tycoon/assets/
+    - assets/game/manifest.json
+    - assets/game/brand/
+    - assets/game/backgrounds/
+    - assets/game/buildings/
+    - assets/game/rooms/
+    - assets/game/characters/
+    - assets/game/tiles/
+    - assets/game/transport/
+    - assets/game/icons/
+    - assets/game/effects/
+    - assets/game/decorations/
+    - assets/game/audio/
   fonts:
     - family: Roboto
       fonts:

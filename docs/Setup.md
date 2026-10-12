@@ -56,7 +56,7 @@ The setup uses MVVM with Flutter `ChangeNotifier`, without an extra state-manage
 
 | Location | Responsibility |
 | --- | --- |
-| `lib/app/` | App composition, approved asset paths and shared theme |
+| `lib/app/` | App composition, generated runtime asset catalog, approved paths and shared theme |
 | `lib/domain/` | Profile metadata, building-type identifiers, documented limits and phase order |
 | `lib/data/` | Versioned local storage and `SaveManager` |
 | `lib/features/profiles/` | Five-slot view model, profile selection and naming |
@@ -74,7 +74,7 @@ The canvas is a visual bootstrap, not a construction system. Its eight-by-eight 
 
 ## Fonts and artwork
 
-Colors, corners, title lockup and controls derive from the approved kit. All five original artwork PNGs are bundled through `pubspec.yaml`; the app references their source paths directly. Android launcher icons, splash logo and Web icons derive from the defined BM PNG. `design/brand/export-app-icons.mjs` regenerates these exports with Sharp available, optionally through `RUNTIME_NODE_MODULES`.
+Colors, corners, title lockup and controls derive from the approved kit. The original five PNG atlases remain design sources; the current application bundles 158 individual PNG/WAV assets and their manifest from `assets/game/`. The profile screen uses runtime exports of the same BM mark and district illustration. `lib/app/production_assets.dart` contains generated path constants, and a Flutter bundle test loads every catalog file. [Assets.md](Assets.md) records source provenance, animation metadata, geometry and regeneration. Android launcher icons, splash logo and Web icons derive from the defined BM PNG. `design/brand/export-app-icons.mjs` regenerates these exports with Sharp available, optionally through `RUNTIME_NODE_MODULES`.
 
 The reference uses Trebuchet MS. No redistributable application font file was supplied. The theme keeps that requested family and uses bundled Roboto as its offline fallback, with Noto Sans Thai for Thai district names. Android and Web share these fallback files. Exact reference typography requires a distribution-ready Trebuchet source or an approved font substitution. Source links and included font licenses are in `assets/fonts/README.md`. Web automatic fallback requests use the app's own origin. Additional writing systems need bundled glyph coverage.
 
@@ -102,3 +102,12 @@ The user additionally confirmed that occupying empty land with a building automa
 Re-ran dependency resolution, the Dart format check, Flutter analysis and all 13 tests successfully before committing the project. Rebuilt the Android debug APK at `build/app/outputs/flutter-apk/app-debug.apk` and the release Web bundle at `build/web/`. The offline build generated 48 resources; all manifest paths exist and the generated service worker has its version and registration. The earlier browser/offline review above remains the UI validation; it was not repeated for these documentation-only rule additions.
 
 The source handoff includes the approved BM assets/design references, Flutter application, tests, pinned dependencies/toolchain, GitHub Actions configuration and updated rules. SDKs, dependency caches, generated builds, Kotlin error logs and machine/signing settings remain ignored. Built outputs stay local; no store signing or GitHub release is configured. Apartment Sunday billing and automatic surrounding roads are recorded rules for future gameplay implementation, not features of this initial app build.
+
+## Runtime asset pack validation — 2026-10-12
+
+- All 158 PNG/WAV resources are exported to `assets/game/`, with source/output hashes, animation metadata and a generated Dart catalog. The unchanged BM master is verified. Asset checks pass for decoding, alpha/frame boundaries, all required roads/modules/phases, Flutter declarations and PCM audio format/peaks; 124 referenced animation frames are validated. Text-source hashing normalizes Windows/Linux line endings.
+- Reviewed the source character sheets and all visual-family contact sheets. Fixed uneven source gutters that cut shoes, per-pose scaling and modular-building base alignment. The local gallery shows the same identities in idle/walk/stair modes; all ten sequence controls are present, and desktop review shows no horizontal overflow. The gallery is a development artifact, not a new game screen. No audio was autoplayed during the review.
+- Dart formatting passes, Flutter analysis reports no issues and all **14 tests** pass, including the new test that loads every catalog asset from Flutter's bundle. The bundle test was repeated after the final manifest hash-format update.
+- Android debug APK and release Web rebuilds pass. Package inspection confirms all 158 resources and the current catalog in both outputs. The Web offline manifest now includes **201 local resources**; every game asset is covered. These are build/package checks; the earlier offline-launch review remains the app's browser validation, and no Android device execution was performed.
+- The CI workflow now installs the pinned asset-tool dependency and runs `design/production/validate.mjs` before Flutter checks. This workflow update has not been verified remotely in this local pass.
+- Engine animation/composition, sound playback/mute settings, construction, weekly apartment settlement and automatic road generation remain their documented gameplay implementation tasks. Asset creation did not add or decide prices, road width, land bounds, capacity rules or future mall/VIP content.

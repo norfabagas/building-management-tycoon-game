@@ -55,7 +55,7 @@ Every board places the same 48 × 48 square beside the editable **Building Manag
 - The editable PPTX passes package, geometry, heading-fit, font and first-party import checks. Trebuchet MS is installed on this workstation. These checks do not imply native PowerPoint execution.
 - Five PNG artwork sources and the unchanged BM logo remain separate from native labels and controls. Identical image bytes are deduplicated in the PPTX without changing the artwork.
 - Daily +$600, two offline days +$1,200 and a loss of -$200 are illustrative examples that predate the economy selection. Apartment rent now pays only on in-game Sunday Noon; do not infer a fixed offline payout from days alone. Offline net is already applied and has no second claim action.
-- The game kit is a reference, not a playable prototype. Raster artwork is not a native vector illustration library. Character sprites include a walking pose, not finished animation cycles. Exteriors are canonical silhouettes; dynamic facade modules for arbitrary floor counts remain implementation work.
+- The Canva game kit is a reference, not a playable prototype. Its original character atlas has a walking pose; the later [runtime asset pack](Assets.md) adds five registered idle/walk/stair sheets, vector structural pieces and other missing resources. Exteriors in the kit remain canonical silhouettes; gameplay must compose the supplied structural modules from saved dimensions and animate the supplied frames.
 - The user selected the relaxed-idle model on 2026-10-12. Starting funds, capacity formulas, spending timing, billing calendar, tax rates and other selected parameters are in [Economy.md](Economy.md). Board prices/upkeep remain illustrative; the full catalogs and unlock thresholds are unfinished. The user also confirmed automatic roads surrounding newly occupied building plots; roads are now a required mechanic, while landscaping remains a decorative proposal. The Canva boards have not been revised for weekly apartment billing or automatic-road placement states.
 
 ## Canva workspace and future Figma setup
@@ -118,12 +118,12 @@ Every interactive component needs default, pressed, focus, disabled, and selecte
 | Profile/Create | name field, continue action, error | Create in an empty selected slot |
 | Map/Plot | empty, selected, occupied construction site, valid footprint/road surround, collision, boundary error | Drag defines the footprint; occupied plots automatically receive surrounding roads (Rules/Logic) |
 | Map/Building | apartment, hotel, office, F&B, mall concept | Tap opens cross-section; malls are future scope |
-| Map/Synergy | highlighted neighbors, bonus chip, no bonus | Show adjacency and benefit; +30% office/F&B is an example (Logic) |
+| Map/Synergy | highlighted neighbors, bonus chip, no bonus | Show selected bonuses within the 15% cap; individual values remain catalog work (Logic) |
 | Build/TypeCard | available, selected, locked | MVP availability and unlock thresholds are TBD |
 | Build/StepHeader | type, footprint, floors/capacity, review | Back preserves entered plan; cancel returns to map |
 | Build/Footprint | dimensions, selected grid area, surrounding-road preview, valid/invalid | Manually draw the footprint; roads are outside usable building land and generate on successful placement |
 | Build/Capacity | residential rooms, office floor lease, F&B facility | Rooms calculated for hotels/apartments; don't apply room rules universally |
-| Build/Cost | estimate, unaffordable, ready | Exact formula and spending commit timing unresolved |
+| Build/Cost | estimate, unaffordable, ready | Reserve funds on confirmation, settle at Noon; exact prices remain catalog work |
 | Build/PermanentSize | notice and review summary | Above-ground footprint, floors, room capacity fixed after construction |
 | Building/Summary | type, luxury, occupancy, parking | Parking quota limits occupancy |
 | Building/CrossSection | selected floor, above ground, B1/B2/B3 | Pan vertically; underground strictly parking |
@@ -139,27 +139,27 @@ Every interactive component needs default, pressed, focus, disabled, and selecte
 | Parking/Quota | current, near cap, full; B0–B3 | Max three basements; no non-parking rooms underground |
 | Finance/Statement | profit/loss, cash gross, maintenance, tax, net, pending apartment rent | Net = cash gross − maintenance − tax; apartment rent received only at Sunday Noon, others daily |
 | Finance/OfflineSummary | positive, negative, zero elapsed | Batch net after away time; already applied, no second claim |
-| Achievement/Card | locked, progress, earned | Offline gem rewards; reward claiming mechanics TBD |
+| Achievement/Card | locked, progress, earned | Grant offline gem rewards once with saved completion; achievement definitions remain TBD |
 | Decoration/Card | preview, affordable, unaffordable | Gem decorations in rules; catalog TBD |
 | Effect/Feedback | dust, coin, lift arrival | Coin effect must not imply per-tap revenue collection |
 
 ## Game artwork inventory
 
-Use the shared PNG sprite atlases in `design/tycoon/assets/` and the district scene for artwork examples. Keep UI labels and controls native and editable. The building and room atlas variants must retain their view angle, materials and palette. Finished animation cycles require a later artwork pass.
+Use the shared PNG sprite atlases in `design/tycoon/assets/` and the district scene as the approved artwork sources. Runtime exports are in `assets/game/`; [Assets.md](Assets.md) describes all 158 resources, generation sources, animation contracts and coverage. Keep UI labels and controls native and editable. Supplied structural modules retain the shared view angles and palette; engine composition and playback remain gameplay work.
 
 | Asset | Variants / states |
 | --- | --- |
 | Grid land | empty, selected, footprint/road-space valid/invalid, occupied plot with automatic surrounding road; greenery remains decorative |
-| Exteriors | apartment, hotel, office, food court/restaurant; mall reserved for future; luxury tiers TBD |
+| Exteriors | apartment, hotel, office, food court/restaurant; repeatable lobby/floor/roof pieces and three luxury previews; mall reserved for future |
 | Room interiors | apartment, hotel, corporate office, food facility; vacant/occupied/selected |
 | Transport | stairs, standard lift, executive lift, shaft, carriage |
 | Basement parking | B1/B2/B3 floor label, bay, occupied bay, capacity indicator |
-| People | resident, guest, office tenant, customer; idle, walking, stairs |
+| People | resident, guest, office tenant, customer, maintenance; four idle, eight walk and four stair frames per actor; leftward mirror |
 | Currency and symbols | dollar, gem, parking, luxury, happiness, maintenance, tax, synergy |
-| Effects | construction dust, financial-closing coin feedback, lift arrival; movement sequences TBD |
+| Effects | eight-frame construction dust, financial-closing coin feedback and lift arrival sheets |
 | Phase ambience | Morning, Day, Afternoon, Night, Noon/closing overlays; keep labels legible |
 
-Animation frames/timing belong in a later artwork pass. Prototype motion must respect reduced-motion settings as a proposed usability convention.
+Animation frame order, pivots and timing are supplied in the runtime manifest. Hold neutral frames and omit optional effects for reduced motion; engine integration must preserve these contracts.
 
 ## Screens and prototype flow
 
