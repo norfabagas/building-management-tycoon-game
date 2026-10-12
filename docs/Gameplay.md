@@ -14,6 +14,10 @@ Map navigation includes bottom-right **− / +** controls for mouse/touch users.
 
 Zoom validation on 2026-10-12: formatting, analysis, all **32 tests**, Android debug and offline Web builds passed. Tests cover focal-point preservation after panning, both zoom limits/disabled buttons, mouse footprint selection at 125%, building picking at 75%, and control clicks that do not create selections. Portrait, landscape and desktop construction flows now run at 125% with semantics enabled. Zoom controls are 48-pixel native button targets in a separate overlay, twelve pixels from the map's bottom/right edges, above the page toolbar/hosting footer.
 
+The deployed browser review confirmed both scale directions and a correct 2 × 4 footprint at 125%, without a selection from button clicks.
+
+![Bottom-right zoom controls at 125% during footprint planning](images/map-zoom.png)
+
 ## Local persistence
 
 Full snapshots use Sembast transactions with SQLite on Android (`sembast_sqflite`/`sqflite`) and IndexedDB on Web (`sembast_web`). One versioned record per profile stores the wallet, buildings/orders, road layout derived from occupied plots, clock/watermark, rent ledger and closing ID together. Read latest state inside each transaction, advance elapsed time, validate the requested mutation and commit before publishing it. Preserve unsupported/corrupt records and show a retryable error. SharedPreferences continues to hold only legacy/profile metadata.

@@ -33,13 +33,15 @@ The first visit needs connectivity to install the app's resources. Later reloads
 - Project ID: `326e5871-656b-4f7b-87c1-664e001d4ac4`.
 - Production URL: [Open the game](https://building-management-tycoon-game.netlify.app).
 - Dashboard: [Netlify project](https://app.netlify.com/projects/building-management-tycoon-game).
-- Deploy ID: `6acce2a358f934c48bbcf515`.
-- Deploy details: [Production deployment](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acce2a358f934c48bbcf515).
-- Uploaded release: source checkout `3c3d0ba`, using `netlify deploy --prod --dir build/web --no-build`.
+- Deploy ID: `6acce85f79f475141097f789`.
+- Deploy details: [Production deployment](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acce85f79f475141097f789).
+- Uploaded release: source checkout `2aca7b3`, using `netlify deploy --prod --dir build/web --no-build`.
 - Deployment mode: manual CLI upload. GitHub continuous deployment is **not connected**; future pushes alone do not publish the site. Build locally and run the upload command above for updates, or explicitly connect Git builds later.
 - Local project linkage remains in ignored `.netlify/state.json`; credentials are stored by the CLI outside tracked project files.
 
-Before upload, formatting (31 files), Flutter analysis, all **28 tests**, the 158-file runtime catalog validator, Android debug and release Web builds passed. Construction UI tests run with semantics enabled at phone, landscape and desktop sizes. All 201 offline-cache resources exist in the output, including all 158 runtime assets.
+Before this zoom update, formatting (33 files), Flutter analysis, all **32 tests**, Android debug and release Web builds passed. Construction UI tests run at 125% zoom with semantics enabled at phone, landscape and desktop sizes. The unchanged 158-file resource catalog retains its earlier asset validation; the offline Web build includes 201 resources.
+
+Live zoom verification: mouse clicks changed 100% → 125% → 75%, then returned to 125% during planning without drawing a footprint. A subsequent fast drag selected the expected 2 × 4 tiles, six rooms, sixteen B1 bays and $20,000 quote. The buttons are in the map's bottom-right above the footer. Review used an isolated deploy-permalink origin; main-origin player saves were not changed. The production JavaScript hash matches the validated zoom bundle.
 
 After publication, the production main JavaScript SHA-256 matched the validated build. On the deploy-permalink origin, browser review with accessibility enabled verified profile creation, $40,000 initialization, a fast-drag 2 × 4 footprint, six derived rooms, sixteen B1 bays, the $20,000 cost review, confirmation/reservation and the automatically saved road ring. Review data is isolated from the main origin's player saves. The semantic canvas interception found during the first upload was fixed forward in this release.
 
