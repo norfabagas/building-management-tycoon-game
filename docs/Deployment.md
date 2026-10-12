@@ -1,6 +1,6 @@
 # Netlify Web deployment
 
-The user resumed creating a new Netlify project and deploying the Web app on 2026-10-12. The CLI still reports the previous account authorization as pending, so a fresh authorization link has been requested. No project or deployment has been created yet. Apartment Sunday billing and automatic roads remain documented future gameplay work.
+The Web app is published at [building-management-tycoon-game.netlify.app](https://building-management-tycoon-game.netlify.app). The user resumed deployment on 2026-10-12 and authorized the Netlify CLI. A new project was created in the `norfabagas` team and the validated Web release was uploaded to production. Apartment Sunday billing and automatic roads remain documented future gameplay work.
 
 ## Build and hosting configuration
 
@@ -27,6 +27,20 @@ The first visit needs connectivity to install the app's resources. Later reloads
 
 ## Deployment status
 
-**Resumed; waiting for Netlify account authorization.** No Netlify project, live deployment or GitHub continuous-deployment connection has been created. On 2026-10-12, formatting (19 files unchanged), Flutter analysis, all 14 tests, the 158-file runtime catalog validator and the release Web build passed. All 201 offline-cache resources exist in the output, including all 158 runtime assets. `.netlify/` remains ignored. The release is ready for upload once account authorization completes; these checks do not indicate a published site. Local Android and Web builds and the GitHub source repository remain available.
+**Published on 2026-10-12.**
+
+- Project: `building-management-tycoon-game`, team `norfabagas`.
+- Project ID: `326e5871-656b-4f7b-87c1-664e001d4ac4`.
+- Production URL: [Open the game](https://building-management-tycoon-game.netlify.app).
+- Dashboard: [Netlify project](https://app.netlify.com/projects/building-management-tycoon-game).
+- Deploy ID: `6accd3213b81fa43c5ced96c`, confirmed `ready` by the Netlify API.
+- Deploy details: [Production deployment](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6accd3213b81fa43c5ced96c).
+- Uploaded release: source checkout `341bf18`, using `netlify deploy --prod --dir build/web --no-build`.
+- Deployment mode: manual CLI upload. GitHub continuous deployment is **not connected**; future pushes alone do not publish the site. Build locally and run the upload command above for updates, or explicitly connect Git builds later.
+- Local project linkage remains in ignored `.netlify/state.json`; credentials are stored by the CLI outside tracked project files.
+
+Before upload, formatting (19 files unchanged), Flutter analysis, all 14 tests, the 158-file runtime catalog validator and the release Web build passed. All 201 offline-cache resources exist in the output, including all 158 runtime assets.
+
+After publication, the HTTPS profile screen displayed the BM mark, approved district illustration and five empty slots. The root page and client-navigation fallback returned HTTP 200. Published runtime manifest contents match the repository's 158-asset catalog. HTTP checks confirmed the offline cache manifest/worker, main bundle, bootstrap, CanvasKit Wasm, logo, character animation and music resource with their expected content types. Host cache revalidation and `nosniff` headers are present. Local offline reload was verified during initial setup; a disconnected reload on this live origin has not been repeated. The page displays Netlify's hosting badge. Current gameplay limitations remain in [Setup.md](Setup.md) and [Project.md](Project.md).
 
 Primary references: [Netlify file configuration](https://docs.netlify.com/build/configure-builds/file-based-configuration/), [headers](https://docs.netlify.com/manage/routing/headers/) and [CLI deployments](https://docs.netlify.com/cli/get-started/).

@@ -2,6 +2,8 @@
 
 An offline 2D building management tycoon for Android and Web, built with Flutter and Dart.
 
+[Open the Web app](https://building-management-tycoon-game.netlify.app). The current release includes profile setup and the empty district canvas; management and economy gameplay are still pending. Netlify deployment details and update commands are in [Deployment.md](docs/Deployment.md).
+
 ## Run the project
 
 ```powershell
