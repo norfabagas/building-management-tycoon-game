@@ -38,6 +38,8 @@ On 2026-10-14, the floor-navigation change passed formatting, Flutter analysis a
 
 An isolated in-memory browser fixture verified desktop, portrait and landscape floor layouts, parking-only B1, live current-floor labels, scrolling beneath fixed navigation, and restored map zoom. The fixture is ignored and never included in the production entry point or player saves.
 
+The hosted Web check exposed the bottom-right Netlify badge's overlap with navigation. Web floor detail now reserves 64 pixels beneath its toolbar; Android retains normal safe-area spacing. Analysis and all 35 tests were repeated successfully for this adjustment.
+
 ![Floor 1 detail with bottom navigation](images/building-floor-1.jpg)
 
 ![B1 parking detail](images/building-b1.jpg)

@@ -4,6 +4,8 @@
 
 This Windows workstation installed the pinned SDK using `tool/bootstrap.ps1`; an initial dependency-cache rename was denied by Windows and succeeded on the bootstrap retry. Formatting (33 files), analysis, all 35 tests, asset validation (158 assets/124 frames) and the final offline release Web build (201 resources) pass. An Android debug build was attempted and reports **No Android SDK found**. The older machine-specific Android setup below does not apply to this workstation. Android device execution remains unverified. See `PROJECTS.md` and Gameplay.md for browser review of the new floor navigation.
 
+GitHub accepted source commit `792d3b2`. Its [Actions run](https://github.com/norfabagas/building-management-tycoon-game/actions/runs/38508472461) returned `startup_failure` with zero jobs, so it supplies no remote build/test evidence. The API response did not establish the startup failure's cause; the local checks above remain the validation evidence.
+
 ## Approved source
 
 The user approved the current [Canva artwork and game kit](https://www.canva.com/d/51ESDDCqVSdEOVT) on 2026-10-11. Follow [DesignKit.md](DesignKit.md) and preserve the BM mark from `design/brand/`. The game contract remains [Project.md](Project.md), [Platform.md](Platform.md), [Rules.md](Rules.md), [Logic.md](Logic.md) and [Design.md](Design.md).

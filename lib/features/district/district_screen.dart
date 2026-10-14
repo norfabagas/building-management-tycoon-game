@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/game_theme.dart';
@@ -133,7 +134,13 @@ class _DistrictScreenState extends State<DistrictScreen>
               final smallHeight = constraints.maxHeight < 450;
               final activePanel = _buildMenu || _finance;
               return Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                // Keep floor controls above the hosted Web footer badge.
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  4,
+                  12,
+                  _selected != null && kIsWeb ? 64 : 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

@@ -28,7 +28,8 @@
   2. **Construction Wizard:** Triggered when building on empty land. Prompts for Building Type -> Drag & Drop Land Area -> Input Above-Ground Floors & Review Calculated Room Capacity -> Confirm Cost. Rooms per floor are derived from the footprint, as defined in Rules.md and Logic.md; they are not manually entered.
   3. **Building View:** Selecting a building replaces the area map with that building's selected floor detail. Enter at Floor 1, showing front cutaway room modules. Keep **Exit building | Go up | Go down** at the bottom with a persistent **Current floor: Floor 1/B1** label. The starter connects Floor 1 directly to completed B1 parking, skipping floor zero; disable movement beyond available floors. B1 contains parking only. Exit restores the map camera. Content scrolls independently of navigation in portrait and landscape. Future floors/upgrades remain subject to their catalog gates.
   4. **Floor/Tenant View:** Manage specific rooms and tenants on a selected floor via tap menus.
-- **HUD:** 
+- **Hosted footer clearance:** On Web building detail, reserve 64 px beneath the bottom navigation so the hosting badge cannot cover Go down on narrow screens. Android uses normal safe-area spacing.
+- **HUD:**
   - Top bar: Area Name, Current funds, premium currency.
   - Bottom/Side bar: Build menu, Tenant menu, Upgrades menu.
 
