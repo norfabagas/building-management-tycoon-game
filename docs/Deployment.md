@@ -1,5 +1,18 @@
 # Netlify Web deployment
 
+## Pacing, copy and pinch release — 2026-10-14
+
+Source [`6103052`](https://github.com/norfabagas/building-management-tycoon-game/commit/6103052) adds 5-second phases (25-second days), concise construction/finance/tenant copy and continuous focal-point pinch zoom at 50%–200%. Schema 2 records the clock interval; older saves catch up at their original speed before changing interval and preserving phase progress. Five slots, prices, per-game-day rules and phase order remain unchanged.
+
+- Published to https://bmt.niceblue.biz.id through the existing CLI deployment path.
+- Deploy: [`6acf076d4d86214e639668c3`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acf076d4d86214e639668c3); connector confirms current/ready.
+- Live `main.dart.js` SHA-256 equals the tested local release: `589315243C906D619FCD0AED28696D4E30F4AC6A64604DC4C5899909D002195D`.
+- Live offline manifest returns HTTP 200 with 201 resources. Git-based hosting remains unconnected; the source was pushed separately.
+- Formatting, Flutter analysis, all 43 tests and release Web build pass. Android debug build was attempted and remains blocked by the missing Android SDK. Physical-device pinch remains unverified; multi-pointer Flutter tests cover it in simulation.
+- Browser review on an isolated localhost origin confirmed running phases, short statuses and the 2 × 4 mouse construction flow. Existing production saves were not edited. Evidence: `images/pacing-and-copy.jpg`.
+
+Close all old game tabs and reopen to activate the new code/cache. Schema 2 is deliberately unreadable by older app clients; keep browser storage intact to preserve the local saves.
+
 ## Floor navigation release — 2026-10-14
 
 The requested floor-navigation update passes formatting, analysis, all 35 tests and asset validation. The final `lib/main.dart` release Web build succeeds with 201 offline resources. Browser floor review used a separate ignored in-memory fixture, never the production entry point or existing player saves. Local Android build is blocked by the missing Android SDK.
