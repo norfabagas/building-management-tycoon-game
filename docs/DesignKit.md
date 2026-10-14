@@ -128,7 +128,7 @@ Every interactive component needs default, pressed, focus, disabled, and selecte
 | Build/Footprint | dimensions, selected grid area, surrounding-road preview, valid/invalid | Manually draw the footprint; roads are outside usable building land and generate on successful placement |
 | Build/Capacity | residential rooms, office floor lease, F&B facility | Rooms calculated for hotels/apartments; don't apply room rules universally |
 | Build/Cost | estimate, unaffordable, ready | Reserve funds on confirmation, settle at Noon; exact prices remain catalog work |
-| Build/PermanentSize | notice and review summary | Above-ground footprint, floors, room capacity fixed after construction |
+| Build/PermanentSize | notice and review summary | Footprint and rooms per floor fixed; 2026-10-14 override permits floor upgrades up to 10 |
 | Building/Summary | type, luxury, occupancy, parking | Parking quota limits occupancy |
 | Building/CrossSection | selected floor, above ground, B1/B2/B3 | Pan vertically; underground strictly parking |
 | Building/Stairs | idle, moving tenant | Stairs exist by default |
@@ -138,8 +138,8 @@ Every interactive component needs default, pressed, focus, disabled, and selecte
 | Tenant/Card | apartment resident, hotel guest, corporate lease | Office tenancy is by whole floor, hotel occupancy is daily |
 | Tenant/Needs | happy, lift concern, parking capacity issue | Explain needs and link to relevant upgrade |
 | Traffic/Summary | F&B customers, parking visitors, occupancy cap | Daily sales and parking demand differ from residential rentals |
-| Upgrade/Card | available, unaffordable, maximum, unavailable | Luxury, standard lift, executive lift, parking excavation |
-| Upgrade/Review | price, benefit, added daily maintenance | Lifts add heavy daily fees; don't hide recurring cost |
+| Upgrade/Card | available, unaffordable, maximum, unavailable, in progress | Apartment floors (10 total), parking (3), standard lift (3), executive lift (1); luxury deferred |
+| Upgrade/Review | price, benefit, added daily maintenance, duration | Show the approved $40/day added upkeep for each apartment upgrade; don't hide recurring cost |
 | Parking/Quota | current, near cap, full; B0–B3 | Max three basements; no non-parking rooms underground |
 | Finance/Statement | profit/loss, cash gross, maintenance, tax, net, pending apartment rent | Net = cash gross − maintenance − tax; apartment rent received only at Sunday Noon, others daily |
 | Finance/OfflineSummary | positive, negative, zero elapsed | Batch net after away time; already applied, no second claim |

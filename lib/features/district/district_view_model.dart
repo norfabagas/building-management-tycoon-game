@@ -28,10 +28,16 @@ class DistrictViewModel extends ChangeNotifier {
     return null;
   }
 
-  String get floorLabel => currentFloor == 1 ? 'Floor 1' : 'B1';
-  bool get canGoUp => selectedBuilding != null && currentFloor == -1;
+  String get floorLabel =>
+      currentFloor > 0 ? 'Floor $currentFloor' : 'B${-currentFloor}';
+  bool get canGoUp =>
+      selectedBuilding != null &&
+      (currentFloor < 0 || currentFloor < selectedBuilding!.completedFloors);
   bool get canGoDown =>
-      selectedBuilding?.parkingComplete == true && currentFloor == 1;
+      selectedBuilding != null &&
+      (currentFloor > 1 ||
+          (selectedBuilding!.completedBasements > 0 &&
+              currentFloor > -selectedBuilding!.completedBasements));
 
   void selectBuilding(int? id) {
     selectedBuildingId = id;
@@ -41,13 +47,13 @@ class DistrictViewModel extends ChangeNotifier {
 
   void goUp() {
     if (!canGoUp) return;
-    currentFloor = 1;
+    currentFloor = currentFloor == -1 ? 1 : currentFloor + 1;
     notifyListeners();
   }
 
   void goDown() {
     if (!canGoDown) return;
-    currentFloor = -1;
+    currentFloor = currentFloor == 1 ? -1 : currentFloor - 1;
     notifyListeners();
   }
 
@@ -67,6 +73,19 @@ class DistrictViewModel extends ChangeNotifier {
 
   Future<bool> openBusiness(int id) =>
       save((state) => DistrictSimulation.openBusiness(state, id));
+
+  Future<bool> orderUpgrade(int id, BuildingUpgrade kind) =>
+      save((state) => DistrictSimulation.orderUpgrade(state, id, kind));
+
+  Future<bool> cancelUpgrade(int id) =>
+      save((state) => DistrictSimulation.cancelUpgrade(state, id));
+
+  double upgradeProgress(ApartmentBuilding building) =>
+      DistrictSimulation.upgradeProgress(
+        game!,
+        building,
+        elapsedMilliseconds: elapsedMilliseconds,
+      );
 
   Future<bool> save([void Function(DistrictGame)? action]) async {
     if (busy || _disposed) return false;

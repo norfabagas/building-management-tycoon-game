@@ -1,6 +1,6 @@
 # Game Rules & Mechanics
 
-The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent paid **weekly on Sunday at Noon** and other income paid **daily at Noon**. The user subsequently approved an apartment starter catalog, one-floor starter restriction and automatic-road geometry. [Economy.md](Economy.md) defines these selected rules; [Gameplay.md](Gameplay.md) records their implementation. Hotel, office, F&B, lifts, luxury and other catalogs remain pending. [EconomyOptions.md](EconomyOptions.md) preserves the original alternatives.
+The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent paid **weekly on Sunday at Noon** and other income paid **daily at Noon**. The apartment starter and automatic-road geometry were approved next; on 2026-10-14 the user replaced the one-floor restriction with floor, basement and lift upgrades defined below. [Economy.md](Economy.md) defines the selected catalog; [Gameplay.md](Gameplay.md) records implementation. Hotel, office, F&B, luxury and happiness systems remain pending. [EconomyOptions.md](EconomyOptions.md) preserves the original alternatives.
 
 ## The Core Loop
 1. **Name Your Area:** At the start of a new game, the player names their CBD area.
@@ -33,6 +33,7 @@ The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent 
 Regardless of the type of building constructed, the following constraints **always** apply without exception:
 - **Land Area Requirement:** Every new building requires the player to manually define its physical footprint via a **drag-and-drop tool on the CBD map** before construction.
 - **Underground Depth Limit:** No building can exceed a maximum of **3 underground levels**.
+- **Above-Ground Limit (2026-10-14):** Buildings can expand upward to **10 total above-ground floors** for now.
 - **Standard Lift Limit:** A building can have a maximum of **3 standard lifts**.
 - **Executive Lift Limit:** A building can have a maximum of **1 executive lift**.
 
@@ -42,9 +43,10 @@ Regardless of the type of building constructed, the following constraints **alwa
 - **Automatic Surrounding Roads:** As confirmed by the user on 2026-10-12, when a new building occupies previously empty land, the game automatically creates a road around the occupied footprint. The player does not need to draw or place that road manually. Create it when the plot becomes an occupied construction site, not during an unconfirmed placement preview.
   - Roads sit outside the building footprint; they do not add room capacity or underground parking quota. Reuse compatible existing road segments instead of duplicating them, and never overwrite another building.
   - Placement review previews and validates both the footprint and surrounding road. The approved starter uses a free one-tile rectangular ring including corners on unbounded land, merging shared road segments. Existing roads cannot become building footprints; road rings cannot overwrite occupied plots.
-- **Permanent Above-Ground Sizing:** The above-ground physical size (land area, total floors, max unit capacity) is **locked** once constructed.
+- **Permanent footprint:** Land area, coordinates and rooms per floor are locked. As requested on 2026-10-14, above-ground floors can be added through upgrades, up to 10 total, superseding the earlier permanent-floor/starter restriction. Each building starts with one floor and B1; caps include these initial levels.
 - **Underground Parking Expansion:** Through upgrades, players can excavate lower ground floors up to the universal max of 3 levels deep. These are strictly used for parking.
 - **Vertical Logistics:** Buildings have stairs by default. Lifts must be purchased as upgrades (up to the universal limits) to improve efficiency.
+- **Apartment upgrade catalog (2026-10-14):** Added floor: $2,000/tile, 2 game days, +$40/day upkeep. Added basement: $500/tile, 1 day, +$40/day. Standard lift: 1/4 of the original floor+B1 quote; executive lift: 1/2. Both lifts take 1 game day and add $40/day each. The user approved this price basis and deferred lift rent/happiness effects. One job per building; reserve now, pay at the next Noon, begin next Morning. Keep existing business open. Completed capacity and upkeep/valuation apply at completion; new admissions wait until Morning and remain parking-limited. Cancel only unpaid upgrades.
 - **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating.
 - **Selected construction baseline:** Starter shell takes two game days, then a separate B1 job takes one day. Include both in the starter quote; occupancy remains zero until parking is operational.
 - **Manual opening (2026-10-14):** When both jobs finish, construction reaches 100% and the building waits for **Open to Business**. No tenants, new rent accrual or parking income before this action. Admissions begin at the next Morning after opening. Completed components still incur their documented maintenance/valuation taxes. Existing open buildings remain open after upgrade; no new price, refund or automatic opening is introduced.
@@ -63,5 +65,5 @@ Selected synergy bonuses add together and cap at **15%** per receiving building.
 
 ## Tenant & Visitor Management
 - **The Parking Quota Hard Limit:** The total parking quota dictates the maximum possible occupancy of a building. If a building lacks sufficient parking, it cannot take in more tenants or visitors.
-- Players must actively manage tenants. A lack of lifts in high-rises will drastically reduce tenant happiness.
+- Players must actively manage tenants. The future happiness system will account for high-rise lift needs; its penalty/bonus formula is deferred for this apartment upgrade release, as approved on 2026-10-14.
 - If tenant needs are not met, occupancy, rentals, and sales will decrease.

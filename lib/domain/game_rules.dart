@@ -1,6 +1,7 @@
 /// Constants and phase order specified in docs/Rules.md and docs/Logic.md.
 abstract final class GameRules {
   static const profileSlots = 5;
+  static const maximumAboveGroundFloors = 10;
   static const maximumUndergroundFloors = 3;
   static const maximumStandardLifts = 3;
   static const maximumExecutiveLifts = 1;

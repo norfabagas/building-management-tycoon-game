@@ -12,6 +12,7 @@ import '../../domain/local_profile.dart';
 import '../../shared/widgets/asset_animation.dart';
 import '../../shared/widgets/game_brand.dart';
 import '../../shared/widgets/game_button.dart';
+import 'building_upgrade_panel.dart';
 import 'district_map.dart';
 import 'district_view_model.dart';
 
@@ -34,9 +35,14 @@ class _DistrictScreenState extends State<DistrictScreen>
     widget.repository,
   );
   bool _buildMenu = false, _drawing = false, _review = false, _finance = false;
+  bool _upgrades = false;
   Footprint? _preview;
   int? get _selected => _model.selectedBuildingId;
-  set _selected(int? id) => _model.selectBuilding(id);
+  set _selected(int? id) {
+    _upgrades = false;
+    _model.selectBuilding(id);
+  }
+
   int _reset = 0;
 
   @override
@@ -342,14 +348,24 @@ class _DistrictScreenState extends State<DistrictScreen>
           Expanded(
             child: GameButton(
               label: 'Go up',
-              onPressed: _model.canGoUp ? _model.goUp : null,
+              onPressed: _model.canGoUp
+                  ? () => setState(() {
+                      _upgrades = false;
+                      _model.goUp();
+                    })
+                  : null,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: GameButton(
               label: 'Go down',
-              onPressed: _model.canGoDown ? _model.goDown : null,
+              onPressed: _model.canGoDown
+                  ? () => setState(() {
+                      _upgrades = false;
+                      _model.goDown();
+                    })
+                  : null,
             ),
           ),
         ],
@@ -366,9 +382,15 @@ class _DistrictScreenState extends State<DistrictScreen>
       borderRadius: BorderRadius.circular(18),
     ),
     child: SingleChildScrollView(
-      key: ValueKey('floor-$_selected-${_model.currentFloor}'),
+      key: ValueKey('floor-$_selected-${_model.currentFloor}-$_upgrades'),
       padding: const EdgeInsets.all(16),
-      child: _buildingPanel(game),
+      child: _upgrades && _model.selectedBuilding != null
+          ? BuildingUpgradePanel(
+              model: _model,
+              building: _model.selectedBuilding!,
+              onClose: () => setState(() => _upgrades = false),
+            )
+          : _buildingPanel(game),
     ),
   );
 
@@ -418,14 +440,17 @@ class _DistrictScreenState extends State<DistrictScreen>
     ),
   );
 
-  Widget _heading(String title) => Row(
+  Widget _heading(String title, {Widget? action}) => Row(
     children: [
       Expanded(
         child: Text(
           title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
         ),
       ),
+      ?action,
       if (_buildMenu || _finance || _selected != null)
         IconButton(
           tooltip: 'Close panel',
@@ -550,7 +575,9 @@ class _DistrictScreenState extends State<DistrictScreen>
         ] else ...[
           const SizedBox(height: 8),
           Text(
-            _review ? 'Building size cannot be changed later.' : 'Drag to select land. Green: available. Red: blocked or too expensive.',
+            _review
+                ? 'The footprint cannot be changed later. Add floors through upgrades.'
+                : 'Drag to select land. Green: available. Red: blocked or too expensive.',
           ),
           const SizedBox(height: 12),
           _line(
@@ -651,10 +678,31 @@ class _DistrictScreenState extends State<DistrictScreen>
     if (matches.isEmpty) return _welcome(game);
     final building = matches.first;
     final ready = building.stage == ConstructionStage.ready;
+    final firstRoom = (_model.currentFloor - 1) * building.footprint.rooms;
+    final lastRoom = firstRoom + building.footprint.rooms;
+    final floorTenants = building.occupied
+        .where((room) => room >= firstRoom && room < lastRoom)
+        .length;
+    final usedBays =
+        (building.occupied.length -
+                (-_model.currentFloor - 1) * building.footprint.bays)
+            .clamp(0, building.footprint.bays);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _heading('Apartment ${building.id}'),
+        _heading(
+          'Apartment ${building.id}',
+          action: TextButton.icon(
+            onPressed: () => setState(() => _upgrades = true),
+            icon: Image.asset(
+              ProductionAssets.iconsUpgrade,
+              width: 22,
+              height: 22,
+              excludeFromSemantics: true,
+            ),
+            label: const Text('Upgrade building'),
+          ),
+        ),
         Text(
           building.stage.label,
           style: const TextStyle(
@@ -680,6 +728,29 @@ class _DistrictScreenState extends State<DistrictScreen>
           'Permanent footprint',
           '${building.footprint.width} × ${building.footprint.length} tiles',
         ),
+        _line(
+          'Floors / basements',
+          '${building.completedFloors} / ${building.completedBasements}',
+        ),
+        _line(
+          'Lifts / executive lifts',
+          '${building.standardLifts} / ${building.executiveLifts}',
+        ),
+        if (building.upgrade case final upgrade?) ...[
+          const SizedBox(height: 8),
+          Text(
+            '${upgrade.kind.label} · ${upgrade.stage.label} · ${(_model.upgradeProgress(building) * 100).floor()}%',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          LinearProgressIndicator(
+            value: _model.upgradeProgress(building),
+            minHeight: 8,
+            semanticsLabel: 'Upgrade progress',
+            semanticsValue:
+                '${(_model.upgradeProgress(building) * 100).floor()}%',
+          ),
+        ],
         if (!ready) ...[
           const SizedBox(height: 10),
           Text(switch (building.stage) {
@@ -707,22 +778,30 @@ class _DistrictScreenState extends State<DistrictScreen>
             ),
           ],
         ],
-        if (_model.currentFloor == 1) ...[
+        if (_model.currentFloor > 0) ...[
           const Divider(),
           Row(
             children: [
               Image.asset(ProductionAssets.iconsHome, width: 30, height: 30),
               const SizedBox(width: 8),
-              const Text(
-                'Floor 1 · Rooms',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+              Text(
+                '${_model.floorLabel} · Rooms',
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 10),
+          _line('Tenants', '$floorTenants / ${building.footprint.rooms} rooms'),
           _line(
-            'Tenants',
-            '${building.occupied.length} / ${building.footprint.rooms} rooms',
+            'Building tenants',
+            '${building.occupied.length} / ${building.rooms} rooms',
+          ),
+          _line(
+            'Building parking',
+            '${building.occupied.length} / ${building.bays} bays used',
           ),
           _line('Pending weekly rent', formatMoney(building.pendingRent)),
           _line('Weekly rent per room', formatMoney(StarterCatalog.weeklyRent)),
@@ -739,7 +818,7 @@ class _DistrictScreenState extends State<DistrictScreen>
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    for (var room = 0; room < building.footprint.rooms; room++)
+                    for (var room = firstRoom; room < lastRoom; room++)
                       SizedBox(width: width, child: _room(building, room)),
                   ],
                 );
@@ -755,6 +834,22 @@ class _DistrictScreenState extends State<DistrictScreen>
             height: 90,
             excludeFromSemantics: true,
           ),
+          if (building.standardLifts > 0 || building.executiveLifts > 0)
+            Wrap(
+              spacing: 12,
+              children: [
+                if (building.standardLifts > 0)
+                  _lift(
+                    ProductionAssets.transportStandardLift,
+                    '${building.standardLifts} standard ${building.standardLifts == 1 ? 'lift' : 'lifts'}',
+                  ),
+                if (building.executiveLifts > 0)
+                  _lift(
+                    ProductionAssets.transportExecutiveLift,
+                    '1 executive lift',
+                  ),
+              ],
+            ),
           Text(
             building.parkingComplete
                 ? 'Go down for parking.'
@@ -762,13 +857,13 @@ class _DistrictScreenState extends State<DistrictScreen>
           ),
         ] else ...[
           const Divider(),
-          const Text(
-            'B1 · Parking only',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+          Text(
+            '${_model.floorLabel} · Parking only',
+            style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 12),
           Image.asset(
-            building.occupied.isEmpty
+            usedBays == 0
                 ? ProductionAssets.transportParkingEmpty
                 : ProductionAssets.transportParkingOccupied,
             height: 220,
@@ -777,24 +872,29 @@ class _DistrictScreenState extends State<DistrictScreen>
             excludeFromSemantics: true,
           ),
           _line('Parking capacity', '${building.footprint.bays} bays'),
-          _line('Tenant bays used', '${building.occupied.length}'),
-          _line(
-            'Available bays',
-            '${building.footprint.bays - building.occupied.length}',
-          ),
+          _line('Tenant bays used', '$usedBays'),
+          _line('Available bays', '${building.footprint.bays - usedBays}'),
           const Text(
             'Parking is reserved for tenants.',
             style: TextStyle(fontSize: 13, color: GameColors.muted),
           ),
         ],
-        const SizedBox(height: 14),
-        const Text(
-          'Building upgrades coming soon.',
-          style: TextStyle(fontSize: 13, color: GameColors.muted),
-        ),
       ],
     );
   }
+
+  Widget _lift(String asset, String label) => Column(
+    children: [
+      Image.asset(
+        asset,
+        height: 90,
+        width: 100,
+        fit: BoxFit.contain,
+        excludeFromSemantics: true,
+      ),
+      Text(label),
+    ],
+  );
 
   Widget _constructionProgress(ApartmentBuilding building) {
     final progress = _model.constructionProgress(building);

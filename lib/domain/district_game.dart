@@ -96,6 +96,75 @@ enum ConstructionStage {
   final String label;
 }
 
+enum BuildingUpgrade {
+  floor('Add floor', GameRules.maximumAboveGroundFloors, 2),
+  basement('Add basement', GameRules.maximumUndergroundFloors, 1),
+  standardLift('Standard lift', GameRules.maximumStandardLifts, 1),
+  executiveLift('Executive lift', GameRules.maximumExecutiveLifts, 1);
+
+  const BuildingUpgrade(this.label, this.maximum, this.days);
+  final String label;
+  final int maximum, days;
+
+  int count(ApartmentBuilding building) => switch (this) {
+    floor => building.aboveGroundFloors,
+    basement => building.undergroundFloors,
+    standardLift => building.standardLifts,
+    executiveLift => building.executiveLifts,
+  };
+
+  int cost(ApartmentBuilding building) => switch (this) {
+    floor => building.footprint.shellCost,
+    basement => building.footprint.basementCost,
+    standardLift => building.footprint.quote ~/ 4,
+    executiveLift => building.footprint.quote ~/ 2,
+  };
+
+  int get maintenance => switch (this) {
+    floor => StarterCatalog.maintenancePerFloor,
+    basement => StarterCatalog.maintenancePerBasement,
+    standardLift || executiveLift => 4000,
+  };
+}
+
+enum UpgradeStage {
+  reserved('Queued'),
+  paid('Starts tomorrow'),
+  building('In progress');
+
+  const UpgradeStage(this.label);
+  final String label;
+}
+
+class UpgradeOrder {
+  UpgradeOrder({
+    required this.kind,
+    this.stage = UpgradeStage.reserved,
+    this.startedDay = 0,
+  });
+  final BuildingUpgrade kind;
+  UpgradeStage stage;
+  int startedDay;
+  Map<String, Object> toJson() => {
+    'kind': kind.name,
+    'stage': stage.name,
+    'startedDay': startedDay,
+  };
+  factory UpgradeOrder.fromJson(Map<String, dynamic> json) {
+    final order = UpgradeOrder(
+      kind: BuildingUpgrade.values.byName(json['kind'] as String),
+      stage: UpgradeStage.values.byName(json['stage'] as String),
+      startedDay: json['startedDay'] as int,
+    );
+    if (order.stage == UpgradeStage.building
+        ? order.startedDay < 1
+        : order.startedDay != 0) {
+      throw const FormatException('Invalid upgrade order');
+    }
+    return order;
+  }
+}
+
 class ApartmentBuilding {
   ApartmentBuilding({
     required this.id,
@@ -103,6 +172,11 @@ class ApartmentBuilding {
     this.stage = ConstructionStage.reserved,
     this.startedDay = 0,
     this.pendingRent = 0,
+    this.aboveGroundFloors = 1,
+    this.undergroundFloors = 1,
+    this.standardLifts = 0,
+    this.executiveLifts = 0,
+    this.upgrade,
     Set<int>? occupied,
   }) : occupied = occupied ?? {};
   final int id;
@@ -110,25 +184,43 @@ class ApartmentBuilding {
   ConstructionStage stage;
   int startedDay;
   int pendingRent;
+  int aboveGroundFloors, undergroundFloors, standardLifts, executiveLifts;
+  UpgradeOrder? upgrade;
   final Set<int> occupied;
   bool get shellComplete => stage.index >= ConstructionStage.shellDone.index;
   bool get parkingComplete =>
       stage.index >= ConstructionStage.parkingDone.index;
+  int get completedFloors => shellComplete ? aboveGroundFloors : 0;
+  int get completedBasements => parkingComplete ? undergroundFloors : 0;
+  int get rooms => completedFloors * footprint.rooms;
+  int get bays => completedBasements * footprint.bays;
   int get valuation =>
-      (shellComplete ? footprint.shellCost : 0) +
-      (parkingComplete ? footprint.basementCost : 0);
+      completedFloors * footprint.shellCost +
+      completedBasements * footprint.basementCost +
+      standardLifts * BuildingUpgrade.standardLift.cost(this) +
+      executiveLifts * BuildingUpgrade.executiveLift.cost(this);
   int get maintenance =>
-      (shellComplete ? StarterCatalog.maintenancePerFloor : 0) +
-      (parkingComplete ? StarterCatalog.maintenancePerBasement : 0);
-  Map<String, Object> toJson() => {
+      completedFloors * StarterCatalog.maintenancePerFloor +
+      completedBasements * StarterCatalog.maintenancePerBasement +
+      standardLifts * BuildingUpgrade.standardLift.maintenance +
+      executiveLifts * BuildingUpgrade.executiveLift.maintenance;
+  Map<String, Object?> toJson() => {
     'id': id,
     'footprint': footprint.toJson(),
     'stage': stage.name,
     'startedDay': startedDay,
     'pendingRent': pendingRent,
+    'aboveGroundFloors': aboveGroundFloors,
+    'undergroundFloors': undergroundFloors,
+    'standardLifts': standardLifts,
+    'executiveLifts': executiveLifts,
+    'upgrade': upgrade?.toJson(),
     'occupied': occupied.toList()..sort(),
   };
-  factory ApartmentBuilding.fromJson(Map<String, dynamic> json) {
+  factory ApartmentBuilding.fromJson(
+    Map<String, dynamic> json, {
+    bool legacy = false,
+  }) {
     final building = ApartmentBuilding(
       id: json['id'] as int,
       footprint: Footprint.fromJson(
@@ -137,14 +229,39 @@ class ApartmentBuilding {
       stage: ConstructionStage.values.byName(json['stage'] as String),
       startedDay: json['startedDay'] as int,
       pendingRent: json['pendingRent'] as int,
+      aboveGroundFloors: legacy ? 1 : json['aboveGroundFloors'] as int,
+      undergroundFloors: legacy ? 1 : json['undergroundFloors'] as int,
+      standardLifts: legacy ? 0 : json['standardLifts'] as int,
+      executiveLifts: legacy ? 0 : json['executiveLifts'] as int,
+      upgrade: legacy || json['upgrade'] == null
+          ? null
+          : UpgradeOrder.fromJson(
+              Map<String, dynamic>.from(json['upgrade'] as Map),
+            ),
       occupied: Set<int>.from(json['occupied'] as List),
     );
     if (building.id < 1 ||
         building.startedDay < 0 ||
         building.pendingRent < 0 ||
-        building.occupied.any(
-          (room) => room < 0 || room >= building.footprint.rooms,
-        ) ||
+        building.aboveGroundFloors < 1 ||
+        building.aboveGroundFloors > GameRules.maximumAboveGroundFloors ||
+        building.undergroundFloors < 1 ||
+        building.undergroundFloors > GameRules.maximumUndergroundFloors ||
+        building.standardLifts < 0 ||
+        building.standardLifts > GameRules.maximumStandardLifts ||
+        building.executiveLifts < 0 ||
+        building.executiveLifts > GameRules.maximumExecutiveLifts ||
+        (building.stage != ConstructionStage.ready &&
+            (building.aboveGroundFloors != 1 ||
+                building.undergroundFloors != 1 ||
+                building.standardLifts != 0 ||
+                building.executiveLifts != 0 ||
+                building.upgrade != null)) ||
+        (building.upgrade != null &&
+            building.upgrade!.kind.count(building) >=
+                building.upgrade!.kind.maximum) ||
+        building.occupied.any((room) => room < 0 || room >= building.rooms) ||
+        building.occupied.length > building.bays ||
         (building.stage != ConstructionStage.ready &&
             building.occupied.isNotEmpty)) {
       throw const FormatException('Invalid building state');
@@ -225,15 +342,19 @@ class DistrictGame {
   ][weekday];
   int get nextSunday =>
       day + (6 - weekday) + (weekday == 6 && phaseIndex == 4 ? 7 : 0);
-  int get reserved => buildings
-      .where((b) => b.stage == ConstructionStage.reserved)
-      .fold(0, (sum, b) => sum + b.footprint.quote);
+  int get reserved =>
+      buildings
+          .where((b) => b.stage == ConstructionStage.reserved)
+          .fold(0, (sum, b) => sum + b.footprint.quote) +
+      buildings
+          .where((b) => b.upgrade?.stage == UpgradeStage.reserved)
+          .fold<int>(0, (sum, b) => sum + b.upgrade!.kind.cost(b));
   int get available => math.max(0, balance - reserved);
   int get pendingRent => buildings.fold(0, (sum, b) => sum + b.pendingRent);
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': 3,
+    'version': 4,
     'catalog': 1,
     'phaseMilliseconds': phaseMilliseconds,
     'watermark': watermark,
@@ -250,7 +371,8 @@ class DistrictGame {
   factory DistrictGame.fromJson(Map<String, dynamic> json) {
     if ((json['version'] != 1 &&
             json['version'] != 2 &&
-            json['version'] != 3) ||
+            json['version'] != 3 &&
+            json['version'] != 4) ||
         json['catalog'] != 1) {
       throw const FormatException('Unsupported game save');
     }
@@ -268,8 +390,10 @@ class DistrictGame {
       earned: json['earned'] as int,
       buildings: (json['buildings'] as List)
           .map(
-            (b) =>
-                ApartmentBuilding.fromJson(Map<String, dynamic>.from(b as Map)),
+            (b) => ApartmentBuilding.fromJson(
+              Map<String, dynamic>.from(b as Map),
+              legacy: json['version'] != 4,
+            ),
           )
           .toList(),
       statement: json['statement'] == null
@@ -304,6 +428,53 @@ class GameplayException implements Exception {
 }
 
 abstract final class DistrictSimulation {
+  static String? upgradeError(
+    DistrictGame state,
+    ApartmentBuilding building,
+    BuildingUpgrade kind,
+  ) {
+    if (building.stage != ConstructionStage.ready) {
+      return 'Open the building before upgrading.';
+    }
+    if (kind.count(building) >= kind.maximum) return 'Maximum reached.';
+    if (building.upgrade != null) return 'Finish the current upgrade first.';
+    if (kind.cost(building) > state.available) {
+      return 'Not enough available dollars.';
+    }
+    return null;
+  }
+
+  static void orderUpgrade(DistrictGame state, int id, BuildingUpgrade kind) {
+    final building = _find(state, id);
+    final error = upgradeError(state, building, kind);
+    if (error != null) throw GameplayException(error);
+    building.upgrade = UpgradeOrder(kind: kind);
+  }
+
+  static void cancelUpgrade(DistrictGame state, int id) {
+    final building = _find(state, id);
+    if (building.upgrade?.stage != UpgradeStage.reserved) {
+      throw const GameplayException('Only unpaid upgrades can be canceled.');
+    }
+    building.upgrade = null;
+  }
+
+  static double upgradeProgress(
+    DistrictGame state,
+    ApartmentBuilding building, {
+    int elapsedMilliseconds = 0,
+  }) {
+    final order = building.upgrade;
+    if (order == null) return 1;
+    if (order.stage != UpgradeStage.building) return 0;
+    final phases =
+        (state.day - order.startedDay) * 5 +
+        state.phaseIndex +
+        (state.remainder + math.max(0, elapsedMilliseconds)) /
+            state.phaseMilliseconds;
+    return (phases / (order.kind.days * 5 - 1)).clamp(0.0, .999);
+  }
+
   /// Completed work: the two-day shell is 2/3; the one-day B1 job is 1/3.
   static double constructionProgress(
     DistrictGame state,
@@ -408,6 +579,11 @@ abstract final class DistrictSimulation {
 
   static void _morning(DistrictGame state) {
     for (final building in state.buildings) {
+      final upgrade = building.upgrade;
+      if (upgrade?.stage == UpgradeStage.paid) {
+        upgrade!.stage = UpgradeStage.building;
+        upgrade.startedDay = state.day;
+      }
       if (building.stage == ConstructionStage.paid) {
         building.stage = ConstructionStage.shell;
         building.startedDay = state.day;
@@ -416,12 +592,16 @@ abstract final class DistrictSimulation {
         building.startedDay = state.day;
       }
       if (building.stage == ConstructionStage.ready) {
-        final capacity = math.min(
-          building.footprint.rooms,
-          building.footprint.bays,
+        final capacity = math.min(building.rooms, building.bays);
+        var remainingAdmissions = math.min(
+          (capacity + 3) ~/ 4,
+          capacity - building.occupied.length,
         );
-        var remainingAdmissions = (capacity + 3) ~/ 4;
-        for (var room = 0; room < capacity && remainingAdmissions > 0; room++) {
+        for (
+          var room = 0;
+          room < building.rooms && remainingAdmissions > 0;
+          room++
+        ) {
           if (building.occupied.add(room)) remainingAdmissions--;
         }
       }
@@ -432,6 +612,24 @@ abstract final class DistrictSimulation {
     if (state.lastClosing >= state.day) return;
     var rent = 0, parking = 0, maintenance = 0, valuation = 0, purchases = 0;
     for (final building in state.buildings) {
+      final upgrade = building.upgrade;
+      if (upgrade?.stage == UpgradeStage.reserved) {
+        purchases += upgrade!.kind.cost(building);
+        upgrade.stage = UpgradeStage.paid;
+      } else if (upgrade?.stage == UpgradeStage.building &&
+          state.day >= upgrade!.startedDay + upgrade.kind.days - 1) {
+        switch (upgrade.kind) {
+          case BuildingUpgrade.floor:
+            building.aboveGroundFloors++;
+          case BuildingUpgrade.basement:
+            building.undergroundFloors++;
+          case BuildingUpgrade.standardLift:
+            building.standardLifts++;
+          case BuildingUpgrade.executiveLift:
+            building.executiveLifts++;
+        }
+        building.upgrade = null;
+      }
       if (building.stage == ConstructionStage.reserved) {
         purchases += building.footprint.quote;
         building.stage = ConstructionStage.paid;

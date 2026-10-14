@@ -554,11 +554,24 @@ class _DistrictPainter extends CustomPainter {
         site.x + site.width / 2,
         site.y + site.length / 2,
       );
+      final working =
+          building.stage != ConstructionStage.ready || building.upgrade != null;
+      final progress = building.upgrade != null
+          ? DistrictSimulation.upgradeProgress(
+              game,
+              building,
+              elapsedMilliseconds: elapsedMilliseconds,
+            )
+          : DistrictSimulation.constructionProgress(
+              game,
+              building,
+              elapsedMilliseconds: elapsedMilliseconds,
+            );
       final label = TextPainter(
         text: TextSpan(
-          text: building.stage == ConstructionStage.ready
+          text: !working
               ? 'Apartment ${building.id}'
-              : 'Apartment ${building.id} · ${(DistrictSimulation.constructionProgress(game, building, elapsedMilliseconds: elapsedMilliseconds) * 100).floor()}%',
+              : 'Apartment ${building.id} · ${building.upgrade != null ? 'Upgrade · ' : ''}${(progress * 100).floor()}%',
           style: const TextStyle(
             color: GameColors.ink,
             fontSize: 13,
@@ -582,12 +595,7 @@ class _DistrictPainter extends CustomPainter {
         Paint()..color = GameColors.surface,
       );
       label.paint(canvas, position);
-      if (building.stage != ConstructionStage.ready) {
-        final progress = DistrictSimulation.constructionProgress(
-          game,
-          building,
-          elapsedMilliseconds: elapsedMilliseconds,
-        );
+      if (working) {
         final track = Rect.fromLTWH(
           position.dx - 6,
           position.dy + label.height + 5,

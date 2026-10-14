@@ -2,6 +2,28 @@
 
 The user approved this starter implementation on 2026-10-12. Follow [Economy.md](Economy.md) for the explicit starter catalog and original weekly apartment billing contract. The empty-canvas bootstrap is replaced with a buildable district.
 
+## Apartment upgrades — 2026-10-14
+
+Select a building, then **Upgrade building** beside its title. The menu shows Add floor (10 total), Add basement (3 total), Standard lift (3) and Executive lift (1), with counts, price, time and added upkeep. Review and confirm each purchase. Initial construction must be open first. One upgrade can run per building; an unpaid upgrade can be canceled. Existing business continues during work. The map and building detail display the active job's progress.
+
+The user approved the [upgrade catalog](Economy.md): reuse existing floor/basement rates and times; standard lifts cost 1/4 of the original floor+B1 price, executive lifts 1/2, both take 1 game day and add $40/day upkeep. Lift rent/happiness effects are deferred. Reserve now, pay at the next Noon, start next Morning and complete at the final Noon. Completed work adds upkeep/valuation and available capacity; admissions continue next Morning under total parking capacity. Initial manual opening remains required; upgrades keep already-open buildings open.
+
+Above-ground floors now expand after initial construction, superseding the earlier one-floor restriction and permanent-floor rule. Footprint/roads/rooms-per-floor remain fixed. Floor detail and the fixed toolbar reach all completed floors and B1–B3, skipping zero. Each floor has its own stable room IDs; each basement shows its portion of occupied parking bays. Installed lift modules/counts appear inside the building; exterior artwork remains the approved visual symbol.
+
+Schema 4 adds completed level/lift counts and one upgrade order. Schemas 1/2/3 retain their original one floor/B1, zero lifts, rooms, rent and initial manual-opening state on migration. Limits, room/bay bounds and job state are validated, and transactions protect purchases/catch-up from failed writes and competing requests. Old clients reject schema 4; close older game tabs before reopening the update.
+
+Validation: formatting, analysis, all 68 tests and release Web build pass, including queued completion through every maximum, tax/upkeep, parking-limited admissions across floors, fixed lift quotes, migration, offline parity and rollback/concurrent reservations. UI tests cover phone portrait, landscape and desktop review/cancel/confirm, upper-floor room IDs, B3 navigation and disabled maximums. Asset validation passes 158 resources/124 frames. Android debug compilation is blocked by the missing Android SDK. An isolated ignored in-memory browser fixture verifies actual review/reservation/progress/completion, Floor 2 admissions and portrait/landscape controls without editing production saves.
+
+![Upgrade building beside the apartment title](images/upgrade-button.jpg)
+
+![Upgrade cost, construction time and added upkeep review](images/upgrade-review.jpg)
+
+![Standard and executive lift cards with original-price quotes](images/upgrade-lift-cards.jpg)
+
+Browser review also confirms standard lift completion, unchanged original-price quotes after adding Floor 2, and the installed lift module/count beside the stairs. The temporary review tab and server are closed; the fixture is not shipped.
+
+![Completed standard lift beside the stairs](images/installed-standard-lift.jpg)
+
 ## Player flow
 
 Feedback update on 2026-10-14: phases now last **5 seconds**, giving a **25-second game day**. Construction status labels are short (Queued, Starts tomorrow, Building apartments, Parking queued, Building parking, Ready to open, Open); finance/build/tenant text uses direct player wording. Phase names and the per-game-day economy still follow Rules.md.
@@ -26,7 +48,7 @@ The exterior/progress/opening update passes formatting, analysis and all 50 test
 
 Two fingers now zoom continuously from 50% to 200%, keeping the world point under the moving midpoint anchored. A one-finger drag pans outside placement mode. Pinching during placement restores the previous preview and blocks further drawing until every finger is released. Pinch gestures never pick buildings. The −/+ controls move to the next 25% step from a continuous pinch scale; their original behavior at exact steps is unchanged.
 
-As of 2026-10-14, selecting a building opens a full floor detail in place of the map and its side/bottom panel. Floor 1 shows its room modules and existing tenant actions. Completed B1 shows only parking, with capacity and used/free bays from the saved footprint/occupancy. The fixed bottom toolbar orders Exit building, Go up and Go down beneath a live current-floor label. Floor 1 and B1 connect directly; unavailable directions are disabled. Construction detail remains visible for unfinished buildings, and B1 becomes accessible when parking completes. No extra floor, pricing or save-schema mechanics are introduced. Selection and floor position belong to `DistrictViewModel`; each entry starts at Floor 1 and exit restores the mounted map's zoom/pan. `PROJECTS.md` tracks this iteration and verification.
+Selecting a building opens a full floor detail in place of the map and its side/bottom panel. Each above-ground floor shows its room modules and tenant actions; basements show only parking with per-level capacity/used/free bays. The fixed bottom toolbar orders Exit building, Go up and Go down beneath a live current-floor label. Floor 1 and B1 connect directly; unavailable directions are disabled. Construction detail remains visible for unfinished buildings. Selection and floor position belong to `DistrictViewModel`; each entry starts at Floor 1 and exit restores the mounted map's zoom/pan. Completed upgrades extend available navigation. `PROJECTS.md` tracks this iteration and verification.
 
 Map navigation includes bottom-right **− / +** controls for mouse/touch users. Start at 100%, step by 25 percentage points and disable the relevant button at 50%/200%. The viewport centre remains on the same world point after zooming. Terrain, roads, buildings, previews and picking share one scaled projection. Button clicks never draw land or select a building. Camera zoom/pan belong to a presentation view model and last for the current district screen session; they are not game-save data. Center map clears panning while keeping the chosen zoom.
 
@@ -66,6 +88,6 @@ On 2026-10-12, formatting, Flutter analysis and all **28 tests** passed. Coverag
 
 Browser review on the local Web build confirmed saved-profile reload, elapsed-time catch-up, the running calendar, fast-drag 2 × 4 planning, six derived rooms, sixteen B1 bays, the $20,000 quote, complete-quote reservation and automatic roads. The original fast-drag selection issue was corrected using pointer release coordinates. Construction markers retain their source aspect ratio, and the selected ground outline renders beneath the actual one-floor exterior. A prepared in-memory operational fixture was inspected for geometry/room composition; it is not seeded into real games. No Android device was available for execution.
 
-Production publication and hosting checks are recorded in [Deployment.md](Deployment.md). The complete hotel/office/F&B and upgrade systems remain outside this explicitly approved starter release. Audio integration is still pending.
+Production publication and hosting checks are recorded in [Deployment.md](Deployment.md). Hotel/office/F&B, luxury and lift happiness effects remain future work. Apartment floor/basement/lift upgrades are now implemented. Audio integration is still pending.
 
 ![Deployed apartment starter after confirming the occupied plot and road ring](images/gameplay-starter.png)

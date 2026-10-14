@@ -23,6 +23,184 @@ void main() {
     const Size(844, 390),
     const Size(1440, 900),
   ]) {
+    testWidgets('upgrade review, reservation and cancellation at $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final database = (await tester.runAsync(openNewInMemoryDatabase))!;
+      final state = DistrictGame(
+        watermark: DateTime.now().millisecondsSinceEpoch,
+        nextBuildingId: 2,
+        buildings: [
+          ApartmentBuilding(
+            id: 1,
+            footprint: const Footprint(3, 3, 2, 2),
+            stage: ConstructionStage.ready,
+            occupied: {0},
+          ),
+        ],
+      );
+      await tester.runAsync(
+        () => GameRepository.store.record('1').put(database, state.toJson()),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildGameTheme(),
+          home: DistrictScreen(
+            profile: localProfile,
+            repository: GameRepository(open: () async => database),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+      await tester.tapAt(
+        map.topLeft + MapProjection(map.size, Offset.zero).point(4, 4),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Upgrade building'));
+      await tester.pumpAndSettle();
+      expect(find.text('Apartment 1 · Upgrades'), findsOneWidget);
+      expect(find.text('1 / 10'), findsOneWidget);
+      expect(find.text('1 / 3'), findsOneWidget);
+      expect(find.text('0 / 3'), findsOneWidget);
+      expect(find.text('0 / 1'), findsOneWidget);
+      final floorCard = find.byKey(const ValueKey('upgrade-floor'));
+      final review = find.descendant(
+        of: floorCard,
+        matching: find.text('Review upgrade'),
+      );
+      await tester.ensureVisible(review);
+      await tester.tap(review);
+      await tester.pumpAndSettle();
+      expect(find.text(r'Price: $8,000.00'), findsOneWidget);
+      expect(find.text(r'Added upkeep: $40.00 / day'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      final untouched = (await tester.runAsync(
+        () => GameRepository.store.record('1').get(database),
+      ))!;
+      expect(DistrictGame.fromJson(untouched).reserved, 0);
+      await tester.tap(review);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Confirm upgrade'));
+      await tester.pumpAndSettle();
+      expect(find.text('Add floor · Queued'), findsOneWidget);
+      final source = (await tester.runAsync(
+        () => GameRepository.store.record('1').get(database),
+      ))!;
+      final reserved = DistrictGame.fromJson(source);
+      expect(reserved.balance, state.balance);
+      expect(reserved.reserved, 800000);
+      expect(reserved.buildings.single.upgrade!.kind, BuildingUpgrade.floor);
+      await tester.ensureVisible(find.text('Cancel unpaid upgrade'));
+      await tester.tap(find.text('Cancel unpaid upgrade'));
+      await tester.pumpAndSettle();
+      expect(find.text('Add floor · Queued'), findsNothing);
+      final canceled = (await tester.runAsync(
+        () => GameRepository.store.record('1').get(database),
+      ))!;
+      expect(DistrictGame.fromJson(canceled).reserved, 0);
+      await tester.ensureVisible(find.text('Back to floors'));
+      await tester.tap(find.text('Back to floors'));
+      await tester.pumpAndSettle();
+      expect(find.text('Upgrade building'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      await tester.runAsync(database.close);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets(
+      'upgraded floors show separate rooms, basement counts and maximums at $size',
+      (tester) async {
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final database = (await tester.runAsync(openNewInMemoryDatabase))!;
+        final state = DistrictGame(
+          watermark: DateTime.now().millisecondsSinceEpoch,
+          nextBuildingId: 2,
+          buildings: [
+            ApartmentBuilding(
+              id: 1,
+              footprint: const Footprint(3, 3, 2, 2),
+              stage: ConstructionStage.ready,
+              aboveGroundFloors: 10,
+              undergroundFloors: 3,
+              standardLifts: 3,
+              executiveLifts: 1,
+              occupied: {0, 3, 29},
+            ),
+          ],
+        );
+        await tester.runAsync(
+          () => GameRepository.store.record('1').put(database, state.toJson()),
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildGameTheme(),
+            home: DistrictScreen(
+              profile: localProfile,
+              repository: GameRepository(open: () async => database),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+        await tester.tapAt(
+          map.topLeft + MapProjection(map.size, Offset.zero).point(4, 4),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Go up'));
+        await tester.pumpAndSettle();
+        expect(find.text('Current floor: Floor 2'), findsOneWidget);
+        expect(find.text('Room 4'), findsOneWidget);
+        expect(find.text('Room 1'), findsNothing);
+        for (var i = 0; i < 8; i++) {
+          await tester.tap(find.text('Go up'));
+          await tester.pump();
+        }
+        expect(find.text('Current floor: Floor 10'), findsOneWidget);
+        expect(find.text('Room 30'), findsOneWidget);
+        expect(
+          tester
+              .widget<FilledButton>(find.widgetWithText(FilledButton, 'Go up'))
+              .onPressed,
+          isNull,
+        );
+        await tester.tap(find.text('Upgrade building'));
+        await tester.pumpAndSettle();
+        expect(find.text('Maximum reached'), findsNWidgets(4));
+        for (final button in tester.widgetList<FilledButton>(
+          find.widgetWithText(FilledButton, 'Maximum reached'),
+        )) {
+          expect(button.onPressed, isNull);
+        }
+        for (var i = 0; i < 12; i++) {
+          await tester.tap(find.text('Go down'));
+          await tester.pump();
+        }
+        expect(find.text('Current floor: B3'), findsOneWidget);
+        expect(find.text('B3 · Parking only'), findsOneWidget);
+        expect(find.text('Room 30'), findsNothing);
+        expect(
+          tester
+              .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'Go down'),
+              )
+              .onPressed,
+          isNull,
+        );
+        await tester.pumpWidget(const SizedBox());
+        await tester.runAsync(database.close);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('completed building waits for manual opening at $size', (
       tester,
     ) async {

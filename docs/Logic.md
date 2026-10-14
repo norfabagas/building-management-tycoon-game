@@ -10,12 +10,16 @@ The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements
 - **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
 - **Road layout:** Tracks generated road segments outside building footprints. A confirmed occupied construction plot creates its surrounding road automatically; compatible shared segments are represented once. Road layout is part of full local game state, not profile metadata.
 - **Building:** Attributes include `id`, `type`, `luxuryLevel`, `parkingQuota` (calculated from underground levels). 
-  - **Immutable Attributes:** `footprintWidth`, `footprintLength`, `aboveGroundFloors`, `roomsPerFloor`, `gridCoordinates`.
+  - **Immutable Attributes:** `footprintWidth`, `footprintLength`, `roomsPerFloor`, `gridCoordinates`.
   - **Upgradeable Attributes:** 
+    - `aboveGroundFloors`: Starts at 1; add floors up to 10 total (2026-10-14 user override of permanent floors).
     - `undergroundFloors`: Starts at 0, upgradable up to a max of 3. Strictly dedicated to Parking.
     - `standardLifts`: Starts at 0, upgradable up to a max of 3.
     - `executiveLifts`: Starts at 0, upgradable up to a max of 1.
     - `hasStairs`: `true` by default.
+  - **Upgrade order:** One optional kind/stage/start-day per building. Reserve through `orderUpgrade`, debit at the next Noon, start next Morning, and increment the completed count at the final Noon (2 days for floors, 1 for basements/lifts). Existing business remains open. Price comes from `BuildingUpgrade`: floors/basements use the footprint rate, lifts use 1/4 or 1/2 of the immutable original floor+B1 quote. Each upgrade adds $40/day upkeep when completed and its paid cost to valuation. Lift rent/happiness effects are deferred by user approval.
+  - **Capacity and navigation:** Completed floors multiply rooms per floor, completed basements multiply bays per basement. Stable zero-based room IDs span floors; admissions scan all rooms but never exceed free total parking or daily admissions. Per-basement parking use is allocated from B1 downward. Navigate completed levels only, skipping zero.
+  - **Schema 4:** Persist completed counts and upgrade order in the existing local transaction. Read schemas 1/2/3 as one floor/B1 and zero lifts with no pending upgrade, preserving construction stage, tenants and ledger. Reject invalid caps, room/bay bounds or order state; older clients reject schema 4. Initial manual opening and clock migrations remain in force.
 - **Floor:** Represents a vertical level (can be negative for underground). Contains a list of `Room`/`Facility` objects.
 - **Room/Facility:** The usable space. Attributes vary heavily by building type.
 - **Persistence:** All state models are serialized strictly to local storage into one of the 5 profile slots.
@@ -35,7 +39,7 @@ The player's Dollar balance is strictly updated on a daily basis. Throughout the
   - *Office Tower Logic:* `Daily Revenue = Floors Rented * Floor Rate * synergyModifier`. (Floors Rented constrained by `parkingQuota`).
   - *F&B Logic:* `Daily Revenue = Simulated Sales per Phase * Item Price * synergyModifier`. (Sales traffic constrained by `parkingQuota`).
   - *Parking Logic:* Daily tenant-bay fees plus per-admitted-visit fees. Reserve tenant bays first; cap simultaneous visitor admissions by remaining bays. Phase turnover can produce more daily visits than physical bays without exceeding simultaneous capacity. Apartment parking still pays daily.
-- **Maintenance Logic:** Starter apartments use $40 per completed floor plus $40 per completed basement daily. Other type/lift/luxury coefficients remain unfinished.
+- **Maintenance Logic:** Apartments use $40 per completed floor, basement, standard lift and executive lift daily. Other type/luxury coefficients remain unfinished.
 - **Tax Logic:** `Tax = 0.0005 * completedBuildingValuation + 0.02 * CashGross`, with valuation/revenue components separately rounded to cents. Apartment pending rent is excluded from cash gross until Sunday; daily valuation tax and upkeep continue throughout the week.
 
 ### Apartment billing and save state

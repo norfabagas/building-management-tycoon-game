@@ -98,7 +98,7 @@ The reference uses Trebuchet MS. No redistributable application font file was su
 
 ## Next implementation gates
 
-The approved apartment starter catalog and selected Relaxed idle rules are implemented; see [Economy.md](Economy.md) and [Gameplay.md](Gameplay.md). Hotel/office/F&B prices and demand, lift/happiness formulas, additional parking/luxury upgrades, synergy, unlocks, achievements and decorations still need their catalogs. These features are unavailable in the starter UI. Above-ground sizing stays immutable; universal future limits remain three parking basements, three standard lifts and one executive lift. Offices will lease whole floors.
+The approved apartment catalog and selected Relaxed idle rules are implemented; see [Economy.md](Economy.md) and [Gameplay.md](Gameplay.md). The 2026-10-14 upgrade release supports 10 total above-ground floors, 3 parking basements, 3 standard lifts and 1 executive lift. The footprint and rooms per floor stay immutable. Schema 4 persists upgrades; schemas 1/2/3 migrate transactionally with their prior rooms, rent and opening state. Hotel/office/F&B prices and demand, happiness effects, luxury, synergy, unlocks, achievements and decorations remain future work. Offices will lease whole floors.
 
 Every implementation change must update the documentation and retain these constraints.
 
