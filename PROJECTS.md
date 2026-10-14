@@ -15,9 +15,13 @@ Flutter/Dart targets Android and Web, portrait and landscape, with MVVM and five
 - Save schema 4 persists level/lift counts and the single upgrade order (kind/stage/start day) atomically with money and time. Schemas 1/2/3 migrate with the original one floor/B1 and zero lifts, preserving occupancy, rent and initial manual-opening state. Older clients cannot read schema 4. Validate limits, order state and room/parking bounds before accepting snapshots. Purchases are revalidated in the repository transaction.
 - Formatting, Flutter analysis, all 68 tests and the release Web build pass (201 offline resources). The unchanged asset catalog validates all 158 resources/124 frames. Tests cover every cap through real queued jobs, reservation/cancellation/payment timing, fixed lift prices, completion upkeep/valuation, stable upper-floor room IDs, parking caps, migration, offline parity, rollback/concurrent orders and responsive UI at 390×844, 844×390 and 1440×900. Android debug compilation was attempted and remains blocked by the missing SDK. Browser review on an ignored in-memory fixture confirms the title-row button, review, reservation, live progress, completion and Floor 2 admissions/navigation in portrait, plus the landscape layout. Evidence: `docs/images/upgrade-button.jpg`, `upgrade-review.jpg`, `upgrade-progress-portrait.jpg`, `upgraded-floor-2.jpg`, `upgrade-button-landscape.jpg` and `upgrade-lift-cards.jpg`. Production saves were not edited.
 
-## Building floor navigation — 2026-10-14
-
 The upgrade browser review also confirmed one standard lift completing with the same original-price quote after a floor upgrade, its saved count increasing, and the approved lift module appearing beside the stairs. Evidence: `docs/images/installed-standard-lift.jpg`. The temporary review tab is closed and the review server stopped; no fixture data is shipped.
+
+Source `75c21ac` is pushed to GitHub and published as Netlify deploy `6acf15edceedcc9c7df1de50`. The connector confirms current/ready. Live JavaScript matches the tested release (`1FEDCF3FC30A891C6F514C69D2138133BB2A70D11819E30BED6F7FC8437EE773`); the offline manifest returns HTTP 200 with 201 resources. See Deployment.md. Close older game tabs and reopen without clearing site storage to activate the update.
+
+Earlier iterations below retain their validation history; the current upgrade contract above supersedes their one-floor restriction.
+
+## Building floor navigation — 2026-10-14
 
 - Selecting an existing building on the map or district list replaces the map area with that building's floor detail. New construction confirmation opens the same detail with its real construction status.
 - Enter on Floor 1. Show only its rooms; room management retains its saved occupancy and pending-rent behavior. B1 shows parking artwork and actual capacity/used/free bay counts, without tenant rooms.

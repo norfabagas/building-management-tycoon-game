@@ -1,5 +1,19 @@
 # Netlify Web deployment
 
+## Apartment floors, basements and lifts — 2026-10-14
+
+Source [`75c21ac`](https://github.com/norfabagas/building-management-tycoon-game/commit/75c21ac) adds **Upgrade building** beside the apartment title, cost/upkeep/time review, queued upgrades up to 10 floors, 3 basements, 3 standard lifts and 1 executive lift, construction progress, expanded per-floor room/parking detail and schema 4 migration. The user approved level rates/times and lift prices/upkeep/installation, with rent/happiness effects deferred. See Economy.md for the exact catalog. Existing businesses stay open while upgrading; initial manual opening remains required.
+
+- Source pushed to `origin/main`; GitHub connector credentials also verified for the repository owner.
+- Published by CLI to https://bmt.niceblue.biz.id as deploy [`6acf15edceedcc9c7df1de50`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acf15edceedcc9c7df1de50). The connector confirms current/ready.
+- Live `main.dart.js` returns HTTP 200 and matches the tested release SHA-256: `1FEDCF3FC30A891C6F514C69D2138133BB2A70D11819E30BED6F7FC8437EE773`.
+- Live offline manifest returns HTTP 200 with 201 resources. No backend, credentials or fixture data are included in the build. Git-based hosting remains unconnected; future pushes alone do not deploy.
+- The published release launches successfully in the browser on its isolated deploy-permalink origin, showing all five local slots. This startup check created no game data; the temporary tab is closed.
+- Formatting, analysis, all 68 tests, asset validation (158 resources/124 frames) and release Web build pass. Android debug compilation remains blocked by the missing SDK; no Android device validation is claimed.
+- Browser review used an ignored in-memory localhost fixture to verify review/reservation/payment/progress/completion, Floor 2 admissions/navigation, unchanged original-price lift quotes after floor expansion, installed standard lift artwork/count and portrait/landscape controls. That tab and server are closed; production player saves were not edited. Gameplay.md links the evidence.
+
+Close older game tabs and reopen to activate the new code/cache without clearing site storage. Older clients cannot read schema 4. Schemas 1/2/3 migrate inside the existing local transaction and retain prior rooms, rent and initial opening state.
+
 ## Approved building art, progress and manual opening — 2026-10-14
 
 Source [`1f1afac`](https://github.com/norfabagas/building-management-tycoon-game/commit/1f1afac) uses the approved apartment exterior image directly, adds map/detail construction bars and percentages, and requires **Open to Business** after both jobs finish. Schema 3 preserves already-open buildings while preventing older clients from automatically opening completed-but-closed construction. Admissions still begin at the next Morning after opening; prices, capacity, five-second phases and other financial rules are unchanged.
