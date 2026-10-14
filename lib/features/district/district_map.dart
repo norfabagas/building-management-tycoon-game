@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -22,12 +21,14 @@ class DistrictMap extends StatefulWidget {
     this.selected,
     this.reset = 0,
     this.onCancelFootprint,
+    this.elapsedMilliseconds = 0,
   });
   final DistrictGame game;
   final bool drawing;
   final Footprint? preview;
   final int? selected;
   final int reset;
+  final int elapsedMilliseconds;
   final ValueChanged<Footprint> onFootprint;
   final VoidCallback? onCancelFootprint;
   final ValueChanged<int> onSelect;
@@ -67,8 +68,7 @@ class _DistrictMapState extends State<DistrictMap> {
   static Future<Map<String, ui.Image>> _loadImages() async {
     final paths = [
       ProductionAssets.tilesLand,
-      ProductionAssets.buildingsApartmentLobby,
-      ProductionAssets.buildingsApartmentRoof,
+      ProductionAssets.buildingsApartment,
       ProductionAssets.buildingsConstructionFenced,
       ProductionAssets.buildingsConstructionFrame,
       for (var i = 0; i < 16; i++)
@@ -206,8 +206,15 @@ class _DistrictMapState extends State<DistrictMap> {
                   onTapUp: (details) {
                     final cell = projection.cellAt(details.localPosition);
                     if (!widget.drawing && !_hadMultiTouch) {
-                      for (final building in widget.game.buildings.reversed) {
-                        if (building.footprint.contains(cell)) {
+                      for (final building in _depthSorted(
+                        widget.game,
+                      ).reversed) {
+                        final facadeHit =
+                            building.shellComplete &&
+                            projection
+                                .buildingRect(building.footprint)
+                                .contains(details.localPosition);
+                        if (facadeHit || building.footprint.contains(cell)) {
                           widget.onSelect(building.id);
                           break;
                         }
@@ -228,6 +235,7 @@ class _DistrictMapState extends State<DistrictMap> {
                               _images,
                               widget.preview,
                               widget.selected,
+                              widget.elapsedMilliseconds,
                             ),
                           ),
                         ),
@@ -369,7 +377,33 @@ class MapProjection {
     ].map((p) => p - Offset(0, lift)).toList();
     return Path()..addPolygon(points, true);
   }
+
+  /// The approved 512-square exterior is centred on the plot and bottom anchored.
+  Rect buildingRect(Footprint site) {
+    final bounds = footprint(site).getBounds();
+    return Rect.fromLTWH(
+      bounds.left,
+      bounds.bottom - bounds.width,
+      bounds.width,
+      bounds.width,
+    );
+  }
 }
+
+List<ApartmentBuilding> _depthSorted(DistrictGame game) =>
+    game.buildings.toList()..sort(
+      (a, b) =>
+          (a.footprint.x +
+                  a.footprint.y +
+                  a.footprint.width +
+                  a.footprint.length)
+              .compareTo(
+                b.footprint.x +
+                    b.footprint.y +
+                    b.footprint.width +
+                    b.footprint.length,
+              ),
+    );
 
 class _DistrictPainter extends CustomPainter {
   _DistrictPainter(
@@ -378,12 +412,14 @@ class _DistrictPainter extends CustomPainter {
     this.images,
     this.preview,
     this.selected,
+    this.elapsedMilliseconds,
   );
   final DistrictGame game;
   final MapProjection projection;
   final Map<String, ui.Image> images;
   final Footprint? preview;
   final int? selected;
+  final int elapsedMilliseconds;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -457,20 +493,7 @@ class _DistrictPainter extends CustomPainter {
         }
       }
     }
-    final buildings = game.buildings.toList()
-      ..sort(
-        (a, b) =>
-            (a.footprint.x +
-                    a.footprint.y +
-                    a.footprint.width +
-                    a.footprint.length)
-                .compareTo(
-                  b.footprint.x +
-                      b.footprint.y +
-                      b.footprint.width +
-                      b.footprint.length,
-                ),
-      );
+    final buildings = _depthSorted(game);
     for (final building in buildings) {
       final site = building.footprint;
       final path = projection.footprint(site);
@@ -485,7 +508,7 @@ class _DistrictPainter extends CustomPainter {
         );
       }
       if (building.shellComplete &&
-          images.containsKey(ProductionAssets.buildingsApartmentLobby)) {
+          images.containsKey(ProductionAssets.buildingsApartment)) {
         _apartment(canvas, site);
       } else {
         canvas.drawPath(
@@ -533,7 +556,9 @@ class _DistrictPainter extends CustomPainter {
       );
       final label = TextPainter(
         text: TextSpan(
-          text: 'Apartment ${building.id}',
+          text: building.stage == ConstructionStage.ready
+              ? 'Apartment ${building.id}'
+              : 'Apartment ${building.id} · ${(DistrictSimulation.constructionProgress(game, building, elapsedMilliseconds: elapsedMilliseconds) * 100).floor()}%',
           style: const TextStyle(
             color: GameColors.ink,
             fontSize: 13,
@@ -557,6 +582,37 @@ class _DistrictPainter extends CustomPainter {
         Paint()..color = GameColors.surface,
       );
       label.paint(canvas, position);
+      if (building.stage != ConstructionStage.ready) {
+        final progress = DistrictSimulation.constructionProgress(
+          game,
+          building,
+          elapsedMilliseconds: elapsedMilliseconds,
+        );
+        final track = Rect.fromLTWH(
+          position.dx - 6,
+          position.dy + label.height + 5,
+          label.width + 12,
+          8,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(track, const Radius.circular(4)),
+          Paint()..color = GameColors.border,
+        );
+        if (progress > 0) {
+          canvas.drawRRect(
+            RRect.fromRectAndRadius(
+              Rect.fromLTWH(
+                track.left,
+                track.top,
+                track.width * progress,
+                track.height,
+              ),
+              const Radius.circular(4),
+            ),
+            Paint()..color = GameColors.primary,
+          );
+        }
+      }
     }
     if (preview case final site?) {
       final valid = DistrictSimulation.placementError(game, site) == null;
@@ -586,90 +642,15 @@ class _DistrictPainter extends CustomPainter {
     }
   }
 
-  /// Map approved roof/facade textures onto the actual saved rectangular site.
+  /// Reuse the approved exterior without remapping or distorting its artwork.
   void _apartment(Canvas canvas, Footprint site) {
-    final floorHeight = projection.tile * .55;
-    final top = projection.point(site.x, site.y);
-    final right = projection.point(site.x + site.width, site.y);
-    final front = projection.point(site.x + site.width, site.y + site.length);
-    final left = projection.point(site.x, site.y + site.length);
-    final lift = Offset(0, floorHeight);
-    final lobby = images[ProductionAssets.buildingsApartmentLobby]!;
-    _surface(
-      canvas,
-      lobby,
-      [left - lift, front - lift, front, left],
-      const [Offset(8, 68), Offset(128, 128), Offset(128, 176), Offset(8, 116)],
+    final image = images[ProductionAssets.buildingsApartment]!;
+    canvas.drawImageRect(
+      image,
+      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      projection.buildingRect(site),
+      Paint()..filterQuality = FilterQuality.medium,
     );
-    _surface(
-      canvas,
-      lobby,
-      [front - lift, right - lift, right, front],
-      const [
-        Offset(128, 128),
-        Offset(248, 68),
-        Offset(248, 116),
-        Offset(128, 176),
-      ],
-    );
-    final roof = images[ProductionAssets.buildingsApartmentRoof];
-    if (roof != null) {
-      _surface(
-        canvas,
-        roof,
-        [top - lift, right - lift, front - lift, left - lift],
-        const [
-          Offset(128, 8),
-          Offset(248, 68),
-          Offset(128, 128),
-          Offset(8, 68),
-        ],
-      );
-    }
-  }
-
-  void _surface(
-    Canvas canvas,
-    ui.Image image,
-    List<Offset> target,
-    List<Offset> source,
-  ) {
-    final vertices = ui.Vertices(
-      ui.VertexMode.triangles,
-      target,
-      textureCoordinates: source,
-      indices: const [0, 1, 2, 0, 2, 3],
-    );
-    canvas.drawVertices(
-      vertices,
-      BlendMode.srcOver,
-      Paint()
-        ..shader = ImageShader(
-          image,
-          TileMode.clamp,
-          TileMode.clamp,
-          Float64List.fromList([
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-          ]),
-          filterQuality: FilterQuality.low,
-        ),
-    );
-    vertices.dispose();
   }
 
   @override
@@ -680,5 +661,6 @@ class _DistrictPainter extends CustomPainter {
       oldDelegate.projection.pan != projection.pan ||
       oldDelegate.projection.zoom != projection.zoom ||
       oldDelegate.preview != preview ||
-      oldDelegate.selected != selected;
+      oldDelegate.selected != selected ||
+      oldDelegate.elapsedMilliseconds != elapsedMilliseconds;
 }

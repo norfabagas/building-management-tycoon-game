@@ -32,7 +32,7 @@ Implementation and save behavior are recorded in [Gameplay.md](Gameplay.md).
 - At Noon, settle each queued purchase once: `balanceAfter = balanceBefore + cashGross - maintenance - tax - queuedPurchaseCosts`. Keep purchase costs separate from operating net in the finance statement.
 - Construction begins at the next Morning after payment. The starter shell takes **2 game days**, followed by a separate **1-day B1 parking job**. The starter quote includes both jobs so the initial purchase can become usable.
 - When successful placement turns empty land into an occupied construction site, automatically generate the approved free one-tile surrounding road. Road space is outside the footprint and does not increase room or parking capacity. It causes no wallet debit.
-- Underground levels start at zero when the shell finishes. No occupancy is possible without completed parking. Completed buildings/upgrades become operational at the following Morning; they do not earn a full day's income from a partial day.
+- Underground levels start at zero when the shell finishes. No occupancy is possible without completed parking. As requested on 2026-10-14, completed apartments wait for the player's **Open to Business** action. Admissions begin at the following Morning; no rent accrual or parking income before opening/admission. Completed upkeep and valuation taxes continue while closed. No opening fee or refund is added.
 - Release reservations if an unpaid order is canceled. Refunds after payment remain an open policy; do not implement them implicitly.
 - Operating losses may make the balance negative. Keep simulation running and block purchases when available funds are zero. No automatic loans, grants or gem-to-dollar conversions.
 

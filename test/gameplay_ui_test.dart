@@ -23,6 +23,72 @@ void main() {
     const Size(844, 390),
     const Size(1440, 900),
   ]) {
+    testWidgets('completed building waits for manual opening at $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final database = (await tester.runAsync(openNewInMemoryDatabase))!;
+      final repository = GameRepository(open: () async => database);
+      const site = Footprint(3, 3, 2, 2);
+      final state = DistrictGame(
+        watermark: DateTime.now().millisecondsSinceEpoch,
+        nextBuildingId: 2,
+        buildings: [
+          ApartmentBuilding(
+            id: 1,
+            footprint: site,
+            stage: ConstructionStage.parkingDone,
+          ),
+        ],
+      );
+      await tester.runAsync(
+        () => GameRepository.store.record('1').put(database, state.toJson()),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildGameTheme(),
+          home: DistrictScreen(profile: localProfile, repository: repository),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+      final projection = MapProjection(map.size, Offset.zero);
+      final art = projection.buildingRect(site);
+      final facade = Offset(art.center.dx, art.top + art.height * .25);
+      expect(site.contains(projection.cellAt(facade)), isFalse);
+      await tester.tapAt(map.topLeft + facade);
+      await tester.pumpAndSettle();
+      expect(find.text('Construction · 100%'), findsOneWidget);
+      expect(
+        tester
+            .widget<LinearProgressIndicator>(
+              find.byKey(const ValueKey('construction-progress')),
+            )
+            .value,
+        1,
+      );
+      expect(find.text('Room 1'), findsNothing);
+      await tester.ensureVisible(find.text('Open to Business'));
+      await tester.tap(find.text('Open to Business'));
+      await tester.pumpAndSettle();
+      expect(find.text('Open to Business'), findsNothing);
+      expect(find.text('Open'), findsOneWidget);
+      expect(find.text('Room 1'), findsOneWidget);
+      final saved = (await tester.runAsync(
+        () => GameRepository.store.record('1').get(database),
+      ))!;
+      final opened = DistrictGame.fromJson(saved);
+      expect(opened.buildings.single.stage, ConstructionStage.ready);
+      expect(opened.buildings.single.occupied, isEmpty);
+      expect(opened.balance, state.balance);
+      await tester.pumpWidget(const SizedBox());
+      await tester.runAsync(database.close);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('building floor navigation replaces map at $size', (
       tester,
     ) async {
@@ -175,6 +241,8 @@ void main() {
         expect(saved.reserved, 1000000);
         expect(saved.roads.length, 12);
         expect(find.text('Queued'), findsOneWidget);
+        expect(find.text('Construction · 0%'), findsOneWidget);
+        expect(find.text('Open to Business'), findsNothing);
         await tester.ensureVisible(find.text('Cancel unpaid order'));
         await tester.tap(find.text('Cancel unpaid order'));
         await tester.pumpAndSettle();

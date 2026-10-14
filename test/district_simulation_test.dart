@@ -44,36 +44,108 @@ void main() {
     expect(state.balance, 2000000);
   });
 
-  test(
-    'shell lasts two days, then B1 one; no tenants before following Morning',
-    () {
-      final state = DistrictGame(watermark: 0);
-      DistrictSimulation.place(state, const Footprint(0, 0, 2, 4));
-      at(state, 2);
-      final building = state.buildings.single;
-      expect(building.stage, ConstructionStage.shell);
-      at(state, 2, GamePhase.noon);
-      expect(building.stage, ConstructionStage.shell);
-      expect(building.occupied, isEmpty);
-      at(state, 3, GamePhase.noon);
-      expect(building.stage, ConstructionStage.shellDone);
-      expect(building.valuation, 1600000);
-      expect(state.statement!.maintenance, 4000);
-      expect(state.statement!.tax, 800);
-      at(state, 4);
-      expect(building.stage, ConstructionStage.basement);
-      at(state, 4, GamePhase.noon);
-      expect(building.stage, ConstructionStage.parkingDone);
-      expect(building.occupied, isEmpty);
-      at(state, 5);
-      expect(building.stage, ConstructionStage.ready);
-      expect(building.occupied.length, 2);
-      at(state, 6);
-      expect(building.occupied.length, 4);
-      at(state, 7);
-      expect(building.occupied.length, 6);
-    },
-  );
+  test('shell lasts two days, then B1 one; opening is manual before Morning admissions', () {
+    final state = DistrictGame(watermark: 0);
+    DistrictSimulation.place(state, const Footprint(0, 0, 2, 4));
+    at(state, 2);
+    final building = state.buildings.single;
+    expect(building.stage, ConstructionStage.shell);
+    at(state, 2, GamePhase.noon);
+    expect(building.stage, ConstructionStage.shell);
+    expect(building.occupied, isEmpty);
+    at(state, 3, GamePhase.noon);
+    expect(building.stage, ConstructionStage.shellDone);
+    expect(building.valuation, 1600000);
+    expect(state.statement!.maintenance, 4000);
+    expect(state.statement!.tax, 800);
+    at(state, 4);
+    expect(building.stage, ConstructionStage.basement);
+    at(state, 4, GamePhase.noon);
+    expect(building.stage, ConstructionStage.parkingDone);
+    expect(building.occupied, isEmpty);
+    at(state, 5);
+    expect(building.stage, ConstructionStage.parkingDone);
+    expect(building.occupied, isEmpty);
+    DistrictSimulation.openBusiness(state, building.id);
+    expect(building.stage, ConstructionStage.ready);
+    expect(building.occupied, isEmpty);
+    at(state, 6);
+    expect(building.occupied.length, 2);
+    at(state, 7);
+    expect(building.occupied.length, 4);
+    at(state, 8);
+    expect(building.occupied.length, 6);
+  });
+
+  test('construction progress follows both jobs and stays at 100 while awaiting opening', () {
+    final state = DistrictGame(watermark: 0);
+    DistrictSimulation.place(state, const Footprint(0, 0, 2, 4));
+    final building = state.buildings.single;
+    expect(DistrictSimulation.constructionProgress(state, building), 0);
+    at(state, 2);
+    expect(DistrictSimulation.constructionProgress(state, building), 0);
+    final moving = DistrictSimulation.constructionProgress(
+      state,
+      building,
+      elapsedMilliseconds: 2500,
+    );
+    expect(moving, closeTo(.5 / 9 * 2 / 3, .00001));
+    at(state, 3, GamePhase.noon);
+    expect(
+      DistrictSimulation.constructionProgress(state, building),
+      closeTo(2 / 3, .00001),
+    );
+    at(state, 4);
+    expect(
+      DistrictSimulation.constructionProgress(state, building),
+      closeTo(2 / 3, .00001),
+    );
+    at(state, 4, GamePhase.afternoon);
+    expect(
+      DistrictSimulation.constructionProgress(state, building),
+      closeTo(5 / 6, .00001),
+    );
+    expect(
+      DistrictSimulation.constructionProgress(
+        state,
+        building,
+        elapsedMilliseconds: 60000,
+      ),
+      lessThan(1),
+    );
+    at(state, 4, GamePhase.noon);
+    expect(DistrictSimulation.constructionProgress(state, building), 1);
+    at(state, 20);
+    expect(building.stage, ConstructionStage.parkingDone);
+    expect(building.occupied, isEmpty);
+    expect(state.pendingRent, 0);
+    expect(state.earned, 0);
+    expect(DistrictSimulation.constructionProgress(state, building), 1);
+  });
+
+  test('opening rejects incomplete construction and is idempotent after completion', () {
+    final state = DistrictGame(watermark: 0);
+    DistrictSimulation.place(state, const Footprint(0, 0, 2, 4));
+    final before = state.toJson();
+    expect(
+      () => DistrictSimulation.openBusiness(state, 1),
+      throwsA(isA<GameplayException>()),
+    );
+    expect(state.toJson(), before);
+    at(state, 4, GamePhase.noon);
+    final balance = state.balance;
+    DistrictSimulation.openBusiness(state, 1);
+    expect(state.balance, balance);
+    expect(state.buildings.single.occupied, isEmpty);
+    final opened = state.toJson();
+    DistrictSimulation.openBusiness(state, 1);
+    expect(state.toJson(), opened);
+    at(state, 5);
+    expect(state.buildings.single.occupied.length, 2);
+    at(state, 5, GamePhase.noon);
+    expect(state.statement!.parking, 2000);
+    expect(state.pendingRent, 24000);
+  });
 
   test(
     'daily parking and costs, rent collected Sunday including Sunday accrual',

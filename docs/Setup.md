@@ -1,5 +1,13 @@
 # Project setup
 
+## Approved exterior and manual opening validation — 2026-10-14
+
+The map now uses the approved apartment image directly, with matching facade/ground picking. Construction has map/detail progress bars and percentages; completed buildings wait for **Open to Business**, with admissions at the next Morning after the action. Schema 3 preserves already-open schema 1/2 buildings and keeps completed-but-closed buildings closed through offline catch-up.
+
+Formatting, Flutter analysis and all 50 tests pass. Coverage includes rectangular-plot sprite geometry, facade picking, progress across both jobs, manual opening at three viewport sizes, premature/repeated opening, old-save behavior, rollback and unchanged economy/clock/zoom flows. The unchanged asset catalog passes all 158 assets/124 frames. Release Web output includes 201 offline resources. Android debug compilation was attempted and is still blocked by the missing Android SDK.
+
+An ignored in-memory browser fixture checked approved exteriors, moving construction progress, completion holding at 100% for several game days, the manual opening action, and the portrait button layout. Review data never touched production saves; fixture code is not the production entry point. Screenshots are linked in Gameplay.md. Physical Android/device execution remains unverified.
+
 ## Pacing and pinch validation — 2026-10-14
 
 The feedback update uses 5-second phases and a 25-second day, concise status copy and continuous focal-point pinch zoom. Formatting, Flutter analysis and all 43 tests pass; the final targeted repository and multi-pointer gesture checks also pass. The Web build includes 201 offline resources. Browser review on an isolated localhost origin confirmed the faster running calendar, shorter construction labels and normal 2 × 4 mouse placement/cost review. Pinch behavior was verified with simulated two-finger Flutter events; physical-device pinch was not tested. Android debug compilation was attempted again and remains blocked by the missing Android SDK.

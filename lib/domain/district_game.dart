@@ -233,7 +233,7 @@ class DistrictGame {
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': 2,
+    'version': 3,
     'catalog': 1,
     'phaseMilliseconds': phaseMilliseconds,
     'watermark': watermark,
@@ -248,7 +248,9 @@ class DistrictGame {
     'statement': statement?.toJson(),
   };
   factory DistrictGame.fromJson(Map<String, dynamic> json) {
-    if ((json['version'] != 1 && json['version'] != 2) ||
+    if ((json['version'] != 1 &&
+            json['version'] != 2 &&
+            json['version'] != 3) ||
         json['catalog'] != 1) {
       throw const FormatException('Unsupported game save');
     }
@@ -302,6 +304,37 @@ class GameplayException implements Exception {
 }
 
 abstract final class DistrictSimulation {
+  /// Completed work: the two-day shell is 2/3; the one-day B1 job is 1/3.
+  static double constructionProgress(
+    DistrictGame state,
+    ApartmentBuilding building, {
+    int elapsedMilliseconds = 0,
+  }) {
+    final elapsedPhases =
+        (state.day - building.startedDay) * 5 +
+        state.phaseIndex +
+        (state.remainder + math.max(0, elapsedMilliseconds)) /
+            state.phaseMilliseconds;
+    return switch (building.stage) {
+      ConstructionStage.reserved || ConstructionStage.paid => 0,
+      ConstructionStage.shell => (elapsedPhases / 9).clamp(0.0, 1.0) * 2 / 3,
+      ConstructionStage.shellDone => 2 / 3,
+      ConstructionStage.basement =>
+        // Reserve 100% for the committed completion state.
+        2 / 3 + (elapsedPhases / 4).clamp(0.0, .999) / 3,
+      ConstructionStage.parkingDone || ConstructionStage.ready => 1,
+    };
+  }
+
+  static void openBusiness(DistrictGame state, int id) {
+    final building = _find(state, id);
+    if (building.stage == ConstructionStage.ready) return;
+    if (building.stage != ConstructionStage.parkingDone) {
+      throw const GameplayException('Finish construction before opening.');
+    }
+    building.stage = ConstructionStage.ready;
+  }
+
   static void advance(DistrictGame state, int now) {
     final interval = state.phaseMilliseconds;
     var elapsed = math.max(0, now - state.watermark) + state.remainder;
@@ -381,8 +414,6 @@ abstract final class DistrictSimulation {
       } else if (building.stage == ConstructionStage.shellDone) {
         building.stage = ConstructionStage.basement;
         building.startedDay = state.day;
-      } else if (building.stage == ConstructionStage.parkingDone) {
-        building.stage = ConstructionStage.ready;
       }
       if (building.stage == ConstructionStage.ready) {
         final capacity = math.min(

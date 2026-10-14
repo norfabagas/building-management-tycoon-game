@@ -12,6 +12,61 @@ LocalProfile profile(int slot) => LocalProfile(
 );
 
 void main() {
+  test('schema 2 completed buildings wait offline; already open buildings stay open', () async {
+    final database = await openNewInMemoryDatabase();
+    final repository = GameRepository(open: () async => database);
+    for (final slot in [1, 2]) {
+      final source = DistrictGame(
+        watermark: 0,
+        nextBuildingId: 2,
+        buildings: [
+          ApartmentBuilding(
+            id: 1,
+            footprint: const Footprint(0, 0, 2, 4),
+            stage: slot == 1
+                ? ConstructionStage.parkingDone
+                : ConstructionStage.ready,
+            occupied: slot == 1 ? {} : {0},
+            pendingRent: slot == 1 ? 0 : 12000,
+          ),
+        ],
+      ).toJson()..['version'] = 2;
+      await GameRepository.store.record('$slot').put(database, source);
+    }
+    const now = 400000;
+    final closed = await repository.update(profile(1), now);
+    expect(closed.buildings.single.stage, ConstructionStage.parkingDone);
+    expect(closed.buildings.single.occupied, isEmpty);
+    expect(closed.earned, 0);
+    final before = closed.toJson();
+    await expectLater(
+      repository.update(profile(1), now, (s) {
+        DistrictSimulation.openBusiness(s, 1);
+        throw StateError('write failed');
+      }),
+      throwsStateError,
+    );
+    expect(await GameRepository.store.record('1').get(database), before);
+    final opened = await repository.update(
+      profile(1),
+      now,
+      (s) => DistrictSimulation.openBusiness(s, 1),
+    );
+    expect(opened.buildings.single.stage, ConstructionStage.ready);
+    expect(opened.toJson()['version'], 3);
+    final repeated = await repository.update(
+      profile(1),
+      now,
+      (s) => DistrictSimulation.openBusiness(s, 1),
+    );
+    expect(repeated.toJson(), opened.toJson());
+    final existing = await repository.update(profile(2), 0);
+    expect(existing.buildings.single.stage, ConstructionStage.ready);
+    expect(existing.buildings.single.occupied, {0});
+    expect(existing.pendingRent, 12000);
+    await database.close();
+  });
+
   test('legacy clock catches up at its old speed and migrates once', () async {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
@@ -40,7 +95,7 @@ void main() {
     expect(migrated.balance, 3996880);
     expect(migrated.pendingRent, 84345);
     expect(migrated.phaseMilliseconds, 5000);
-    expect(migrated.toJson()['version'], 2);
+    expect(migrated.toJson()['version'], 3);
     expect(
       (await repository.update(profile(1), 270000)).toJson(),
       migrated.toJson(),

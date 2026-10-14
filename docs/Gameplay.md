@@ -12,7 +12,15 @@ Validation: formatting, analysis and all 43 tests pass. Browser review on an iso
 
 Load an existing district or create one of the five local slots. Existing metadata-only profiles receive an empty game snapshot with $40,000 at first gameplay load; their names and slots are preserved. Choose Build, select Apartment, draw a footprint on the map, review its derived rooms, B1 bays and costs, then confirm. Roads and the occupied construction plot are saved together. Unpaid orders can be canceled; paid orders have no refund action.
 
-Payment waits for Noon, construction starts next Morning, shell construction lasts two game days and B1 lasts one. Occupancy starts at the next Morning after B1 completion. Apartments accumulate rent for actual occupied days and pay at in-game Sunday Noon. Parking, expenses and taxes settle daily. The finance panel shows available dollars, reservations, pending apartment rent, next Sunday payment and the last closing. Select a building to view rooms and parking; vacating a room preserves accrued rent.
+Payment waits for Noon, construction starts next Morning, shell construction lasts two game days and B1 lasts one. Once both jobs complete, the building waits at 100% for **Open to Business**. Tenant admissions begin at the next Morning after opening. Apartments accumulate rent for actual occupied days and pay at in-game Sunday Noon. Parking, expenses and taxes settle daily. Completed upkeep/valuation taxes continue while closed. The finance panel shows available dollars, reservations, pending apartment rent, next Sunday payment and the last closing. Select a building to view rooms and parking; vacating a room preserves accrued rent.
+
+The map uses the approved apartment exterior image directly, preserving its square aspect ratio and anchoring it to the plot's projected bottom. Its illustrated storeys do not change the one-floor starter or saved capacity. Both the facade and plot are clickable, using the same drawing/picking depth order. Construction bars/percentages appear on the map and building detail. The shell contributes 2/3 of progress; B1 contributes 1/3. Progress follows saved phases and the current phase's elapsed time, holds across job waits, and reaches 100% only after completion is committed.
+
+The exterior/progress/opening update passes formatting, analysis and all 50 tests. Browser review used a separate in-memory fixture and verified the approved map art, moving progress, completion remaining closed through several game days, manual opening, and the portrait button layout. The fixture is ignored and not shipped. Android build remains blocked by the missing SDK.
+
+![Approved apartment image and construction progress on the map](images/approved-apartment-map.jpg)
+
+![Completed construction waiting for Open to Business](images/open-to-business.jpg)
 
 ## Map navigation
 
@@ -30,7 +38,7 @@ The deployed browser review confirmed both scale directions and a correct 2 × 4
 
 ## Local persistence
 
-Schema 2 snapshots store the phase interval. On first load of a schema 1 save, simulate elapsed offline time with the original 60-second phases, then scale the fractional phase remainder into the new 5-second interval. This prevents previously elapsed time from being counted at twelve times its old rate. The watermark never moves backward. Migration and the user's action commit in one existing repository transaction, so failure leaves the old save intact. Schema/catalog/interval validation continues to preserve unsupported data. Existing old app tabs cannot read schema 2 and must be closed to load the new release.
+Schema 3 snapshots preserve the phase interval introduced in schema 2 and protect the manual-opening rule from older clients. Schemas 1/2 remain readable. Already-open buildings retain their stage and tenants; completed-but-closed buildings stay `parkingDone` through offline catch-up until the opening action commits. On first load of a schema 1 save, simulate elapsed offline time with the original 60-second phases, then scale the fractional phase remainder into the new 5-second interval. The watermark never moves backward. Migration and the user's action commit in one existing repository transaction, so failure leaves the old save intact. Opening is free, requires completion, and repeated requests do not duplicate money or admissions. Schema/catalog/interval validation continues to preserve unsupported data. Older app tabs cannot read schema 3 and must be closed to load the new release.
 
 Full snapshots use Sembast transactions with SQLite on Android (`sembast_sqflite`/`sqflite`) and IndexedDB on Web (`sembast_web`). One versioned record per profile stores the wallet, buildings/orders, road layout derived from occupied plots, clock/watermark, rent ledger and closing ID together. Read latest state inside each transaction, advance elapsed time, validate the requested mutation and commit before publishing it. Preserve unsupported/corrupt records and show a retryable error. SharedPreferences continues to hold only legacy/profile metadata.
 

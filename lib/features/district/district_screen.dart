@@ -301,6 +301,7 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _map(DistrictGame game) => DistrictMap(
     game: game,
+    elapsedMilliseconds: _model.elapsedMilliseconds,
     drawing: _drawing && !_review && _model.error == null,
     preview: _preview,
     selected: _selected,
@@ -472,7 +473,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       ),
       const SizedBox(height: 10),
       const Text(
-        'Tap Build and drag to select land. Tenants move in when the apartments and parking are ready.',
+        'Tap Build and drag to select land. Open completed buildings to welcome tenants.',
       ),
       const SizedBox(height: 12),
       const Text(
@@ -488,7 +489,11 @@ class _DistrictScreenState extends State<DistrictScreen>
         ListTile(
           contentPadding: EdgeInsets.zero,
           title: Text('Apartment ${building.id}'),
-          subtitle: Text(building.stage.label),
+          subtitle: Text(
+            building.stage == ConstructionStage.ready
+                ? building.stage.label
+                : '${building.stage.label} · ${(_model.constructionProgress(building) * 100).floor()}%',
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => setState(() => _selected = building.id),
         ),
@@ -657,6 +662,19 @@ class _DistrictScreenState extends State<DistrictScreen>
             fontWeight: FontWeight.w700,
           ),
         ),
+        if (!ready) ...[
+          const SizedBox(height: 12),
+          _constructionProgress(building),
+          if (building.stage == ConstructionStage.parkingDone) ...[
+            const SizedBox(height: 12),
+            GameButton(
+              label: 'Open to Business',
+              onPressed: _model.busy || _model.error != null
+                  ? null
+                  : () => unawaited(_model.openBusiness(building.id)),
+            ),
+          ],
+        ],
         const SizedBox(height: 10),
         _line(
           'Permanent footprint',
@@ -674,7 +692,8 @@ class _DistrictScreenState extends State<DistrictScreen>
               'Apartments complete. Parking starts tomorrow.',
             ConstructionStage.basement =>
               'Building parking · Day ${building.startedDay}.',
-            ConstructionStage.parkingDone => 'Ready. Tenants arrive tomorrow.',
+            ConstructionStage.parkingDone =>
+              'Construction complete. Ready to open.',
             ConstructionStage.ready => '',
           }),
           if (building.stage == ConstructionStage.reserved) ...[
@@ -728,7 +747,7 @@ class _DistrictScreenState extends State<DistrictScreen>
             )
           else
             const Text(
-              'Rooms open after construction and parking are complete.',
+              'Open the building after construction to welcome tenants.',
             ),
           const SizedBox(height: 16),
           Image.asset(
@@ -772,6 +791,30 @@ class _DistrictScreenState extends State<DistrictScreen>
         const Text(
           'Building upgrades coming soon.',
           style: TextStyle(fontSize: 13, color: GameColors.muted),
+        ),
+      ],
+    );
+  }
+
+  Widget _constructionProgress(ApartmentBuilding building) {
+    final progress = _model.constructionProgress(building);
+    final percent = (progress * 100).floor();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Construction · $percent%',
+          key: const ValueKey('construction-percent'),
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 6),
+        LinearProgressIndicator(
+          key: const ValueKey('construction-progress'),
+          value: progress,
+          minHeight: 12,
+          borderRadius: BorderRadius.circular(6),
+          semanticsLabel: 'Construction progress',
+          semanticsValue: '$percent%',
         ),
       ],
     );

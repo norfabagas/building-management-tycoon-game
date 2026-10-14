@@ -35,6 +35,29 @@ Widget mapApp(
 );
 
 void main() {
+  test(
+    'approved exterior stays square and bottom anchored for rectangular plots',
+    () {
+      for (final zoom in [.5, 1.0, 2.0]) {
+        final projection = MapProjection(
+          const Size(800, 500),
+          const Offset(30, -20),
+          zoom: zoom,
+        );
+        for (final site in [
+          const Footprint(0, 0, 2, 4),
+          const Footprint(3, 3, 4, 2),
+        ]) {
+          final land = projection.footprint(site).getBounds();
+          final exterior = projection.buildingRect(site);
+          expect(exterior.width, land.width);
+          expect(exterior.height, exterior.width);
+          expect(exterior.bottomCenter, land.bottomCenter);
+        }
+      }
+    },
+  );
+
   test('pinch anchors the focal world point while scaling and moving', () {
     final camera = MapCameraViewModel()..panBy(const Offset(70, -40));
     const size = Size(800, 500);

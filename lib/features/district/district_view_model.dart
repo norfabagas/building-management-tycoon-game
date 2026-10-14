@@ -51,6 +51,23 @@ class DistrictViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  int get elapsedMilliseconds => game == null
+      ? 0
+      : (_now().millisecondsSinceEpoch - game!.watermark).clamp(
+          0,
+          StarterCatalog.phaseMilliseconds,
+        );
+
+  double constructionProgress(ApartmentBuilding building) =>
+      DistrictSimulation.constructionProgress(
+        game!,
+        building,
+        elapsedMilliseconds: elapsedMilliseconds,
+      );
+
+  Future<bool> openBusiness(int id) =>
+      save((state) => DistrictSimulation.openBusiness(state, id));
+
   Future<bool> save([void Function(DistrictGame)? action]) async {
     if (busy || _disposed) return false;
     busy = true;

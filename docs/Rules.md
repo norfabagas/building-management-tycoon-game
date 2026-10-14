@@ -47,6 +47,7 @@ Regardless of the type of building constructed, the following constraints **alwa
 - **Vertical Logistics:** Buildings have stairs by default. Lifts must be purchased as upgrades (up to the universal limits) to improve efficiency.
 - **Luxury Upgrades:** Players can upgrade existing buildings to increase their luxury rating.
 - **Selected construction baseline:** Starter shell takes two game days, then a separate B1 job takes one day. Include both in the starter quote; occupancy remains zero until parking is operational.
+- **Manual opening (2026-10-14):** When both jobs finish, construction reaches 100% and the building waits for **Open to Business**. No tenants, new rent accrual or parking income before this action. Admissions begin at the next Morning after opening. Completed components still incur their documented maintenance/valuation taxes. Existing open buildings remain open after upgrade; no new price, refund or automatic opening is introduced.
 - **Selected capacity:** Apartments/hotels use `floor(0.75 * footprintTiles)` rooms per floor; each basement supplies `floor(2 * footprintTiles)` parking bays. Full space/parking allocation rules are in Economy.md.
 - **Selected progression:** Three luxury tiers; permanent unlocks based on cumulative earned revenue, with thresholds still to be defined.
 

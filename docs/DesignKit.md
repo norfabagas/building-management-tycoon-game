@@ -20,6 +20,8 @@ Every board places the same 48 × 48 square beside the editable **Building Manag
 
 ## Shared visual rules
 
+The 2026-10-14 feedback explicitly requests the approved apartment image as the map exterior. The starter now uses that image directly with uniform scaling/bottom anchoring, superseding its earlier facade/roof composition. The illustrated storeys remain a visual symbol; playable floors/capacity still follow the saved game rules. See Design.md and Assets.md for the current runtime contract.
+
 - Canvas: 1600 × 1000 with 48 px outside margins. Pages ascend from 01 to 16; both headings and counters include the page number.
 - Header: logo at (48, 28), title at (112, 32), divider at y=96, section heading at y=120. Shared footer at y=950 marks economy values as illustrative.
 - Type: Trebuchet MS throughout, 39 px board headings, 26–30 px panel headings, 21–23 px body/actions, 16–18 px captions. Cover title and net totals use larger type.

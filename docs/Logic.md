@@ -50,6 +50,10 @@ Persist weekly rent, pending daily accruals, completed closing IDs and the game-
   3. Save the resulting wallet, pending rent, closing IDs, orders and clock together, then publish the already-applied summary. Retrying/loading the same result must not duplicate rent. Backward device-clock changes add no elapsed time and must not lower the saved watermark.
 
 ## Placement & Construction Logic
+
+Construction now ends at `parkingDone` and does not advance automatically to `ready`. `DistrictSimulation.openBusiness` validates completion, changes the stage to `ready` without charging or admitting tenants, and treats repeated opening as a no-op. The repository persists it atomically before the view model publishes success. Subsequent Morning processing admits tenants under the existing quota. While closed, rent/parking accrual is zero; completed maintenance and valuation taxes remain payable. Schema 3 prevents old clients from bypassing this gate, while preserving schema 1/2 already-open buildings.
+
+`constructionProgress` derives the shell's fraction from its nine Morning-to-final-Noon phase intervals (2/3 weight) and B1 from its four intervals (1/3 weight). Queue/payment states are 0; the shell/B1 wait holds at 2/3; completed/open states are 1. The view model supplies elapsed phase time for live presentation. Active B1 stays below 100% until the completed state is committed. Progress is display state derived from the snapshot, not a separate persisted timer.
 - **Area Grid System:** The CBD is a 2D coordinate grid (X, Y).
 - **Construction Wizard:**
   1. Player selects building type (e.g., Hotel, Office).
