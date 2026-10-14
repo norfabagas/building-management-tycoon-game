@@ -1,5 +1,9 @@
 # Project setup
 
+## Pacing and pinch validation — 2026-10-14
+
+The feedback update uses 5-second phases and a 25-second day, concise status copy and continuous focal-point pinch zoom. Formatting, Flutter analysis and all 43 tests pass; the final targeted repository and multi-pointer gesture checks also pass. The Web build includes 201 offline resources. Browser review on an isolated localhost origin confirmed the faster running calendar, shorter construction labels and normal 2 × 4 mouse placement/cost review. Pinch behavior was verified with simulated two-finger Flutter events; physical-device pinch was not tested. Android debug compilation was attempted again and remains blocked by the missing Android SDK.
+
 ## Floor navigation validation — 2026-10-14
 
 This Windows workstation installed the pinned SDK using `tool/bootstrap.ps1`; an initial dependency-cache rename was denied by Windows and succeeded on the bootstrap retry. Formatting (33 files), analysis, all 35 tests, asset validation (158 assets/124 frames) and the final offline release Web build (201 resources) pass. An Android debug build was attempted and reports **No Android SDK found**. The older machine-specific Android setup below does not apply to this workstation. Android device execution remains unverified. See `PROJECTS.md` and Gameplay.md for browser review of the new floor navigation.

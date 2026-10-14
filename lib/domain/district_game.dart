@@ -10,7 +10,8 @@ abstract final class StarterCatalog {
   static const parkingPerTenant = 1000;
   static const maintenancePerFloor = 4000;
   static const maintenancePerBasement = 4000;
-  static const phaseMilliseconds = 60000;
+  static const phaseMilliseconds = 5000;
+  static const legacyPhaseMilliseconds = 60000;
 }
 
 class LandCell {
@@ -83,12 +84,12 @@ class Footprint {
 }
 
 enum ConstructionStage {
-  reserved('Payment at Noon'),
-  paid('Starts next Morning'),
-  shell('Building shell'),
-  shellDone('B1 starts next Morning'),
-  basement('Building B1 parking'),
-  parkingDone('Opens next Morning'),
+  reserved('Queued'),
+  paid('Starts tomorrow'),
+  shell('Building apartments'),
+  shellDone('Parking queued'),
+  basement('Building parking'),
+  parkingDone('Ready to open'),
   ready('Open');
 
   const ConstructionStage(this.label);
@@ -191,6 +192,7 @@ class DistrictGame {
     this.day = 1,
     this.phaseIndex = 0,
     this.remainder = 0,
+    this.phaseMilliseconds = StarterCatalog.phaseMilliseconds,
     this.lastClosing = 0,
     this.nextBuildingId = 1,
     this.earned = 0,
@@ -198,6 +200,7 @@ class DistrictGame {
     this.statement,
   }) : buildings = buildings ?? [];
   int watermark,
+      phaseMilliseconds,
       balance,
       day,
       phaseIndex,
@@ -230,8 +233,9 @@ class DistrictGame {
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': 1,
+    'version': 2,
     'catalog': 1,
+    'phaseMilliseconds': phaseMilliseconds,
     'watermark': watermark,
     'balance': balance,
     'day': day,
@@ -244,7 +248,8 @@ class DistrictGame {
     'statement': statement?.toJson(),
   };
   factory DistrictGame.fromJson(Map<String, dynamic> json) {
-    if (json['version'] != 1 || json['catalog'] != 1) {
+    if ((json['version'] != 1 && json['version'] != 2) ||
+        json['catalog'] != 1) {
       throw const FormatException('Unsupported game save');
     }
     final state = DistrictGame(
@@ -253,6 +258,9 @@ class DistrictGame {
       day: json['day'] as int,
       phaseIndex: json['phaseIndex'] as int,
       remainder: json['remainder'] as int,
+      phaseMilliseconds: json['version'] == 1
+          ? StarterCatalog.legacyPhaseMilliseconds
+          : json['phaseMilliseconds'] as int,
       lastClosing: json['lastClosing'] as int,
       nextBuildingId: json['nextBuildingId'] as int,
       earned: json['earned'] as int,
@@ -272,7 +280,10 @@ class DistrictGame {
         state.phaseIndex < 0 ||
         state.phaseIndex > 4 ||
         state.remainder < 0 ||
-        state.remainder >= StarterCatalog.phaseMilliseconds ||
+        (state.phaseMilliseconds != StarterCatalog.phaseMilliseconds &&
+            state.phaseMilliseconds !=
+                StarterCatalog.legacyPhaseMilliseconds) ||
+        state.remainder >= state.phaseMilliseconds ||
         state.lastClosing != state.day - (state.phaseIndex == 4 ? 0 : 1) ||
         state.earned < 0 ||
         state.nextBuildingId < 1 ||
@@ -292,11 +303,11 @@ class GameplayException implements Exception {
 
 abstract final class DistrictSimulation {
   static void advance(DistrictGame state, int now) {
-    if (now <= state.watermark) return;
-    var elapsed = now - state.watermark + state.remainder;
-    state.watermark = now;
-    while (elapsed >= StarterCatalog.phaseMilliseconds) {
-      elapsed -= StarterCatalog.phaseMilliseconds;
+    final interval = state.phaseMilliseconds;
+    var elapsed = math.max(0, now - state.watermark) + state.remainder;
+    state.watermark = math.max(now, state.watermark);
+    while (elapsed >= interval) {
+      elapsed -= interval;
       if (state.phaseIndex == 4) {
         state.day++;
         state.phaseIndex = 0;
@@ -306,7 +317,9 @@ abstract final class DistrictSimulation {
         if (state.phaseIndex == 4) _close(state);
       }
     }
-    state.remainder = elapsed;
+    // Settle legacy offline time at its saved speed, then preserve phase progress.
+    state.remainder = elapsed * StarterCatalog.phaseMilliseconds ~/ interval;
+    state.phaseMilliseconds = StarterCatalog.phaseMilliseconds;
   }
 
   static String? placementError(DistrictGame state, Footprint site) {

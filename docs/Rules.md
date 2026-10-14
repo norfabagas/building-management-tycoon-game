@@ -18,7 +18,7 @@ The user selected **Option 1: Relaxed idle** on 2026-10-12, with apartment rent 
   4. **Night:** Peak activity for hotels and residential areas.
   5. **Noon (Closing the book):** The final phase of the day where daily financial calculations (revenue, maintenance, tax) are finalized and profits/losses are committed to the player's balance.
 
-- One game day lasts **5 real minutes**, with one minute per phase.
+- As requested on 2026-10-14, phases change every **5 real seconds**. A game day lasts **25 seconds**. Phase order and per-game-day economy remain unchanged.
 - Use an in-game Monday-to-Sunday week. Day 1 is Monday; every seventh day is Sunday. This calendar is independent of the device's real weekday.
 
 ## Economy & Finances

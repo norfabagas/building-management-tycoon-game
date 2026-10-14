@@ -306,6 +306,7 @@ class _DistrictScreenState extends State<DistrictScreen>
     selected: _selected,
     reset: _reset,
     onFootprint: (site) => setState(() => _preview = site),
+    onCancelFootprint: () => setState(() => _preview = null),
     onSelect: (id) => setState(() {
       _selected = id;
       _buildMenu = false;
@@ -471,11 +472,11 @@ class _DistrictScreenState extends State<DistrictScreen>
       ),
       const SizedBox(height: 10),
       const Text(
-        'Choose Build, then draw the footprint on the land. Your apartment needs its included B1 parking before tenants can move in.',
+        'Tap Build and drag to select land. Tenants move in when the apartments and parking are ready.',
       ),
       const SizedBox(height: 12),
       const Text(
-        'Apartment rent pays on Sunday at Noon. Parking pays daily. One game day takes five minutes.',
+        'Rent: weekly. Parking: daily. One game day takes 25 seconds.',
         style: TextStyle(color: GameColors.muted, fontSize: 14),
       ),
       if (_model.returnSummary case final summary?) ...[
@@ -538,15 +539,13 @@ class _DistrictScreenState extends State<DistrictScreen>
           ),
           const SizedBox(height: 6),
           const Text(
-            'Available in a later release after their prices and demand rules are defined.',
+            'Coming soon.',
             style: TextStyle(color: GameColors.muted, fontSize: 14),
           ),
         ] else ...[
           const SizedBox(height: 8),
           Text(
-            _review
-                ? 'This footprint and above-ground floor count are permanent.'
-                : 'Drag across the land. Green is valid; red shows a conflict or an unaffordable plan.',
+            _review ? 'Building size cannot be changed later.' : 'Drag to select land. Green: available. Red: blocked or too expensive.',
           ),
           const SizedBox(height: 12),
           _line(
@@ -588,7 +587,7 @@ class _DistrictScreenState extends State<DistrictScreen>
             ),
           const SizedBox(height: 12),
           const Text(
-            'Dollars settle at Noon. Building starts next Morning. Tenant admissions begin after both jobs finish.',
+            'Construction: 2 game days, plus 1 for parking.',
             style: TextStyle(color: GameColors.muted, fontSize: 13),
           ),
         ],
@@ -607,17 +606,15 @@ class _DistrictScreenState extends State<DistrictScreen>
         _line('Available to spend', formatMoney(game.available)),
         const Divider(),
         _line('Pending apartment rent', formatMoney(game.pendingRent)),
-        _line('Next rent payment', 'Sunday · Day ${game.nextSunday} · Noon'),
+        _line('Next rent', 'Sunday · Day ${game.nextSunday}'),
         const SizedBox(height: 8),
         const Text(
-          'Pending rent is earned income. It becomes spendable when collected on Sunday.',
+          'Rent is collected on Sundays.',
           style: TextStyle(color: GameColors.muted, fontSize: 13),
         ),
         const SizedBox(height: 18),
         Text(
-          closing == null
-              ? 'First closing is still ahead'
-              : 'Last closing · Day ${closing.day}',
+          closing == null ? 'No transactions yet' : 'Day ${closing.day} totals',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         if (closing != null) ...[
@@ -630,14 +627,14 @@ class _DistrictScreenState extends State<DistrictScreen>
           _line('Purchase payments', formatMoney(-closing.purchases)),
         ],
         const SizedBox(height: 12),
-        _line('Cumulative earned revenue', formatMoney(game.earned)),
+        _line('Total earned', formatMoney(game.earned)),
         if (_model.returnSummary case final summary?) ...[
           const Divider(),
           Text(summary),
         ],
         const SizedBox(height: 10),
         const Text(
-          'One minute per phase: Morning → Day → Afternoon → Night → Noon. Missed time is settled when you return.',
+          'Phases change every 5 seconds. Your district keeps running while you are away.',
           style: TextStyle(fontSize: 13, color: GameColors.muted),
         ),
       ],
@@ -669,17 +666,15 @@ class _DistrictScreenState extends State<DistrictScreen>
           const SizedBox(height: 10),
           Text(switch (building.stage) {
             ConstructionStage.reserved =>
-              'The quote is reserved. Payment happens at the next Noon.',
-            ConstructionStage.paid =>
-              'Payment is complete. Shell construction starts next Morning.',
+              'Construction queued. Funds are reserved.',
+            ConstructionStage.paid => 'Paid. Construction starts tomorrow.',
             ConstructionStage.shell =>
-              'Shell construction: game days ${building.startedDay}–${building.startedDay + 1}. B1 follows next Morning.',
+              'Building apartments · Days ${building.startedDay}–${building.startedDay + 1}.',
             ConstructionStage.shellDone =>
-              'The shell is complete. B1 parking starts next Morning.',
+              'Apartments complete. Parking starts tomorrow.',
             ConstructionStage.basement =>
-              'B1 parking finishes at Noon on Day ${building.startedDay}.',
-            ConstructionStage.parkingDone =>
-              'Parking is complete. Tenants can arrive next Morning.',
+              'Building parking · Day ${building.startedDay}.',
+            ConstructionStage.parkingDone => 'Ready. Tenants arrive tomorrow.',
             ConstructionStage.ready => '',
           }),
           if (building.stage == ConstructionStage.reserved) ...[
@@ -743,8 +738,8 @@ class _DistrictScreenState extends State<DistrictScreen>
           ),
           Text(
             building.parkingComplete
-                ? 'Stairs connect Floor 1 and B1. Use Go down to visit parking.'
-                : 'B1 opens when parking construction is complete.',
+                ? 'Go down for parking.'
+                : 'Parking not ready.',
           ),
         ] else ...[
           const Divider(),
@@ -769,13 +764,13 @@ class _DistrictScreenState extends State<DistrictScreen>
             '${building.footprint.bays - building.occupied.length}',
           ),
           const Text(
-            'Tenant bays are allocated before visitors. Apartments in this release have no visitor traffic.',
+            'Parking is reserved for tenants.',
             style: TextStyle(fontSize: 13, color: GameColors.muted),
           ),
         ],
         const SizedBox(height: 14),
         const Text(
-          'Additional basements, lifts and luxury upgrades are not available in this starter release.',
+          'Building upgrades coming soon.',
           style: TextStyle(fontSize: 13, color: GameColors.muted),
         ),
       ],
@@ -835,9 +830,7 @@ class _DistrictScreenState extends State<DistrictScreen>
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     Text(
-                      occupied
-                          ? 'Occupied · 1 bay'
-                          : 'Vacant · Next Morning admission',
+                      occupied ? 'Occupied · 1 bay' : 'Vacant',
                       style: const TextStyle(
                         fontSize: 12,
                         color: GameColors.muted,
@@ -874,7 +867,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       builder: (_) => AlertDialog(
         title: Text('Room ${room + 1}'),
         content: const Text(
-          'Vacate this room? Already earned rent stays pending until Sunday. A new tenant can arrive at a later Morning.',
+          'Remove this tenant? Uncollected rent is kept. A new tenant can move in tomorrow.',
         ),
         actions: [
           TextButton(

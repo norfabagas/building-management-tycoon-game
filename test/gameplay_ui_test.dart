@@ -174,7 +174,7 @@ void main() {
         expect(saved.balance, 4000000);
         expect(saved.reserved, 1000000);
         expect(saved.roads.length, 12);
-        expect(find.text('Payment at Noon'), findsOneWidget);
+        expect(find.text('Queued'), findsOneWidget);
         await tester.ensureVisible(find.text('Cancel unpaid order'));
         await tester.tap(find.text('Cancel unpaid order'));
         await tester.pumpAndSettle();
@@ -189,7 +189,7 @@ void main() {
         expect(canceled.available, 4000000);
         await tester.tap(find.text('Finances'));
         await tester.pumpAndSettle();
-        expect(find.text('First closing is still ahead'), findsOneWidget);
+        expect(find.text('No transactions yet'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       } finally {

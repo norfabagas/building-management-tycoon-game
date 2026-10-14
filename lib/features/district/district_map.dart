@@ -21,6 +21,7 @@ class DistrictMap extends StatefulWidget {
     this.preview,
     this.selected,
     this.reset = 0,
+    this.onCancelFootprint,
   });
   final DistrictGame game;
   final bool drawing;
@@ -28,6 +29,7 @@ class DistrictMap extends StatefulWidget {
   final int? selected;
   final int reset;
   final ValueChanged<Footprint> onFootprint;
+  final VoidCallback? onCancelFootprint;
   final ValueChanged<int> onSelect;
   @override
   State<DistrictMap> createState() => _DistrictMapState();
@@ -37,6 +39,12 @@ class _DistrictMapState extends State<DistrictMap> {
   final _camera = MapCameraViewModel();
   LandCell? _start;
   int? _drawingPointer;
+  final _pointers = <int>{};
+  bool _hadMultiTouch = false;
+  Footprint? _previousPreview;
+  double _gestureZoom = 1, _gestureScale = 1;
+  int _scalePointers = 0;
+  Offset _previousFocal = Offset.zero;
   Map<String, ui.Image> _images = {};
   static Future<Map<String, ui.Image>>? _art;
 
@@ -105,10 +113,30 @@ class _DistrictMapState extends State<DistrictMap> {
             Semantics(
               label: widget.drawing
                   ? 'Draw apartment footprint by dragging on the map.'
-                  : 'District map. Drag to pan; tap a building to manage it.',
+                  : 'District map. Drag to pan, pinch to zoom, tap a building.',
               child: Listener(
                 onPointerDown: (event) {
-                  if (widget.drawing && _drawingPointer == null) {
+                  if (_pointers.isEmpty) {
+                    _hadMultiTouch = false;
+                    _previousPreview = widget.preview;
+                  }
+                  _pointers.add(event.pointer);
+                  if (_pointers.length > 1) {
+                    _hadMultiTouch = true;
+                    _start = null;
+                    _drawingPointer = null;
+                    if (widget.drawing) {
+                      final previous = _previousPreview;
+                      if (previous == null) {
+                        widget.onCancelFootprint?.call();
+                      } else {
+                        widget.onFootprint(previous);
+                      }
+                    }
+                  }
+                  if (widget.drawing &&
+                      !_hadMultiTouch &&
+                      _drawingPointer == null) {
                     _drawingPointer = event.pointer;
                     _start = projection.cellAt(event.localPosition);
                     widget.onFootprint(Footprint.between(_start!, _start!));
@@ -125,6 +153,7 @@ class _DistrictMapState extends State<DistrictMap> {
                   }
                 },
                 onPointerUp: (event) {
+                  _pointers.remove(event.pointer);
                   if (_drawingPointer == event.pointer && _start != null) {
                     widget.onFootprint(
                       Footprint.between(
@@ -137,6 +166,7 @@ class _DistrictMapState extends State<DistrictMap> {
                   }
                 },
                 onPointerCancel: (event) {
+                  _pointers.remove(event.pointer);
                   if (_drawingPointer == event.pointer) {
                     _start = null;
                     _drawingPointer = null;
@@ -147,14 +177,35 @@ class _DistrictMapState extends State<DistrictMap> {
                   dragStartBehavior: DragStartBehavior.down,
                   key: const ValueKey('district-map'),
                   behavior: HitTestBehavior.opaque,
-                  onPanUpdate: (details) {
-                    if (!widget.drawing && _drawingPointer == null) {
-                      _camera.panBy(details.delta);
+                  onScaleStart: (details) {
+                    _gestureZoom = _camera.zoom;
+                    _gestureScale = 1;
+                    _scalePointers = details.pointerCount;
+                    _previousFocal = details.localFocalPoint;
+                  },
+                  onScaleUpdate: (details) {
+                    if (_scalePointers != details.pointerCount) {
+                      _gestureZoom = _camera.zoom;
+                      _gestureScale = details.scale;
+                      _scalePointers = details.pointerCount;
+                      _previousFocal = details.localFocalPoint;
                     }
+                    if (details.pointerCount >= 2 ||
+                        details.pointerCount == 0) {
+                      final centre = size.center(Offset.zero);
+                      _camera.transform(
+                        zoom: _gestureZoom * details.scale / _gestureScale,
+                        fromFocal: _previousFocal - centre,
+                        toFocal: details.localFocalPoint - centre,
+                      );
+                    } else if (!widget.drawing && !_hadMultiTouch) {
+                      _camera.panBy(details.focalPointDelta);
+                    }
+                    _previousFocal = details.localFocalPoint;
                   },
                   onTapUp: (details) {
                     final cell = projection.cellAt(details.localPosition);
-                    if (!widget.drawing) {
+                    if (!widget.drawing && !_hadMultiTouch) {
                       for (final building in widget.game.buildings.reversed) {
                         if (building.footprint.contains(cell)) {
                           widget.onSelect(building.id);
@@ -208,8 +259,8 @@ class _DistrictMapState extends State<DistrictMap> {
                               ),
                               child: Text(
                                 widget.drawing
-                                    ? 'Drag across land to choose the footprint'
-                                    : 'Drag to pan · Tap a building',
+                                    ? 'Drag to select land · Pinch to zoom'
+                                    : 'Drag to pan · Pinch to zoom · Tap a building',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: GameColors.ink,

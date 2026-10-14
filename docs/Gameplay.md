@@ -4,11 +4,19 @@ The user approved this starter implementation on 2026-10-12. Follow [Economy.md]
 
 ## Player flow
 
+Feedback update on 2026-10-14: phases now last **5 seconds**, giving a **25-second game day**. Construction status labels are short (Queued, Starts tomorrow, Building apartments, Parking queued, Building parking, Ready to open, Open); finance/build/tenant text uses direct player wording. Phase names and the per-game-day economy still follow Rules.md.
+
+Validation: formatting, analysis and all 43 tests pass. Browser review on an isolated localhost origin confirms the faster calendar, short statuses and mouse construction flow. Synthetic two-finger tests cover both zoom limits, existing/empty preview restoration, trailing-finger suppression and building picking after pinch. Migration tests cover old-speed catch-up, fractional progress, rollback and unchanged/backward clock handling. Physical mobile gestures remain unverified without a device.
+
+![Short construction status and five-second phase countdown](images/pacing-and-copy.jpg)
+
 Load an existing district or create one of the five local slots. Existing metadata-only profiles receive an empty game snapshot with $40,000 at first gameplay load; their names and slots are preserved. Choose Build, select Apartment, draw a footprint on the map, review its derived rooms, B1 bays and costs, then confirm. Roads and the occupied construction plot are saved together. Unpaid orders can be canceled; paid orders have no refund action.
 
 Payment waits for Noon, construction starts next Morning, shell construction lasts two game days and B1 lasts one. Occupancy starts at the next Morning after B1 completion. Apartments accumulate rent for actual occupied days and pay at in-game Sunday Noon. Parking, expenses and taxes settle daily. The finance panel shows available dollars, reservations, pending apartment rent, next Sunday payment and the last closing. Select a building to view rooms and parking; vacating a room preserves accrued rent.
 
 ## Map navigation
+
+Two fingers now zoom continuously from 50% to 200%, keeping the world point under the moving midpoint anchored. A one-finger drag pans outside placement mode. Pinching during placement restores the previous preview and blocks further drawing until every finger is released. Pinch gestures never pick buildings. The −/+ controls move to the next 25% step from a continuous pinch scale; their original behavior at exact steps is unchanged.
 
 As of 2026-10-14, selecting a building opens a full floor detail in place of the map and its side/bottom panel. Floor 1 shows its room modules and existing tenant actions. Completed B1 shows only parking, with capacity and used/free bays from the saved footprint/occupancy. The fixed bottom toolbar orders Exit building, Go up and Go down beneath a live current-floor label. Floor 1 and B1 connect directly; unavailable directions are disabled. Construction detail remains visible for unfinished buildings, and B1 becomes accessible when parking completes. No extra floor, pricing or save-schema mechanics are introduced. Selection and floor position belong to `DistrictViewModel`; each entry starts at Floor 1 and exit restores the mounted map's zoom/pan. `PROJECTS.md` tracks this iteration and verification.
 
@@ -21,6 +29,8 @@ The deployed browser review confirmed both scale directions and a correct 2 × 4
 ![Bottom-right zoom controls at 125% during footprint planning](images/map-zoom.png)
 
 ## Local persistence
+
+Schema 2 snapshots store the phase interval. On first load of a schema 1 save, simulate elapsed offline time with the original 60-second phases, then scale the fractional phase remainder into the new 5-second interval. This prevents previously elapsed time from being counted at twelve times its old rate. The watermark never moves backward. Migration and the user's action commit in one existing repository transaction, so failure leaves the old save intact. Schema/catalog/interval validation continues to preserve unsupported data. Existing old app tabs cannot read schema 2 and must be closed to load the new release.
 
 Full snapshots use Sembast transactions with SQLite on Android (`sembast_sqflite`/`sqflite`) and IndexedDB on Web (`sembast_web`). One versioned record per profile stores the wallet, buildings/orders, road layout derived from occupied plots, clock/watermark, rent ledger and closing ID together. Read latest state inside each transaction, advance elapsed time, validate the requested mutation and commit before publishing it. Preserve unsupported/corrupt records and show a retryable error. SharedPreferences continues to hold only legacy/profile metadata.
 

@@ -12,6 +12,8 @@ Widget mapApp(
   bool drawing = true,
   required ValueChanged<Footprint> onFootprint,
   ValueChanged<int>? onSelect,
+  VoidCallback? onCancelFootprint,
+  Footprint? preview,
 }) => MaterialApp(
   theme: buildGameTheme(),
   home: Scaffold(
@@ -24,6 +26,8 @@ Widget mapApp(
           drawing: drawing,
           onFootprint: onFootprint,
           onSelect: onSelect ?? (_) {},
+          onCancelFootprint: onCancelFootprint,
+          preview: preview,
         ),
       ),
     ),
@@ -31,6 +35,140 @@ Widget mapApp(
 );
 
 void main() {
+  test('pinch anchors the focal world point while scaling and moving', () {
+    final camera = MapCameraViewModel()..panBy(const Offset(70, -40));
+    const size = Size(800, 500);
+    const focal = Offset(520, 180);
+    const moved = Offset(550, 200);
+    final before = MapProjection(size, camera.pan, zoom: camera.zoom);
+    final cell = before.cellAt(focal);
+    final marker = before.point(cell.x + .5, cell.y + .5);
+    camera.transform(
+      zoom: 1.37,
+      fromFocal: focal - size.center(Offset.zero),
+      toFocal: moved - size.center(Offset.zero),
+    );
+    final after = MapProjection(size, camera.pan, zoom: camera.zoom);
+    expect(after.cellAt(moved), cell);
+    expect(
+      (after.point(cell.x + .5, cell.y + .5) -
+              (moved + (marker - focal) * 1.37))
+          .distance,
+      lessThan(.000001),
+    );
+    camera.zoomIn();
+    expect(camera.zoom, 1.5);
+    camera.zoomOut();
+    expect(camera.zoom, 1.25);
+    camera.dispose();
+  });
+
+  for (final drawing in [false, true]) {
+    testWidgets(
+      'two-finger pinch zooms both ways without selecting or drawing ($drawing)',
+      (tester) async {
+        Footprint? preview;
+        var selections = 0;
+        await tester.pumpWidget(
+          mapApp(
+            DistrictGame(
+              watermark: 0,
+              nextBuildingId: 2,
+              buildings: [
+                ApartmentBuilding(
+                  id: 1,
+                  footprint: const Footprint(3, 3, 2, 4),
+                  stage: ConstructionStage.ready,
+                ),
+              ],
+            ),
+            drawing: drawing,
+            onFootprint: (site) => preview = site,
+            onCancelFootprint: () => preview = null,
+            onSelect: (_) => selections++,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+        final centre = map.center + const Offset(30, -30);
+        final first = await tester.startGesture(
+          centre - const Offset(40, 0),
+          pointer: 1,
+        );
+        final second = await tester.startGesture(
+          centre + const Offset(40, 0),
+          pointer: 2,
+        );
+        await tester.pump();
+        await first.moveTo(centre - const Offset(60, 0));
+        await second.moveTo(centre + const Offset(60, 0));
+        await tester.pump();
+        await first.moveTo(centre - const Offset(180, 0));
+        await second.moveTo(centre + const Offset(180, 0));
+        await tester.pump();
+        expect(find.text('200%'), findsOneWidget);
+        await first.moveTo(centre - const Offset(10, 0));
+        await second.moveTo(centre + const Offset(10, 0));
+        await tester.pump();
+        expect(find.text('50%'), findsOneWidget);
+        await second.up();
+        await first.moveBy(const Offset(20, 0));
+        await first.up();
+        await tester.pumpAndSettle();
+        expect(preview, isNull);
+        expect(selections, 0);
+        if (drawing) {
+          final gesture = await tester.startGesture(map.center);
+          await gesture.moveBy(const Offset(30, 30));
+          await gesture.up();
+          await tester.pumpAndSettle();
+          expect(preview, isNotNull);
+        } else {
+          final projection = MapProjection(
+            map.size,
+            const Offset(15, -15),
+            zoom: .5,
+          );
+          await tester.tapAt(map.topLeft + projection.point(4, 4));
+          await tester.pumpAndSettle();
+          expect(selections, 1);
+        }
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
+  testWidgets('pinch preserves an existing placement preview', (tester) async {
+    const existing = Footprint(3, 3, 2, 4);
+    Footprint? preview = existing;
+    await tester.pumpWidget(
+      mapApp(
+        DistrictGame(watermark: 0),
+        preview: existing,
+        onFootprint: (site) => preview = site,
+        onCancelFootprint: () => preview = null,
+      ),
+    );
+    await tester.pumpAndSettle();
+    final centre = tester.getCenter(find.byKey(const ValueKey('district-map')));
+    final first = await tester.startGesture(
+      centre - const Offset(40, 0),
+      pointer: 1,
+    );
+    final second = await tester.startGesture(
+      centre + const Offset(40, 0),
+      pointer: 2,
+    );
+    await first.moveBy(const Offset(-30, 0));
+    await second.moveBy(const Offset(30, 0));
+    await second.up();
+    await first.up();
+    await tester.pumpAndSettle();
+    expect(preview?.toJson(), existing.toJson());
+    await tester.pumpWidget(const SizedBox());
+  });
+
   test(
     'zoom keeps the same world point at the viewport centre after panning',
     () {

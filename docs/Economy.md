@@ -19,7 +19,7 @@ Implementation and save behavior are recorded in [Gameplay.md](Gameplay.md).
 
 ## Time and billing calendar
 
-- One in-game day lasts **5 real minutes**: Morning, Day, Afternoon, Night, then Noon (closing), with one minute per phase.
+- One in-game day lasts **25 real seconds**: Morning, Day, Afternoon, Night, then Noon (closing), with **5 seconds per phase**, as requested on 2026-10-14. Per-game-day prices, income and costs are unchanged.
 - Sunday means **in-game Sunday**, not the real device's weekday. Calendar convention: Day 1 is Monday; days 7, 14, 21 and so on are Sundays. `weekdayIndex = (day - 1) % 7`, with Monday at index 0 and Sunday at index 6.
 - Hotel rooms, whole-floor office leases, F&B sales and parking receipts settle every day at Noon.
 - Apartment rent accumulates for occupied game days and settles only at **Sunday Noon**, including that Sunday's occupancy. Pending rent is not available cash. Apartment-associated parking is still daily income.
@@ -71,7 +71,7 @@ The starter catalog now explicitly uses **$840 per room per week**. Rates for la
 
 ## Offline settlement and persistence
 
-- Use the saved game-day index and phase remainder to simulate missed time at five minutes per day, without an offline earnings cap. Device timestamps measure elapsed duration; they do not choose the game's weekday.
+- Use the saved game-day index and phase remainder to simulate missed time at 25 seconds per day, without an offline earnings cap. Device timestamps measure elapsed duration; they do not choose the game's weekday. On the first load of an older save, process elapsed time at its original 60-second phase interval before switching to the new interval, preserving fractional phase progress.
 - Process missed days chronologically. Accrue apartment rent each occupied day and pay it on each crossed Sunday, including multiple weeks. If no Sunday is crossed, leave rent pending. Apply daily income, expenses and queued purchases on their scheduled closings.
 - Save wallet, pending rent, completed closing IDs, paid orders, construction progress and calendar/clock state together before publishing success. The summary describes already-applied results, with no second claim action.
 - If the device clock moves backward, apply zero additional time and keep the prior timestamp watermark until it catches up. Forward changes count as elapsed time under the offline local-clock rule.

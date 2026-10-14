@@ -3,7 +3,10 @@ import 'package:building_management_tycoon/domain/game_rules.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void at(DistrictGame state, int day, [GamePhase phase = GamePhase.morning]) =>
-    DistrictSimulation.advance(state, ((day - 1) * 5 + phase.index) * 60000);
+    DistrictSimulation.advance(
+      state,
+      ((day - 1) * 5 + phase.index) * StarterCatalog.phaseMilliseconds,
+    );
 
 DistrictGame matureApartment() => DistrictGame(
   watermark: 0,
@@ -118,8 +121,11 @@ void main() {
     final offline = matureApartment();
     final online = matureApartment();
     at(offline, 22, GamePhase.afternoon);
-    for (var minute = 1; minute <= 107; minute++) {
-      DistrictSimulation.advance(online, minute * 60000);
+    for (var phase = 1; phase <= 107; phase++) {
+      DistrictSimulation.advance(
+        online,
+        phase * StarterCatalog.phaseMilliseconds,
+      );
     }
     expect(offline.toJson(), online.toJson());
     final snapshot = offline.toJson();

@@ -12,6 +12,99 @@ LocalProfile profile(int slot) => LocalProfile(
 );
 
 void main() {
+  test('legacy clock catches up at its old speed and migrates once', () async {
+    final database = await openNewInMemoryDatabase();
+    final repository = GameRepository(open: () async => database);
+    final legacy =
+        DistrictGame(
+            watermark: 0,
+            remainder: 30000,
+            nextBuildingId: 2,
+            buildings: [
+              ApartmentBuilding(
+                id: 1,
+                footprint: const Footprint(0, 0, 2, 4),
+                stage: ConstructionStage.ready,
+                occupied: {0, 1, 2, 3, 4, 5},
+                pendingRent: 12345,
+              ),
+            ],
+          ).toJson()
+          ..['version'] = 1
+          ..remove('phaseMilliseconds');
+    await GameRepository.store.record('1').put(database, legacy);
+    final migrated = await repository.update(profile(1), 270000);
+    expect(migrated.day, 2);
+    expect(migrated.phaseIndex, 0);
+    expect(migrated.lastClosing, 1);
+    expect(migrated.balance, 3996880);
+    expect(migrated.pendingRent, 84345);
+    expect(migrated.phaseMilliseconds, 5000);
+    expect(migrated.toJson()['version'], 2);
+    expect(
+      (await repository.update(profile(1), 270000)).toJson(),
+      migrated.toJson(),
+    );
+    expect((await repository.update(profile(1), 274999)).phaseIndex, 0);
+    expect((await repository.update(profile(1), 275000)).phaseIndex, 1);
+    await database.close();
+  });
+
+  test('legacy remainder scales even on an unchanged or backward clock', () {
+    final legacy = DistrictGame(watermark: 1000, remainder: 30000).toJson()
+      ..['version'] = 1
+      ..remove('phaseMilliseconds');
+    for (final now in [0, 1000]) {
+      final state = DistrictGame.fromJson(legacy);
+      DistrictSimulation.advance(state, now);
+      expect(state.watermark, 1000);
+      expect(state.remainder, 2500);
+      expect(state.phaseIndex, 0);
+      DistrictSimulation.advance(state, 3500);
+      expect(state.phaseIndex, 1);
+      expect(state.remainder, 0);
+    }
+  });
+
+  test('failed migration transaction preserves the legacy save', () async {
+    final database = await openNewInMemoryDatabase();
+    final repository = GameRepository(open: () async => database);
+    final legacy = DistrictGame(watermark: 0, remainder: 59999).toJson()
+      ..['version'] = 1
+      ..remove('phaseMilliseconds');
+    await GameRepository.store.record('1').put(database, legacy);
+    await expectLater(
+      repository.update(profile(1), 1, (_) => throw StateError('failed write')),
+      throwsStateError,
+    );
+    expect(await GameRepository.store.record('1').get(database), legacy);
+    final migrated = await repository.update(profile(1), 1);
+    expect(migrated.phaseIndex, 1);
+    expect(migrated.remainder, 0);
+    await database.close();
+  });
+
+  test('countdown follows five-second phase boundaries', () async {
+    final database = await openNewInMemoryDatabase();
+    var now = 0;
+    final model = DistrictViewModel(
+      profile(1),
+      GameRepository(open: () async => database),
+      now: () => DateTime.fromMillisecondsSinceEpoch(now),
+    );
+    await model.save();
+    expect(model.secondsRemaining, 5);
+    now = 4999;
+    expect(model.secondsRemaining, 1);
+    now = 5000;
+    expect(model.secondsRemaining, 0);
+    await model.save();
+    expect(model.game!.phaseIndex, 1);
+    expect(model.secondsRemaining, 5);
+    model.dispose();
+    await database.close();
+  });
+
   test('legacy slots initialize once and transactions serialize simultaneous reservations', () async {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
@@ -39,9 +132,10 @@ void main() {
     final second = await repository.update(profile(2), 1000);
     expect(second.balance, 4000000);
     expect(second.buildings, isEmpty);
-    final paid = await repository.update(profile(1), 241000);
+    final closingTime = 1000 + 4 * StarterCatalog.phaseMilliseconds;
+    final paid = await repository.update(profile(1), closingTime);
     expect(paid.balance, 0);
-    expect((await repository.update(profile(1), 241000)).balance, 0);
+    expect((await repository.update(profile(1), closingTime)).balance, 0);
     await database.close();
   });
 
@@ -79,10 +173,17 @@ void main() {
   test('unsupported/corrupt game saves are preserved and cannot become a new wallet', () async {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
-    final bad = {'version': 99, 'balance': 9};
-    await GameRepository.store.record('1').put(database, bad);
-    await expectLater(repository.update(profile(1), 0), throwsFormatException);
-    expect(await GameRepository.store.record('1').get(database), bad);
+    for (final bad in [
+      {'version': 99, 'balance': 9},
+      DistrictGame(watermark: 0).toJson()..['phaseMilliseconds'] = 1000,
+    ]) {
+      await GameRepository.store.record('1').put(database, bad);
+      await expectLater(
+        repository.update(profile(1), 0),
+        throwsFormatException,
+      );
+      expect(await GameRepository.store.record('1').get(database), bad);
+    }
     await database.close();
   });
 }

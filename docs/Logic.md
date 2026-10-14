@@ -2,11 +2,11 @@
 
 ## Implementation status
 
-The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements the approved apartment starter catalog, five one-minute phases, queued purchases, sequential shell/B1 construction, Morning admissions, Sunday rent, daily parking/expenses/tax and chronological offline catch-up. `GameRepository` reads, simulates and writes a full versioned snapshot in a Sembast transaction (SQLite on Android; IndexedDB on Web) before the district view model publishes success. `SaveManager` retains the five-slot legacy/profile metadata store. Unsupported or corrupt snapshots are preserved. See [Gameplay.md](Gameplay.md) and [Setup.md](Setup.md) for implementation details and the remaining building/upgrade catalogs.
+The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements the approved apartment starter catalog, five 5-second phases, queued purchases, sequential shell/B1 construction, Morning admissions, Sunday rent, daily parking/expenses/tax and chronological offline catch-up. `GameRepository` reads, simulates and writes a full versioned snapshot in a Sembast transaction (SQLite on Android; IndexedDB on Web) before the district view model publishes success. `SaveManager` retains the five-slot legacy/profile metadata store. Unsupported or corrupt snapshots are preserved. See [Gameplay.md](Gameplay.md) and [Setup.md](Setup.md) for implementation details and the remaining building/upgrade catalogs.
 
 ## Game State & Data Models
 - **SaveManager:** Handles local serialization for up to **5 distinct Profile slots**.
-- **TimeManager:** Tracks the current `Day`, in-game weekday and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile. One day is five real minutes. Day 1 is Monday; `(day - 1) % 7 == 6` identifies Sunday.
+- **TimeManager:** Tracks the current `Day`, in-game weekday and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile. One day is 25 real seconds, with 5 seconds per phase. Day 1 is Monday; `(day - 1) % 7 == 6` identifies Sunday.
 - **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
 - **Road layout:** Tracks generated road segments outside building footprints. A confirmed occupied construction plot creates its surrounding road automatically; compatible shared segments are represented once. Road layout is part of full local game state, not profile metadata.
 - **Building:** Attributes include `id`, `type`, `luxuryLevel`, `parkingQuota` (calculated from underground levels). 
@@ -45,7 +45,7 @@ Persist weekly rent, pending daily accruals, completed closing IDs and the game-
 ## Offline Idle Generation Logic
 - The game relies on the local device clock to simulate the passage of in-game **Days** while offline.
 - **Offline Calculation:** 
-  1. Determine nonnegative elapsed time from the saved device-clock watermark; retain the game-day/phase remainder and convert at five real minutes per game day. Do not use real-world Sundays for rent billing.
+  1. Determine nonnegative elapsed time from the saved device-clock watermark; retain the game-day/phase remainder and convert at 25 real seconds per game day. Do not use real-world Sundays for rent billing. Schema 1 saves first catch up at 60 seconds per phase; schema 2 stores the interval. After catch-up, scale the phase remainder proportionally to the current 5-second interval and commit the migration atomically with the snapshot. Backward clocks retain the watermark while still migrating fractional progress. Unknown schemas/intervals remain errors and must not reset a wallet.
   2. Simulate missed phases and closings chronologically without a cap, including construction, rent accrual, daily receipts, maintenance, taxes and purchases. Collect apartment rent at each crossed in-game Sunday Noon; retain it pending when no Sunday is crossed.
   3. Save the resulting wallet, pending rent, closing IDs, orders and clock together, then publish the already-applied summary. Retrying/loading the same result must not duplicate rent. Backward device-clock changes add no elapsed time and must not lower the saved watermark.
 

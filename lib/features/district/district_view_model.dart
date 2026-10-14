@@ -66,7 +66,7 @@ class DistrictViewModel extends ChangeNotifier {
       game = next;
       if (next.advancedDays > 1) {
         returnSummary =
-            '${next.advancedDays} game days processed. Balance change: ${formatMoney(next.balance - next.balanceBeforeAdvance)}. Rent still pending: ${formatMoney(next.pendingRent)}.';
+            'Away for ${next.advancedDays} days. Balance: ${formatMoney(next.balance - next.balanceBeforeAdvance)}. Uncollected rent: ${formatMoney(next.pendingRent)}.';
       }
       return true;
     } on GameplayException catch (failure) {
@@ -99,14 +99,15 @@ class DistrictViewModel extends ChangeNotifier {
 
   int get secondsRemaining {
     final state = game;
-    if (state == null) return 60;
+    final interval = StarterCatalog.phaseMilliseconds;
+    if (state == null) return interval ~/ 1000;
     final delta = (_now().millisecondsSinceEpoch - state.watermark).clamp(
       0,
-      60000,
+      interval,
     );
     return ((StarterCatalog.phaseMilliseconds - state.remainder - delta) / 1000)
         .ceil()
-        .clamp(0, 60);
+        .clamp(0, interval ~/ 1000);
   }
 
   @override
