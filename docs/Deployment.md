@@ -1,5 +1,18 @@
 # Netlify Web deployment
 
+## Approved building art, progress and manual opening — 2026-10-14
+
+Source [`1f1afac`](https://github.com/norfabagas/building-management-tycoon-game/commit/1f1afac) uses the approved apartment exterior image directly, adds map/detail construction bars and percentages, and requires **Open to Business** after both jobs finish. Schema 3 preserves already-open buildings while preventing older clients from automatically opening completed-but-closed construction. Admissions still begin at the next Morning after opening; prices, capacity, five-second phases and other financial rules are unchanged.
+
+- Published to https://bmt.niceblue.biz.id with the existing CLI workflow.
+- Deploy [`6acf10cf5408a342b1f9f9ac`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acf10cf5408a342b1f9f9ac); connector confirms current/ready.
+- Live `main.dart.js` SHA-256 matches the tested release: `3E649BE4E0DBE3147ACD98304A9F109FFA6EF9E0FA42B3B42EC0D6E59C0FB66B`.
+- Live offline manifest returns HTTP 200 and 201 resources. Hosting remains manual CLI; GitHub pushes are separate.
+- Formatting, analysis, all 50 tests and the final release Web build pass. The ten gameplay UI tests were repeated after the final help-copy adjustment. The approved asset catalog validates all 158 assets/124 frames; apartment PNG bytes match its unchanged catalog hash. Android compilation was attempted and remains blocked by the missing SDK.
+- Browser review used an ignored in-memory fixture to verify approved art, live progress, completed construction remaining closed for several game days, the manual action and portrait layout. No production player saves were edited. The review server is stopped. Evidence is linked in Gameplay.md.
+
+Close existing game tabs and reopen to activate the updated cache; keep site storage intact. Older app clients cannot read schema 3 and must not overwrite the upgraded snapshots.
+
 ## Pacing, copy and pinch release — 2026-10-14
 
 Source [`6103052`](https://github.com/norfabagas/building-management-tycoon-game/commit/6103052) adds 5-second phases (25-second days), concise construction/finance/tenant copy and continuous focal-point pinch zoom at 50%–200%. Schema 2 records the clock interval; older saves catch up at their original speed before changing interval and preserving phase progress. Five slots, prices, per-game-day rules and phase order remain unchanged.
