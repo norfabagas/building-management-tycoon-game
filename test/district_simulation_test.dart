@@ -22,27 +22,29 @@ DistrictGame matureApartment() => DistrictGame(
 );
 
 void main() {
-  test('confirm reserves complete quote and roads; payment only at Noon', () {
-    final state = DistrictGame(watermark: 0);
-    DistrictSimulation.place(state, const Footprint(0, 0, 2, 4));
-    expect(state.balance, 4000000);
-    expect(state.reserved, 2000000);
-    expect(state.available, 2000000);
-    expect(state.roads.length, 16);
-    expect(
-      state.roads.intersection(state.buildings.single.footprint.cells.toSet()),
-      isEmpty,
-    );
-    at(state, 1, GamePhase.night);
-    expect(state.balance, 4000000);
-    at(state, 1, GamePhase.noon);
-    expect(state.balance, 2000000);
-    expect(state.reserved, 0);
-    expect(state.statement!.purchases, 2000000);
-    expect(state.buildings.single.stage, ConstructionStage.paid);
-    at(state, 1, GamePhase.noon);
-    expect(state.balance, 2000000);
-  });
+  test(
+    'confirm immediately charges complete quote; Noon does not charge twice',
+    () {
+      final state = DistrictGame(watermark: 0);
+      DistrictSimulation.place(state, const Footprint(0, 0, 2, 4));
+      expect(state.balance, 2000000);
+      expect(state.roads.length, 16);
+      expect(
+        state.roads.intersection(
+          state.buildings.single.footprint.cells.toSet(),
+        ),
+        isEmpty,
+      );
+      at(state, 1, GamePhase.night);
+      expect(state.balance, 2000000);
+      at(state, 1, GamePhase.noon);
+      expect(state.balance, 2000000);
+      expect(state.statement!.purchases, 2000000);
+      expect(state.buildings.single.stage, ConstructionStage.paid);
+      at(state, 1, GamePhase.noon);
+      expect(state.balance, 2000000);
+    },
+  );
 
   test('shell lasts two days, then B1 one; opening is manual before Morning admissions', () {
     final state = DistrictGame(watermark: 0);
@@ -228,19 +230,17 @@ void main() {
     expect(state.roads.length, 24); // 16 + 12 minus 4 compatible shared tiles.
     DistrictSimulation.cancel(state, 1);
     expect(state.roads.length, 12);
-    expect(state.reserved, 1000000);
+    expect(state.balance, 3000000);
     at(state, 1, GamePhase.noon);
-    expect(
-      () => DistrictSimulation.cancel(state, 2),
-      throwsA(isA<GameplayException>()),
-    );
+    DistrictSimulation.cancel(state, 2);
+    expect(state.balance, 4000000);
+    expect(state.buildings, isEmpty);
   });
 
   test('losses remain negative, pending rent cannot finance purchases', () {
     final state = matureApartment()..balance = 0;
     at(state, 1, GamePhase.noon);
     expect(state.balance, -3120);
-    expect(state.available, 0);
     expect(state.pendingRent, greaterThan(0));
     expect(
       () => DistrictSimulation.place(state, const Footprint(10, 0, 1, 2)),

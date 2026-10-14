@@ -34,11 +34,6 @@ class BuildingUpgradePanel extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       const Text('Add one level or lift at a time. Your building stays open.'),
-      const SizedBox(height: 8),
-      Text(
-        'Available: ${formatMoney(model.game!.available)}',
-        style: const TextStyle(fontWeight: FontWeight.w700),
-      ),
       if (building.stage != ConstructionStage.ready) ...[
         const SizedBox(height: 12),
         const Text('Open the building before upgrading.'),
@@ -58,13 +53,13 @@ class BuildingUpgradePanel extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text('${(model.upgradeProgress(building) * 100).floor()}%'),
-        if (order.stage == UpgradeStage.reserved)
-          TextButton(
-            onPressed: model.busy || model.error != null
-                ? null
-                : () => unawaited(model.cancelUpgrade(building.id)),
-            child: const Text('Cancel unpaid upgrade'),
-          ),
+        Text('Full refund: ${formatMoney(order.kind.cost(building))}'),
+        TextButton(
+          onPressed: model.busy || model.error != null
+              ? null
+              : () => unawaited(model.cancelUpgrade(building.id)),
+          child: const Text('Cancel upgrade'),
+        ),
       ],
       const SizedBox(height: 16),
       LayoutBuilder(
@@ -204,7 +199,7 @@ class BuildingUpgradePanel extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Funds are reserved now. Construction starts next game day after payment.',
+                'Charged immediately. Cancel before completion for a full refund.',
               ),
               if (kind == BuildingUpgrade.floor)
                 const Text('New tenants still need a free parking bay.'),

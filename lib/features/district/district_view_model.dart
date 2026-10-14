@@ -102,7 +102,7 @@ class DistrictViewModel extends ChangeNotifier {
       game = next;
       if (next.advancedDays > 1) {
         returnSummary =
-            'Away for ${next.advancedDays} days. Balance: ${formatMoney(next.balance - next.balanceBeforeAdvance)}. Uncollected rent: ${formatMoney(next.pendingRent)}.';
+            'Away for ${next.advancedDays} days. Net change: ${formatMoney(next.balance - next.balanceBeforeAdvance)}. Uncollected rent: ${formatMoney(next.pendingRent)}.';
       }
       return true;
     } on GameplayException catch (failure) {

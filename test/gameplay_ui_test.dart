@@ -83,7 +83,7 @@ void main() {
       final untouched = (await tester.runAsync(
         () => GameRepository.store.record('1').get(database),
       ))!;
-      expect(DistrictGame.fromJson(untouched).reserved, 0);
+      expect(DistrictGame.fromJson(untouched).balance, state.balance);
       await tester.tap(review);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Confirm upgrade'));
@@ -93,17 +93,20 @@ void main() {
         () => GameRepository.store.record('1').get(database),
       ))!;
       final reserved = DistrictGame.fromJson(source);
-      expect(reserved.balance, state.balance);
-      expect(reserved.reserved, 800000);
+      expect(reserved.balance, state.balance - 800000);
+      expect(find.text(formatMoney(state.balance - 800000)), findsOneWidget);
+      expect(find.text('Available'), findsNothing);
+      expect(find.text('Dollars'), findsNothing);
+      expect(find.text('Pending rent'), findsNothing);
       expect(reserved.buildings.single.upgrade!.kind, BuildingUpgrade.floor);
-      await tester.ensureVisible(find.text('Cancel unpaid upgrade'));
-      await tester.tap(find.text('Cancel unpaid upgrade'));
+      await tester.ensureVisible(find.text('Cancel upgrade'));
+      await tester.tap(find.text('Cancel upgrade'));
       await tester.pumpAndSettle();
       expect(find.text('Add floor · Queued'), findsNothing);
       final canceled = (await tester.runAsync(
         () => GameRepository.store.record('1').get(database),
       ))!;
-      expect(DistrictGame.fromJson(canceled).reserved, 0);
+      expect(DistrictGame.fromJson(canceled).balance, state.balance);
       await tester.ensureVisible(find.text('Back to floors'));
       await tester.tap(find.text('Back to floors'));
       await tester.pumpAndSettle();
@@ -384,7 +387,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.text('Dollars'), findsOneWidget);
+        expect(find.text('Balance'), findsOneWidget);
         await tester.tap(find.text('Build'));
         await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('Choose apartment'));
@@ -415,14 +418,14 @@ void main() {
           ),
         ))!;
         expect(saved.buildings.length, 1);
-        expect(saved.balance, 4000000);
-        expect(saved.reserved, 1000000);
+        expect(saved.balance, 3000000);
+        expect(find.text(r'$30,000.00'), findsOneWidget);
         expect(saved.roads.length, 12);
         expect(find.text('Queued'), findsOneWidget);
         expect(find.text('Construction · 0%'), findsOneWidget);
         expect(find.text('Open to Business'), findsNothing);
-        await tester.ensureVisible(find.text('Cancel unpaid order'));
-        await tester.tap(find.text('Cancel unpaid order'));
+        await tester.ensureVisible(find.text('Cancel building'));
+        await tester.tap(find.text('Cancel building'));
         await tester.pumpAndSettle();
         final canceled = (await tester.runAsync(
           () => repository.update(
@@ -432,7 +435,8 @@ void main() {
         ))!;
         expect(canceled.buildings, isEmpty);
         expect(canceled.roads, isEmpty);
-        expect(canceled.available, 4000000);
+        expect(canceled.balance, 4000000);
+        expect(find.text(r'$40,000.00'), findsOneWidget);
         await tester.tap(find.text('Finances'));
         await tester.pumpAndSettle();
         expect(find.text('No transactions yet'), findsOneWidget);

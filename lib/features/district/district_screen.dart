@@ -180,18 +180,8 @@ class _DistrictScreenState extends State<DistrictScreen>
                       children: [
                         _stat(
                           ProductionAssets.iconsDollar,
-                          'Dollars',
+                          'Balance',
                           formatMoney(game.balance),
-                        ),
-                        _stat(
-                          ProductionAssets.iconsBuild,
-                          'Available',
-                          formatMoney(game.available),
-                        ),
-                        _stat(
-                          ProductionAssets.iconsSunday,
-                          'Pending rent',
-                          formatMoney(game.pendingRent),
                         ),
                         _stat(
                           ProductionAssets.iconsClock,
@@ -593,8 +583,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           _line('B1 · 1 game day', formatMoney(site?.basementCost ?? 0)),
           _line('Surrounding road', 'Included · 1 tile wide'),
           const Divider(),
-          _line('Total reserved', formatMoney(site?.quote ?? 0)),
-          _line('Available dollars', formatMoney(game.available)),
+          _line('Total cost', formatMoney(site?.quote ?? 0)),
           if (error != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -619,7 +608,7 @@ class _DistrictScreenState extends State<DistrictScreen>
             ),
           const SizedBox(height: 12),
           const Text(
-            'Construction: 2 game days, plus 1 for parking.',
+            'Charged immediately. Construction: 2 game days, plus 1 for parking.',
             style: TextStyle(color: GameColors.muted, fontSize: 13),
           ),
         ],
@@ -633,10 +622,6 @@ class _DistrictScreenState extends State<DistrictScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _heading('Finances'),
-        _line('Dollars', formatMoney(game.balance)),
-        _line('Reserved purchases', formatMoney(game.reserved)),
-        _line('Available to spend', formatMoney(game.available)),
-        const Divider(),
         _line('Pending apartment rent', formatMoney(game.pendingRent)),
         _line('Next rent', 'Sunday · Day ${game.nextSunday}'),
         const SizedBox(height: 8),
@@ -656,7 +641,8 @@ class _DistrictScreenState extends State<DistrictScreen>
           _line('Tax', formatMoney(-closing.tax)),
           const Divider(),
           _line('Operating net', formatMoney(closing.net)),
-          _line('Purchase payments', formatMoney(-closing.purchases)),
+          _line('Purchases', formatMoney(-closing.purchases)),
+          _line('Refunds', formatMoney(closing.refunds)),
         ],
         const SizedBox(height: 12),
         _line('Total earned', formatMoney(game.earned)),
@@ -754,8 +740,7 @@ class _DistrictScreenState extends State<DistrictScreen>
         if (!ready) ...[
           const SizedBox(height: 10),
           Text(switch (building.stage) {
-            ConstructionStage.reserved =>
-              'Construction queued. Funds are reserved.',
+            ConstructionStage.reserved => 'Paid. Construction queued.',
             ConstructionStage.paid => 'Paid. Construction starts tomorrow.',
             ConstructionStage.shell =>
               'Building apartments · Days ${building.startedDay}–${building.startedDay + 1}.',
@@ -767,16 +752,16 @@ class _DistrictScreenState extends State<DistrictScreen>
               'Construction complete. Ready to open.',
             ConstructionStage.ready => '',
           }),
-          if (building.stage == ConstructionStage.reserved) ...[
-            const SizedBox(height: 14),
-            GameButton(
-              label: 'Cancel unpaid order',
-              secondary: true,
-              onPressed: _model.busy || _model.error != null
-                  ? null
-                  : () => unawaited(_cancel(building.id)),
-            ),
-          ],
+          const SizedBox(height: 14),
+          Text('Full refund: ${formatMoney(building.footprint.quote)}'),
+          const SizedBox(height: 8),
+          GameButton(
+            label: 'Cancel building',
+            secondary: true,
+            onPressed: _model.busy || _model.error != null
+                ? null
+                : () => unawaited(_cancel(building.id)),
+          ),
         ],
         if (_model.currentFloor > 0) ...[
           const Divider(),

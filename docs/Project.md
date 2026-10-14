@@ -22,6 +22,8 @@ Casual to mid-core players who enjoy simulation, strategy, and purely offline id
 
 ## Current milestone
 
+The latest money feedback uses one visible **Balance**, immediate purchase deductions and immediate full cancellation refunds before building opening/upgrade completion. Schema 5 migrates queued orders once without charging already-paid work again; daily/Sunday operating settlement is unchanged. See PROJECTS.md for current validation/publication and Economy.md for the contract.
+
 The 2026-10-14 apartment upgrade iteration adds **Upgrade building** in building detail, with purchases up to 10 floors, 3 basements, 3 standard lifts and 1 executive lift. This replaces the prior one-floor/permanent-floor restriction. See [Economy.md](Economy.md) for the user-approved level/lift costs, upkeep, durations and deferred happiness effects. Schema 4 stores upgrades and migrates schemas 1/2/3 while preserving existing progress. `PROJECTS.md` records validation/publication for this iteration; earlier release notes below describe the starting point.
 
 The current Web release is live on [Netlify](https://bmt.niceblue.biz.id) as of 2026-10-14, including the approved apartment exterior, construction bars/percentages and manual **Open to Business**, alongside Floor 1/B1 detail, 5-second phases and pinch zoom. Existing saves preserve open businesses and migrate safely to schema 3. It was uploaded through the CLI; GitHub continuous deployment is not connected. See [Deployment.md](Deployment.md) for the project identity, update procedure and production validation.

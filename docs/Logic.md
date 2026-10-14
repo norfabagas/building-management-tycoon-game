@@ -5,6 +5,8 @@
 The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements the approved apartment starter catalog, five 5-second phases, queued purchases, sequential shell/B1 construction, Morning admissions, Sunday rent, daily parking/expenses/tax and chronological offline catch-up. `GameRepository` reads, simulates and writes a full versioned snapshot in a Sembast transaction (SQLite on Android; IndexedDB on Web) before the district view model publishes success. `SaveManager` retains the five-slot legacy/profile metadata store. Unsupported or corrupt snapshots are preserved. See [Gameplay.md](Gameplay.md) and [Setup.md](Setup.md) for implementation details and the remaining building/upgrade catalogs.
 
 ## Game State & Data Models
+
+Schema 5 adds `purchasesSinceClosing`/`refundsSinceClosing` and closing refund history. Before offline advancement, schemas 1–4 deduct only their previously uncharged queued building/upgrade costs. Already-paid states keep their balance. This conversion and the user action commit in one repository transaction. Immediate actions change Balance; closing copies/clears history counters and applies only operating net. Cancellation removes a pre-opening building or unfinished upgrade and credits its quote once; retain incurred costs and prior tenants/rent. Old clients reject schema 5.
 - **SaveManager:** Handles local serialization for up to **5 distinct Profile slots**.
 - **TimeManager:** Tracks the current `Day`, in-game weekday and `Phase` (Morning, Day, Afternoon, Night, Noon/Closing) for the active profile. One day is 25 real seconds, with 5 seconds per phase. Day 1 is Monday; `(day - 1) % 7 == 6` identifies Sunday.
 - **CBD Area (Root):** Holds the `areaName`, `dollars` (primary funds), and a 2D layout of `Building` objects on the land.
@@ -17,7 +19,7 @@ The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements
     - `standardLifts`: Starts at 0, upgradable up to a max of 3.
     - `executiveLifts`: Starts at 0, upgradable up to a max of 1.
     - `hasStairs`: `true` by default.
-  - **Upgrade order:** One optional kind/stage/start-day per building. Reserve through `orderUpgrade`, debit at the next Noon, start next Morning, and increment the completed count at the final Noon (2 days for floors, 1 for basements/lifts). Existing business remains open. Price comes from `BuildingUpgrade`: floors/basements use the footprint rate, lifts use 1/4 or 1/2 of the immutable original floor+B1 quote. Each upgrade adds $40/day upkeep when completed and its paid cost to valuation. Lift rent/happiness effects are deferred by user approval.
+  - **Upgrade order:** One optional kind/stage/start-day per building. Debit Balance immediately through `orderUpgrade`, queue through the next Noon without another debit, start the following Morning, and increment the completed count at the final Noon (2 days for floors, 1 for basements/lifts). Existing business remains open. Price comes from `BuildingUpgrade`: floors/basements use the footprint rate, lifts use 1/4 or 1/2 of the immutable original floor+B1 quote. Each upgrade adds $40/day upkeep when completed and its paid cost to valuation. Lift rent/happiness effects are deferred by user approval.
   - **Capacity and navigation:** Completed floors multiply rooms per floor, completed basements multiply bays per basement. Stable zero-based room IDs span floors; admissions scan all rooms but never exceed free total parking or daily admissions. Per-basement parking use is allocated from B1 downward. Navigate completed levels only, skipping zero.
   - **Schema 4:** Persist completed counts and upgrade order in the existing local transaction. Read schemas 1/2/3 as one floor/B1 and zero lifts with no pending upgrade, preserving construction stage, tenants and ledger. Reject invalid caps, room/bay bounds or order state; older clients reject schema 4. Initial manual opening and clock migrations remain in force.
 - **Floor:** Represents a vertical level (can be negative for underground). Contains a list of `Room`/`Facility` objects.
@@ -30,9 +32,9 @@ The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements
 ## Revenue & Expense Calculation Logic
 
 The selected model is **Option 1: Relaxed idle**, with weekly apartment rent at Sunday Noon and daily settlement for other income. [Economy.md](Economy.md) defines current formulas and billing conventions. [EconomyOptions.md](EconomyOptions.md) is the original comparison; its daily-equivalent apartment figures do not describe the selected payment schedule.
-The player's Dollar balance is strictly updated on a daily basis. Throughout the day phases, transactions are simulated, but the actual funds are only modified during the **Noon (Closing the book)** phase.
+The single Balance changes immediately for confirmed purchases and cancellation refunds. Operating income, maintenance and tax still settle at Noon. Refunds never increase earned revenue or taxable cash gross.
 - **Synergy Multiplier:** Calculate eligible adjacent bonuses, sum them and cap the bonus at 15%. Individual bonuses/adjacency distance remain catalog work; the former +30% example is not a selected value.
-- **Closing The Books (Noon Phase):** `OperatingNet = CashGross - Maintenance - Tax`; `balanceAfter = balanceBefore + OperatingNet - queuedPurchaseCosts`. Settle reserved purchases once and show them separately from operating costs.
+- **Closing The Books (Noon Phase):** `OperatingNet = CashGross - Maintenance - Tax`; `balanceAfter = balanceBefore + OperatingNet`. Purchase/refund history accumulators are copied to the closing statement and cleared without affecting the wallet again.
 - **Gross Revenue (Polymorphic):**
   - *Hotel Logic:* `Daily Revenue = Occupied Rooms * Room Rate * synergyModifier`. (Occupied Rooms constrained by `parkingQuota`).
   - *Apartment Logic:* Add the occupied day's portion of weekly rent, with that day's eligible synergy, to a pending ledger. `ApartmentCashGross = pendingRentIncludingToday` only on Sunday; otherwise it is zero. Transfer and clear the ledger in the same Sunday transaction. Occupancy is constrained by parking; leaving tenants retain any already-earned pending rent.
@@ -66,7 +68,7 @@ Construction now ends at `parkingDone` and does not advance automatically to `re
   3. Player inputs `aboveGroundFloors`.
   4. **Unit Capacity Check:** System calculates `roomsPerFloor`. For Hotels and Apartments, this is mathematically derived based on the total area (`footprintWidth * footprintLength`), capping the number of units that can fit on a single floor.
   5. System calculates the initial capital required. 
-  6. On successful confirmation, reserve the purchase funds and mark the selected empty plot as occupied by a construction site. Generate its surrounding road in the same saved placement operation, merging compatible existing road segments without overwriting buildings. A failed/canceled placement leaves neither a site nor orphan roads. Payment and construction start still follow the selected Noon/Morning schedule.
+  6. On successful confirmation, deduct the complete quote from Balance and mark the selected empty plot as occupied by a construction site in the same transaction. Generate its surrounding road in the same saved placement operation, merging compatible existing road segments without overwriting buildings. A failed/canceled placement leaves neither a site nor orphan roads. Payment is immediate; the existing Noon queue transition and following-Morning construction start remain unchanged.
 
 ### Automatic road generation
 

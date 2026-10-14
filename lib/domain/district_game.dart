@@ -278,8 +278,9 @@ class ClosingStatement {
     required this.maintenance,
     required this.tax,
     required this.purchases,
+    this.refunds = 0,
   });
-  final int day, rent, parking, maintenance, tax, purchases;
+  final int day, rent, parking, maintenance, tax, purchases, refunds;
   int get gross => rent + parking;
   int get net => gross - maintenance - tax;
   Map<String, Object> toJson() => {
@@ -289,6 +290,7 @@ class ClosingStatement {
     'maintenance': maintenance,
     'tax': tax,
     'purchases': purchases,
+    'refunds': refunds,
   };
   factory ClosingStatement.fromJson(Map<String, dynamic> json) =>
       ClosingStatement(
@@ -298,6 +300,7 @@ class ClosingStatement {
         maintenance: json['maintenance'] as int,
         tax: json['tax'] as int,
         purchases: json['purchases'] as int,
+        refunds: json['refunds'] as int? ?? 0,
       );
 }
 
@@ -313,6 +316,8 @@ class DistrictGame {
     this.lastClosing = 0,
     this.nextBuildingId = 1,
     this.earned = 0,
+    this.purchasesSinceClosing = 0,
+    this.refundsSinceClosing = 0,
     List<ApartmentBuilding>? buildings,
     this.statement,
   }) : buildings = buildings ?? [];
@@ -324,7 +329,9 @@ class DistrictGame {
       remainder,
       lastClosing,
       nextBuildingId,
-      earned;
+      earned,
+      purchasesSinceClosing,
+      refundsSinceClosing;
   final List<ApartmentBuilding> buildings;
   ClosingStatement? statement;
   int advancedDays = 0;
@@ -342,19 +349,11 @@ class DistrictGame {
   ][weekday];
   int get nextSunday =>
       day + (6 - weekday) + (weekday == 6 && phaseIndex == 4 ? 7 : 0);
-  int get reserved =>
-      buildings
-          .where((b) => b.stage == ConstructionStage.reserved)
-          .fold(0, (sum, b) => sum + b.footprint.quote) +
-      buildings
-          .where((b) => b.upgrade?.stage == UpgradeStage.reserved)
-          .fold<int>(0, (sum, b) => sum + b.upgrade!.kind.cost(b));
-  int get available => math.max(0, balance - reserved);
   int get pendingRent => buildings.fold(0, (sum, b) => sum + b.pendingRent);
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': 4,
+    'version': 5,
     'catalog': 1,
     'phaseMilliseconds': phaseMilliseconds,
     'watermark': watermark,
@@ -365,6 +364,8 @@ class DistrictGame {
     'lastClosing': lastClosing,
     'nextBuildingId': nextBuildingId,
     'earned': earned,
+    'purchasesSinceClosing': purchasesSinceClosing,
+    'refundsSinceClosing': refundsSinceClosing,
     'buildings': buildings.map((b) => b.toJson()).toList(),
     'statement': statement?.toJson(),
   };
@@ -372,7 +373,8 @@ class DistrictGame {
     if ((json['version'] != 1 &&
             json['version'] != 2 &&
             json['version'] != 3 &&
-            json['version'] != 4) ||
+            json['version'] != 4 &&
+            json['version'] != 5) ||
         json['catalog'] != 1) {
       throw const FormatException('Unsupported game save');
     }
@@ -388,11 +390,17 @@ class DistrictGame {
       lastClosing: json['lastClosing'] as int,
       nextBuildingId: json['nextBuildingId'] as int,
       earned: json['earned'] as int,
+      purchasesSinceClosing: json['version'] == 5
+          ? json['purchasesSinceClosing'] as int
+          : 0,
+      refundsSinceClosing: json['version'] == 5
+          ? json['refundsSinceClosing'] as int
+          : 0,
       buildings: (json['buildings'] as List)
           .map(
             (b) => ApartmentBuilding.fromJson(
               Map<String, dynamic>.from(b as Map),
-              legacy: json['version'] != 4,
+              legacy: (json['version'] as int) < 4,
             ),
           )
           .toList(),
@@ -412,11 +420,30 @@ class DistrictGame {
         state.remainder >= state.phaseMilliseconds ||
         state.lastClosing != state.day - (state.phaseIndex == 4 ? 0 : 1) ||
         state.earned < 0 ||
+        state.purchasesSinceClosing < 0 ||
+        state.refundsSinceClosing < 0 ||
         state.nextBuildingId < 1 ||
         state.buildings.map((b) => b.id).toSet().length !=
             state.buildings.length ||
         state.buildings.any((b) => b.id >= state.nextBuildingId)) {
       throw const FormatException('Invalid game snapshot');
+    }
+    if (json['version'] != 5) {
+      // Old queued orders held funds outside the wallet. Debit them once before
+      // catch-up; later closings only advance their construction stage.
+      final queuedCost = state.buildings.fold<int>(
+        0,
+        (sum, building) =>
+            sum +
+            (building.stage == ConstructionStage.reserved
+                ? building.footprint.quote
+                : 0) +
+            (building.upgrade?.stage == UpgradeStage.reserved
+                ? building.upgrade!.kind.cost(building)
+                : 0),
+      );
+      state.balance -= queuedCost;
+      state.purchasesSinceClosing += queuedCost;
     }
     return state;
   }
@@ -438,8 +465,8 @@ abstract final class DistrictSimulation {
     }
     if (kind.count(building) >= kind.maximum) return 'Maximum reached.';
     if (building.upgrade != null) return 'Finish the current upgrade first.';
-    if (kind.cost(building) > state.available) {
-      return 'Not enough available dollars.';
+    if (kind.cost(building) > state.balance) {
+      return 'Not enough money.';
     }
     return null;
   }
@@ -448,14 +475,21 @@ abstract final class DistrictSimulation {
     final building = _find(state, id);
     final error = upgradeError(state, building, kind);
     if (error != null) throw GameplayException(error);
+    final cost = kind.cost(building);
+    state.balance -= cost;
+    state.purchasesSinceClosing += cost;
     building.upgrade = UpgradeOrder(kind: kind);
   }
 
   static void cancelUpgrade(DistrictGame state, int id) {
     final building = _find(state, id);
-    if (building.upgrade?.stage != UpgradeStage.reserved) {
-      throw const GameplayException('Only unpaid upgrades can be canceled.');
+    final order = building.upgrade;
+    if (order == null) {
+      throw const GameplayException('There is no upgrade to cancel.');
     }
+    final refund = order.kind.cost(building);
+    state.balance += refund;
+    state.refundsSinceClosing += refund;
     building.upgrade = null;
   }
 
@@ -530,8 +564,8 @@ abstract final class DistrictSimulation {
     if (site.width < 1 || site.length < 1 || site.rooms < 1) {
       return 'Choose at least two land tiles for an apartment.';
     }
-    if (site.quote > state.available) {
-      return 'Not enough available dollars for the shell and B1 parking.';
+    if (site.quote > state.balance) {
+      return 'Not enough money for the building and B1 parking.';
     }
     final roads = state.roads;
     if (site.cells.any(roads.contains)) {
@@ -549,6 +583,8 @@ abstract final class DistrictSimulation {
   static void place(DistrictGame state, Footprint site) {
     final error = placementError(state, site);
     if (error != null) throw GameplayException(error);
+    state.balance -= site.quote;
+    state.purchasesSinceClosing += site.quote;
     state.buildings.add(
       ApartmentBuilding(id: state.nextBuildingId++, footprint: site),
     );
@@ -556,9 +592,11 @@ abstract final class DistrictSimulation {
 
   static void cancel(DistrictGame state, int id) {
     final building = _find(state, id);
-    if (building.stage != ConstructionStage.reserved) {
-      throw const GameplayException('Only unpaid orders can be canceled.');
+    if (building.stage == ConstructionStage.ready) {
+      throw const GameplayException('An open building cannot be canceled.');
     }
+    state.balance += building.footprint.quote;
+    state.refundsSinceClosing += building.footprint.quote;
     state.buildings.remove(building);
   }
 
@@ -610,12 +648,11 @@ abstract final class DistrictSimulation {
 
   static void _close(DistrictGame state) {
     if (state.lastClosing >= state.day) return;
-    var rent = 0, parking = 0, maintenance = 0, valuation = 0, purchases = 0;
+    var rent = 0, parking = 0, maintenance = 0, valuation = 0;
     for (final building in state.buildings) {
       final upgrade = building.upgrade;
       if (upgrade?.stage == UpgradeStage.reserved) {
-        purchases += upgrade!.kind.cost(building);
-        upgrade.stage = UpgradeStage.paid;
+        upgrade!.stage = UpgradeStage.paid;
       } else if (upgrade?.stage == UpgradeStage.building &&
           state.day >= upgrade!.startedDay + upgrade.kind.days - 1) {
         switch (upgrade.kind) {
@@ -631,7 +668,6 @@ abstract final class DistrictSimulation {
         building.upgrade = null;
       }
       if (building.stage == ConstructionStage.reserved) {
-        purchases += building.footprint.quote;
         building.stage = ConstructionStage.paid;
       } else if (building.stage == ConstructionStage.shell &&
           state.day >= building.startedDay + 1) {
@@ -659,7 +695,7 @@ abstract final class DistrictSimulation {
       valuation += building.valuation;
     }
     final tax = (valuation + 1000) ~/ 2000 + ((rent + parking) + 25) ~/ 50;
-    state.balance += rent + parking - maintenance - tax - purchases;
+    state.balance += rent + parking - maintenance - tax;
     state.lastClosing = state.day;
     state.statement = ClosingStatement(
       day: state.day,
@@ -667,7 +703,10 @@ abstract final class DistrictSimulation {
       parking: parking,
       maintenance: maintenance,
       tax: tax,
-      purchases: purchases,
+      purchases: state.purchasesSinceClosing,
+      refunds: state.refundsSinceClosing,
     );
+    state.purchasesSinceClosing = 0;
+    state.refundsSinceClosing = 0;
   }
 }

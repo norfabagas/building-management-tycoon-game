@@ -53,7 +53,7 @@ void main() {
       (s) => DistrictSimulation.openBusiness(s, 1),
     );
     expect(opened.buildings.single.stage, ConstructionStage.ready);
-    expect(opened.toJson()['version'], 4);
+    expect(opened.toJson()['version'], 5);
     final repeated = await repository.update(
       profile(1),
       now,
@@ -95,7 +95,7 @@ void main() {
     expect(migrated.balance, 3996880);
     expect(migrated.pendingRent, 84345);
     expect(migrated.phaseMilliseconds, 5000);
-    expect(migrated.toJson()['version'], 4);
+    expect(migrated.toJson()['version'], 5);
     expect(
       (await repository.update(profile(1), 270000)).toJson(),
       migrated.toJson(),
@@ -182,8 +182,7 @@ void main() {
     ]);
     expect(outcomes.last.buildings.length, 2);
     final reloaded = await repository.update(profile(1), 1000);
-    expect(reloaded.reserved, 4000000);
-    expect(reloaded.available, 0);
+    expect(reloaded.balance, 0);
     final second = await repository.update(profile(2), 1000);
     expect(second.balance, 4000000);
     expect(second.buildings, isEmpty);

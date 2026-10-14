@@ -127,7 +127,7 @@ Every interactive component needs default, pressed, focus, disabled, and selecte
 | Build/StepHeader | type, footprint, floors/capacity, review | Back preserves entered plan; cancel returns to map |
 | Build/Footprint | dimensions, selected grid area, surrounding-road preview, valid/invalid | Manually draw the footprint; roads are outside usable building land and generate on successful placement |
 | Build/Capacity | residential rooms, office floor lease, F&B facility | Rooms calculated for hotels/apartments; don't apply room rules universally |
-| Build/Cost | estimate, unaffordable, ready | Reserve funds on confirmation, settle at Noon; exact prices remain catalog work |
+| Build/Cost | estimate, unaffordable, ready | Deduct the approved apartment quote immediately from Balance; cancellation refunds it immediately before opening |
 | Build/PermanentSize | notice and review summary | Footprint and rooms per floor fixed; 2026-10-14 override permits floor upgrades up to 10 |
 | Building/Summary | type, luxury, occupancy, parking | Parking quota limits occupancy |
 | Building/CrossSection | selected floor, above ground, B1/B2/B3 | Pan vertically; underground strictly parking |

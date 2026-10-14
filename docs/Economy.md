@@ -6,8 +6,10 @@ The user approved the apartment starter release on 2026-10-12 and apartment leve
 
 ## Approved apartment starter catalog
 
+The 2026-10-14 money feedback replaces deferred purchase settlement: display a single **Balance**, charge confirmed building/upgrade purchases immediately, and refund cancellations immediately. Schema 5 debits legacy queued orders once before catch-up, preserves already-paid orders and records purchase/refund history without changing the wallet again at Noon. Failed transactions leave the source unchanged. Income, rent, maintenance and taxes keep their existing schedule.
+
 - Above-ground shell: **$2,000 per footprint tile per above-ground floor**. Apartments start with **one above-ground floor**. The 2026-10-14 user request replaces the fixed-floor restriction with upgrades to 10 total floors; footprint and rooms per floor stay fixed.
-- Separate included B1 job: **$500 per footprint tile**. Reserve and settle the combined quote at Noon, then run the two-day shell and one-day parking jobs sequentially.
+- Separate included B1 job: **$500 per footprint tile**. Charge the combined quote immediately on confirmation, then run the two-day shell and one-day parking jobs sequentially.
 - Weekly rent: **$840 per occupied room**. Parking: **$10 per occupied tenant bay daily**. No visitor traffic in this starter release.
 - Daily maintenance: **$40 per completed above-ground floor + $40 per completed basement**. Completed shell valuation/upkeep apply while B1 is being built; occupancy still waits for operational parking.
 - Completed valuation: the paid cost of completed shell/B1 components. No tax on unbuilt components; once a component completes at Noon it contributes to that closing's valuation/upkeep, and tenant admissions wait until the next Morning.
@@ -26,7 +28,7 @@ The user confirmed reusing the existing level rates, upkeep and durations and se
 | Standard lift | 3 | Original floor+B1 quote / 4 | 1 | $40 |
 | Executive lift | 1 | Original floor+B1 quote / 2 | 1 | $40 |
 
-Limits include the initial Floor 1/B1. Lift prices remain fixed as levels/lifts are added; no compounding. Purchase review shows price, time and added upkeep. One upgrade per open building runs at a time. Reserve funds immediately, pay once at the next Noon, begin at the following Morning, and finish at Noon on the final day. Only unpaid orders can be canceled. Other buildings may run their own jobs against the same available wallet.
+Limits include the initial Floor 1/B1. Lift prices remain fixed as levels/lifts are added; no compounding. Purchase review shows price, time and added upkeep. One upgrade per open building runs at a time. Charge the single balance immediately on confirmation. Preserve the construction schedule: queue through the next Noon, begin at the following Morning, and finish at Noon on the final day. Cancel any unfinished upgrade for an immediate full purchase refund. Other buildings use the same balance.
 
 Business and existing tenants continue during upgrades. Completed work adds its paid cost to valuation and $40/day upkeep at the completion closing; unbuilt work adds neither. New floor/basement capacity becomes navigable then; tenant admissions wait until Morning and remain bounded by total parking. Initial buildings still require **Open to Business**; an upgrade does not close an existing business. Lift artwork/counts are installed, but no rent, admissions-speed or happiness bonus/penalty is applied until that system is defined.
 
@@ -42,14 +44,14 @@ Implementation and save behavior are recorded in [Gameplay.md](Gameplay.md).
 
 ## Capital, spending and construction
 
-- Start a new profile with **$40,000**. After initialization, wallet changes occur only at Noon, or in the batch of missed closings applied on load.
-- `Available = max(0, balance - reservedPurchases)`. Confirming a purchase reserves its complete quote immediately; projected income and pending apartment rent cannot fund a new reservation.
-- At Noon, settle each queued purchase once: `balanceAfter = balanceBefore + cashGross - maintenance - tax - queuedPurchaseCosts`. Keep purchase costs separate from operating net in the finance statement.
-- Construction begins at the next Morning after payment. The starter shell takes **2 game days**, followed by a separate **1-day B1 parking job**. The starter quote includes both jobs so the initial purchase can become usable.
+- Start a new profile with **$40,000**. Purchases and cancellation refunds change the wallet immediately. Income, upkeep and taxes still settle at Noon, including missed closings on load.
+- One wallet: `Balance`. Confirming a building or upgrade validates the quote against this balance and deducts it immediately in the same transaction. There is no separate available/reserved wallet. Projected income and uncollected rent cannot fund purchases.
+- At Noon, apply only `balanceAfter = balanceBefore + cashGross - maintenance - tax`. Purchase/refund amounts since the previous closing appear as history, with no second wallet mutation. Refunds are neither income nor earned revenue and are not revenue-taxed.
+- Construction keeps its existing queue schedule: move to the start-wait stage at the next Noon, then begin the following Morning. This stage transition never charges the wallet. The starter shell takes **2 game days**, followed by a separate **1-day B1 parking job**. The starter quote includes both jobs so the initial purchase can become usable.
 - When successful placement turns empty land into an occupied construction site, automatically generate the approved free one-tile surrounding road. Road space is outside the footprint and does not increase room or parking capacity. It causes no wallet debit.
 - Underground levels start at zero when the shell finishes. No occupancy is possible without completed parking. As requested on 2026-10-14, completed apartments wait for the player's **Open to Business** action. Admissions begin at the following Morning; no rent accrual or parking income before opening/admission. Completed upkeep and valuation taxes continue while closed. No opening fee or refund is added.
-- Release reservations if an unpaid order is canceled. Refunds after payment remain an open policy; do not implement them implicitly.
-- Operating losses may make the balance negative. Keep simulation running and block purchases when available funds are zero. No automatic loans, grants or gem-to-dollar conversions.
+- Cancel a building at any stage before Open to Business, or an unfinished upgrade, for an immediate full purchase-price refund in the same local transaction. Remove its job/site and unshared roads. Retain daily upkeep/tax already incurred, existing business tenants and earned rent. Open buildings and completed upgrades have no cancellation action. Repeated cancellation must not refund twice.
+- Operating losses may make the balance negative. Keep simulation running and block purchases when the balance cannot cover their quote. No automatic loans, grants or gem-to-dollar conversions.
 
 ## Capacity and demand
 

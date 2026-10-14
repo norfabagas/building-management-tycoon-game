@@ -15,7 +15,10 @@ Use `./tool/flutter.ps1 devices` and `./tool/flutter.ps1 run -d <android-device-
 
 The app includes the approved branding, five local slots, district naming, an unbounded pannable map, apartment planning and cost review, automatic surrounding roads, construction, tenant rooms and finance statements. Apartment rent pays weekly at in-game Sunday Noon; parking pays daily. Select **Upgrade building** in a building detail to add floors (10 total), parking basements (3 total), standard lifts (3) and an executive lift (1). Full snapshots and missed-time settlement remain local. Other building types, luxury and happiness effects await their catalogs. See [gameplay](docs/Gameplay.md) and [setup](docs/Setup.md) for commands and limitations.
 
+The HUD shows one **Balance**. Buildings and upgrades charge it immediately on confirmation; canceling a building before opening or an unfinished upgrade refunds the full purchase price immediately. Income, upkeep and taxes keep their daily/Sunday schedule.
+
 ## Documentation
+
 - [Project and scope](docs/Project.md)
 - [Visual design and navigation](docs/Design.md)
 - [Rules and mechanics](docs/Rules.md)

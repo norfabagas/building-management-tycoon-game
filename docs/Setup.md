@@ -98,11 +98,11 @@ The reference uses Trebuchet MS. No redistributable application font file was su
 
 ## Next implementation gates
 
-The approved apartment catalog and selected Relaxed idle rules are implemented; see [Economy.md](Economy.md) and [Gameplay.md](Gameplay.md). The 2026-10-14 upgrade release supports 10 total above-ground floors, 3 parking basements, 3 standard lifts and 1 executive lift. The footprint and rooms per floor stay immutable. Schema 4 persists upgrades; schemas 1/2/3 migrate transactionally with their prior rooms, rent and opening state. Hotel/office/F&B prices and demand, happiness effects, luxury, synergy, unlocks, achievements and decorations remain future work. Offices will lease whole floors.
+The approved apartment catalog and selected Relaxed idle rules are implemented; see [Economy.md](Economy.md) and [Gameplay.md](Gameplay.md). The 2026-10-14 upgrade release supports 10 total above-ground floors, 3 parking basements, 3 standard lifts and 1 executive lift. The footprint and rooms per floor stay immutable. Schema 5 persists immediate purchase/refund history and upgrades. Schemas 1/2/3/4 migrate transactionally: debit old queued orders once, preserve already-paid work, rooms, rent and opening state. Hotel/office/F&B prices and demand, happiness effects, luxury, synergy, unlocks, achievements and decorations remain future work. Offices will lease whole floors.
 
 Every implementation change must update the documentation and retain these constraints.
 
-Automatic surrounding roads are implemented with the approved free one-tile ring, including corners, on unbounded land. Validate building and road conflicts together; shared road tiles merge and unpaid cancellation retains other plots' shared segments. Roads add no room or parking capacity.
+Automatic surrounding roads are implemented with the approved free one-tile ring, including corners, on unbounded land. Validate building and road conflicts together; shared road tiles merge and pre-opening cancellation refunds the purchase and retains other plots' shared road segments. Roads add no room or parking capacity.
 
 ## Validation on 2026-10-12
 

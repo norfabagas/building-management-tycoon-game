@@ -37,53 +37,50 @@ void finish(DistrictGame state, BuildingUpgrade kind) {
 }
 
 void main() {
-  test('floor reserves once, pays once, completes after two days and keeps tenants', () {
-    final state = district();
-    final building = state.buildings.single;
-    final original = building.footprint.toJson();
-    final balance = state.balance;
-    DistrictSimulation.orderUpgrade(state, 1, BuildingUpgrade.floor);
-    expect(state.balance, balance);
-    expect(state.reserved, 1600000);
-    expect(state.available, balance - 1600000);
-    expect(building.rooms, 6);
-    at(state, 1, GamePhase.noon);
-    expect(state.statement!.purchases, 1600000);
-    expect(state.reserved, 0);
-    final paid = state.toJson();
-    at(state, 1, GamePhase.noon);
-    expect(state.toJson(), paid);
-    expect(
-      () => DistrictSimulation.cancelUpgrade(state, 1),
-      throwsA(isA<GameplayException>()),
-    );
-    at(state, 2);
-    expect(building.upgrade!.stage, UpgradeStage.building);
-    expect(DistrictSimulation.upgradeProgress(state, building), 0);
-    expect(
-      DistrictSimulation.upgradeProgress(
-        state,
-        building,
-        elapsedMilliseconds: 2500,
-      ),
-      closeTo(.5 / 9, .00001),
-    );
-    at(state, 2, GamePhase.noon);
-    expect(building.aboveGroundFloors, 1);
-    at(state, 3, GamePhase.noon);
-    expect(building.aboveGroundFloors, 2);
-    expect(building.rooms, 12);
-    expect(building.occupied, {0, 1, 2, 3, 4, 5});
-    expect(building.footprint.toJson(), original);
-    expect(building.stage, ConstructionStage.ready);
-    expect(building.valuation, 3600000);
-    expect(state.statement!.maintenance, 12000);
-    expect(state.statement!.purchases, 0);
-    expect(state.statement!.tax, 1920);
-    at(state, 4);
-    expect(building.occupied.length, 9);
-    expect(building.occupied.contains(6), isTrue);
-  });
+  test(
+    'floor charges immediately, completes after two days and keeps tenants',
+    () {
+      final state = district();
+      final building = state.buildings.single;
+      final original = building.footprint.toJson();
+      final balance = state.balance;
+      DistrictSimulation.orderUpgrade(state, 1, BuildingUpgrade.floor);
+      expect(state.balance, balance - 1600000);
+      expect(building.rooms, 6);
+      at(state, 1, GamePhase.noon);
+      expect(state.statement!.purchases, 1600000);
+      expect(state.balance, balance - 1600000 - 3120);
+      final paid = state.toJson();
+      at(state, 1, GamePhase.noon);
+      expect(state.toJson(), paid);
+      at(state, 2);
+      expect(building.upgrade!.stage, UpgradeStage.building);
+      expect(DistrictSimulation.upgradeProgress(state, building), 0);
+      expect(
+        DistrictSimulation.upgradeProgress(
+          state,
+          building,
+          elapsedMilliseconds: 2500,
+        ),
+        closeTo(.5 / 9, .00001),
+      );
+      at(state, 2, GamePhase.noon);
+      expect(building.aboveGroundFloors, 1);
+      at(state, 3, GamePhase.noon);
+      expect(building.aboveGroundFloors, 2);
+      expect(building.rooms, 12);
+      expect(building.occupied, {0, 1, 2, 3, 4, 5});
+      expect(building.footprint.toJson(), original);
+      expect(building.stage, ConstructionStage.ready);
+      expect(building.valuation, 3600000);
+      expect(state.statement!.maintenance, 12000);
+      expect(state.statement!.purchases, 0);
+      expect(state.statement!.tax, 1920);
+      at(state, 4);
+      expect(building.occupied.length, 9);
+      expect(building.occupied.contains(6), isTrue);
+    },
+  );
 
   for (final kind in BuildingUpgrade.values) {
     test(
@@ -159,7 +156,7 @@ void main() {
     },
   );
 
-  test('unpaid upgrades cancel; duplicate, unaffordable and unopened orders do not mutate', () {
+  test('upgrades refund immediately; duplicate, unaffordable and unopened orders do not mutate', () {
     final state = district();
     final building = state.buildings.single;
     DistrictSimulation.orderUpgrade(state, 1, BuildingUpgrade.standardLift);
@@ -170,7 +167,7 @@ void main() {
     );
     expect(state.toJson(), queued);
     DistrictSimulation.cancelUpgrade(state, 1);
-    expect(state.reserved, 0);
+    expect(state.balance, 100000000);
     state.balance = 499999;
     final poor = state.toJson();
     expect(
@@ -228,7 +225,7 @@ void main() {
         }
       }
       final migrated = DistrictGame.fromJson(source);
-      expect(migrated.toJson()['version'], 4);
+      expect(migrated.toJson()['version'], 5);
       expect(migrated.buildings.single.aboveGroundFloors, 1);
       expect(migrated.buildings.single.completedBasements, 1);
       expect(migrated.buildings.single.occupied, {0, 1, 2, 3, 4, 5});
@@ -253,7 +250,7 @@ void main() {
     expect(() => DistrictGame.fromJson(invalid), throwsFormatException);
   });
 
-  test('transaction rollback and competing upgrade requests retain exactly one reservation', () async {
+  test('transaction rollback and competing upgrade requests charge exactly one purchase', () async {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
     final profile = LocalProfile(
@@ -292,8 +289,9 @@ void main() {
     final queued = await repository.update(profile, 0);
     expect(queued.buildings.single.upgrade, isNotNull);
     expect(
-      queued.reserved,
-      queued.buildings.single.upgrade!.kind.cost(queued.buildings.single),
+      queued.balance,
+      100000000 -
+          queued.buildings.single.upgrade!.kind.cost(queued.buildings.single),
     );
     await database.close();
   });
