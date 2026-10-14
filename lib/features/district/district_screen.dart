@@ -34,7 +34,8 @@ class _DistrictScreenState extends State<DistrictScreen>
   );
   bool _buildMenu = false, _drawing = false, _review = false, _finance = false;
   Footprint? _preview;
-  int? _selected;
+  int? get _selected => _model.selectedBuildingId;
+  set _selected(int? id) => _model.selectBuilding(id);
   int _reset = 0;
 
   @override
@@ -130,7 +131,7 @@ class _DistrictScreenState extends State<DistrictScreen>
             builder: (context, constraints) {
               final sidePanel = constraints.maxWidth >= 700;
               final smallHeight = constraints.maxHeight < 450;
-              final activePanel = _buildMenu || _selected != null || _finance;
+              final activePanel = _buildMenu || _finance;
               return Padding(
                 padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
                 child: Column(
@@ -211,63 +212,76 @@ class _DistrictScreenState extends State<DistrictScreen>
                       ),
                     const SizedBox(height: 10),
                     Expanded(
-                      child: sidePanel
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Expanded(child: _map(game)),
-                                const SizedBox(width: 12),
-                                SizedBox(
-                                  width: constraints.maxWidth >= 1100
-                                      ? 340
-                                      : 280,
-                                  child: _panel(game),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                Expanded(child: _map(game)),
-                                if (activePanel) ...[
-                                  const SizedBox(height: 10),
-                                  SizedBox(
-                                    height: math.min(
-                                      270,
-                                      constraints.maxHeight * .42,
-                                    ),
-                                    child: _panel(game),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Offstage(
+                            offstage: _selected != null,
+                            child: sidePanel
+                                ? Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: _map(game)),
+                                      const SizedBox(width: 12),
+                                      SizedBox(
+                                        width: constraints.maxWidth >= 1100
+                                            ? 340
+                                            : 280,
+                                        child: _panel(game),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    children: [
+                                      Expanded(child: _map(game)),
+                                      if (activePanel) ...[
+                                        const SizedBox(height: 10),
+                                        SizedBox(
+                                          height: math.min(
+                                            270,
+                                            constraints.maxHeight * .42,
+                                          ),
+                                          child: _panel(game),
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                                ],
-                              ],
-                            ),
+                          ),
+                          if (_selected != null) _floorView(game),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        GameButton(
-                          label: 'Build',
-                          onPressed: blocked ? null : _chooseBuild,
-                        ),
-                        const SizedBox(width: 10),
-                        GameButton(
-                          label: 'Finances',
-                          secondary: true,
-                          onPressed: () => setState(() {
-                            _finance = true;
-                            _buildMenu = false;
-                            _drawing = false;
-                            _preview = null;
-                            _selected = null;
-                          }),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          tooltip: 'Center map',
-                          onPressed: () => setState(() => _reset++),
-                          icon: const Icon(Icons.center_focus_strong),
-                        ),
-                      ],
-                    ),
+                    if (_selected != null)
+                      _floorNavigation()
+                    else
+                      Row(
+                        children: [
+                          GameButton(
+                            label: 'Build',
+                            onPressed: blocked ? null : _chooseBuild,
+                          ),
+                          const SizedBox(width: 10),
+                          GameButton(
+                            label: 'Finances',
+                            secondary: true,
+                            onPressed: () => setState(() {
+                              _finance = true;
+                              _buildMenu = false;
+                              _drawing = false;
+                              _preview = null;
+                              _selected = null;
+                            }),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            tooltip: 'Center map',
+                            onPressed: () => setState(() => _reset++),
+                            icon: const Icon(Icons.center_focus_strong),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               );
@@ -292,6 +306,61 @@ class _DistrictScreenState extends State<DistrictScreen>
       _preview = null;
       _finance = false;
     }),
+  );
+
+  Widget _floorNavigation() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Semantics(
+        liveRegion: true,
+        child: Text(
+          'Current floor: ${_model.floorLabel}',
+          key: const ValueKey('current-floor'),
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+      const SizedBox(height: 6),
+      Row(
+        children: [
+          Expanded(
+            child: GameButton(
+              label: 'Exit building',
+              secondary: true,
+              onPressed: _closePanel,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: GameButton(
+              label: 'Go up',
+              onPressed: _model.canGoUp ? _model.goUp : null,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: GameButton(
+              label: 'Go down',
+              onPressed: _model.canGoDown ? _model.goDown : null,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+
+  Widget _floorView(DistrictGame game) => Material(
+    key: const ValueKey('building-floor-view'),
+    color: GameColors.surface,
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(
+      side: const BorderSide(color: GameColors.border, width: 2),
+      borderRadius: BorderRadius.circular(18),
+    ),
+    child: SingleChildScrollView(
+      key: ValueKey('floor-$_selected-${_model.currentFloor}'),
+      padding: const EdgeInsets.all(16),
+      child: _buildingPanel(game),
+    ),
   );
 
   Widget _stat(String asset, String label, String value) => Container(
@@ -336,8 +405,6 @@ class _DistrictScreenState extends State<DistrictScreen>
           ? _financePanel(game)
           : _buildMenu
           ? _buildPanel(game)
-          : _selected != null
-          ? _buildingPanel(game)
           : _welcome(game),
     ),
   );
@@ -591,19 +658,6 @@ class _DistrictScreenState extends State<DistrictScreen>
           'Permanent footprint',
           '${building.footprint.width} × ${building.footprint.length} tiles',
         ),
-        _line('Above ground', '1 floor · Stairs'),
-        _line(
-          'Tenants',
-          '${building.occupied.length} / ${building.footprint.rooms} rooms',
-        ),
-        _line(
-          'B1 parking',
-          building.parkingComplete
-              ? '${building.occupied.length} / ${building.footprint.bays} bays used'
-              : 'Waiting for construction',
-        ),
-        _line('Pending weekly rent', formatMoney(building.pendingRent)),
-        _line('Weekly rent per room', formatMoney(StarterCatalog.weeklyRent)),
         if (!ready) ...[
           const SizedBox(height: 10),
           Text(switch (building.stage) {
@@ -631,7 +685,8 @@ class _DistrictScreenState extends State<DistrictScreen>
                   : () => unawaited(_cancel(building.id)),
             ),
           ],
-        ] else ...[
+        ],
+        if (_model.currentFloor == 1) ...[
           const Divider(),
           Row(
             children: [
@@ -644,19 +699,68 @@ class _DistrictScreenState extends State<DistrictScreen>
             ],
           ),
           const SizedBox(height: 10),
-          for (var room = 0; room < building.footprint.rooms; room++) ...[
-            _room(building, room),
-            const SizedBox(height: 8),
-          ],
-          const Divider(),
+          _line(
+            'Tenants',
+            '${building.occupied.length} / ${building.footprint.rooms} rooms',
+          ),
+          _line('Pending weekly rent', formatMoney(building.pendingRent)),
+          _line('Weekly rent per room', formatMoney(StarterCatalog.weeklyRent)),
+          if (ready)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = math.max(
+                  1,
+                  (constraints.maxWidth / 300).floor(),
+                );
+                final width =
+                    (constraints.maxWidth - (columns - 1) * 12) / columns;
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (var room = 0; room < building.footprint.rooms; room++)
+                      SizedBox(width: width, child: _room(building, room)),
+                  ],
+                );
+              },
+            )
+          else
+            const Text(
+              'Rooms open after construction and parking are complete.',
+            ),
+          const SizedBox(height: 16),
           Image.asset(
-            ProductionAssets.transportParkingEmpty,
-            height: 100,
+            ProductionAssets.transportStairs,
+            height: 90,
+            excludeFromSemantics: true,
+          ),
+          Text(
+            building.parkingComplete
+                ? 'Stairs connect Floor 1 and B1. Use Go down to visit parking.'
+                : 'B1 opens when parking construction is complete.',
+          ),
+        ] else ...[
+          const Divider(),
+          const Text(
+            'B1 · Parking only',
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 12),
+          Image.asset(
+            building.occupied.isEmpty
+                ? ProductionAssets.transportParkingEmpty
+                : ProductionAssets.transportParkingOccupied,
+            height: 220,
             width: double.infinity,
             fit: BoxFit.contain,
             excludeFromSemantics: true,
           ),
-          _line('B1 · Parking only', '${building.footprint.bays} bays'),
+          _line('Parking capacity', '${building.footprint.bays} bays'),
+          _line('Tenant bays used', '${building.occupied.length}'),
+          _line(
+            'Available bays',
+            '${building.footprint.bays - building.occupied.length}',
+          ),
           const Text(
             'Tenant bays are allocated before visitors. Apartments in this release have no visitor traffic.',
             style: TextStyle(fontSize: 13, color: GameColors.muted),

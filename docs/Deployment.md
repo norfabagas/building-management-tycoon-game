@@ -1,5 +1,11 @@
 # Netlify Web deployment
 
+## Floor navigation release preparation — 2026-10-14
+
+The requested floor-navigation update passes formatting, analysis, all 35 tests and asset validation. The final `lib/main.dart` release Web build succeeds with 201 offline resources. Browser floor review used a separate ignored in-memory fixture, never the production entry point or existing player saves. Local Android build is blocked by the missing Android SDK.
+
+The Netlify connector confirms project ID `326e5871-656b-4f7b-87c1-664e001d4ac4`, primary custom-domain URL https://bmt.niceblue.biz.id, and previously published deploy `6acce85f79f475141097f789`. CLI login is separate from the connector; the deployment-session authorization ticket still reports pending. No new production upload has occurred yet. Update this section with actual publication evidence after authentication succeeds.
+
 The Web app is published at [building-management-tycoon-game.netlify.app](https://building-management-tycoon-game.netlify.app). The user resumed deployment on 2026-10-12 and authorized the Netlify CLI. The latest release replaces the empty-canvas bootstrap with the approved apartment starter: construction, automatic roads, local full-game saves, tenant rooms, Sunday rent and daily finances. See [Gameplay.md](Gameplay.md) for scope and remaining building/upgrade systems.
 
 ## Build and hosting configuration

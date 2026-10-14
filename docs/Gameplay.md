@@ -10,6 +10,8 @@ Payment waits for Noon, construction starts next Morning, shell construction las
 
 ## Map navigation
 
+As of 2026-10-14, selecting a building opens a full floor detail in place of the map and its side/bottom panel. Floor 1 shows its room modules and existing tenant actions. Completed B1 shows only parking, with capacity and used/free bays from the saved footprint/occupancy. The fixed bottom toolbar orders Exit building, Go up and Go down beneath a live current-floor label. Floor 1 and B1 connect directly; unavailable directions are disabled. Construction detail remains visible for unfinished buildings, and B1 becomes accessible when parking completes. No extra floor, pricing or save-schema mechanics are introduced. Selection and floor position belong to `DistrictViewModel`; each entry starts at Floor 1 and exit restores the mounted map's zoom/pan. `PROJECTS.md` tracks this iteration and verification.
+
 Map navigation includes bottom-right **− / +** controls for mouse/touch users. Start at 100%, step by 25 percentage points and disable the relevant button at 50%/200%. The viewport centre remains on the same world point after zooming. Terrain, roads, buildings, previews and picking share one scaled projection. Button clicks never draw land or select a building. Camera zoom/pan belong to a presentation view model and last for the current district screen session; they are not game-save data. Center map clears panning while keeping the chosen zoom.
 
 Zoom validation on 2026-10-12: formatting, analysis, all **32 tests**, Android debug and offline Web builds passed. Tests cover focal-point preservation after panning, both zoom limits/disabled buttons, mouse footprint selection at 125%, building picking at 75%, and control clicks that do not create selections. Portrait, landscape and desktop construction flows now run at 125% with semantics enabled. Zoom controls are 48-pixel native button targets in a separate overlay, twelve pixels from the map's bottom/right edges, above the page toolbar/hosting footer.
@@ -31,6 +33,14 @@ Map drawing remains available while a background snapshot commits; saved mutatio
 References: [Sembast transactions](https://pub.dev/packages/sembast), [SQLite adapter](https://pub.dev/packages/sembast_sqflite), [IndexedDB adapter](https://pub.dev/packages/sembast_web).
 
 ## Validation status
+
+On 2026-10-14, the floor-navigation change passed formatting, Flutter analysis and all **35 tests**. New responsive tests click an actual map building, assert that the map is hidden, navigate Floor 1/B1 with disabled boundaries, return at 125% zoom, and select a different unfinished building. Existing room-vacancy/pending-rent and construction tests still pass. The asset validator passes all 158 resources/124 frames. The final release Web build includes 201 offline resources. Local Android debug compilation was attempted but blocked by the missing Android SDK.
+
+An isolated in-memory browser fixture verified desktop, portrait and landscape floor layouts, parking-only B1, live current-floor labels, scrolling beneath fixed navigation, and restored map zoom. The fixture is ignored and never included in the production entry point or player saves.
+
+![Floor 1 detail with bottom navigation](images/building-floor-1.jpg)
+
+![B1 parking detail](images/building-b1.jpg)
 
 On 2026-10-12, formatting, Flutter analysis and all **28 tests** passed. Coverage includes Noon-only payments, shell/B1 timing, Morning admissions, Sunday rent with Sunday accrual, departing-tenant ledger retention, daily tax/upkeep, negative balances, shared-road cancellation, concurrent reservations, failed-transaction preservation, unsupported saves, multi-week offline parity and portrait/landscape/desktop construction and room flows. The four gameplay UI tests were repeated after the final drawing/rendering fixes. Android debug and release Web builds passed; Web still includes all 201 offline resources and the unchanged 158-asset catalog.
 

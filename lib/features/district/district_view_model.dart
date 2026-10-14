@@ -18,6 +18,38 @@ class DistrictViewModel extends ChangeNotifier {
   String? error;
   String? returnSummary;
   Timer? _timer;
+  int? selectedBuildingId;
+  int currentFloor = 1;
+
+  ApartmentBuilding? get selectedBuilding {
+    for (final building in game?.buildings ?? <ApartmentBuilding>[]) {
+      if (building.id == selectedBuildingId) return building;
+    }
+    return null;
+  }
+
+  String get floorLabel => currentFloor == 1 ? 'Floor 1' : 'B1';
+  bool get canGoUp => selectedBuilding != null && currentFloor == -1;
+  bool get canGoDown =>
+      selectedBuilding?.parkingComplete == true && currentFloor == 1;
+
+  void selectBuilding(int? id) {
+    selectedBuildingId = id;
+    currentFloor = 1;
+    notifyListeners();
+  }
+
+  void goUp() {
+    if (!canGoUp) return;
+    currentFloor = 1;
+    notifyListeners();
+  }
+
+  void goDown() {
+    if (!canGoDown) return;
+    currentFloor = -1;
+    notifyListeners();
+  }
 
   Future<bool> save([void Function(DistrictGame)? action]) async {
     if (busy || _disposed) return false;

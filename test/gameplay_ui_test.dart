@@ -23,6 +23,106 @@ void main() {
     const Size(844, 390),
     const Size(1440, 900),
   ]) {
+    testWidgets('building floor navigation replaces map at $size', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final database = (await tester.runAsync(openNewInMemoryDatabase))!;
+      final state = DistrictGame(
+        watermark: DateTime.now().millisecondsSinceEpoch,
+        nextBuildingId: 3,
+        buildings: [
+          ApartmentBuilding(
+            id: 1,
+            footprint: const Footprint(3, 3, 2, 2),
+            stage: ConstructionStage.ready,
+            occupied: {0},
+          ),
+          ApartmentBuilding(id: 2, footprint: const Footprint(0, 4, 2, 2)),
+        ],
+      );
+      await tester.runAsync(
+        () => GameRepository.store.record('1').put(database, state.toJson()),
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildGameTheme(),
+          home: DistrictScreen(
+            profile: localProfile,
+            repository: GameRepository(open: () async => database),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('map-zoom-in')));
+      await tester.pumpAndSettle();
+      final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+      final projection = MapProjection(map.size, Offset.zero, zoom: 1.25);
+      await tester.tapAt(map.topLeft + projection.point(4, 4));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byKey(const ValueKey('district-map')), findsNothing);
+      expect(find.byKey(const ValueKey('building-floor-view')), findsOneWidget);
+      expect(find.text('Apartment 1'), findsOneWidget);
+      expect(find.text('Current floor: Floor 1'), findsOneWidget);
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Go up'))
+            .onPressed,
+        isNull,
+      );
+      await tester.ensureVisible(find.text('Room 1'));
+      await tester.tap(find.text('Go down'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Current floor: B1'), findsOneWidget);
+      expect(find.text('B1 · Parking only'), findsOneWidget);
+      expect(find.text('Room 1'), findsNothing);
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Go down'))
+            .onPressed,
+        isNull,
+      );
+      await tester.tap(find.text('Go up'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Current floor: Floor 1'), findsOneWidget);
+      expect(find.text('Room 1'), findsOneWidget);
+      await tester.tap(find.text('Exit building'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('district-map')), findsOneWidget);
+      expect(find.text('125%'), findsOneWidget);
+      // Select the other building through the native district list.
+      if (size.width < 700) {
+        // On portrait the list is intentionally collapsed; use the map.
+        final nextMap = tester.getRect(
+          find.byKey(const ValueKey('district-map')),
+        );
+        final nextProjection = MapProjection(
+          nextMap.size,
+          Offset.zero,
+          zoom: 1.25,
+        );
+        await tester.tapAt(nextMap.topLeft + nextProjection.point(1, 5));
+      } else {
+        await tester.ensureVisible(find.text('Apartment 2'));
+        await tester.tap(find.text('Apartment 2'));
+      }
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Apartment 2'), findsOneWidget);
+      expect(find.text('Current floor: Floor 1'), findsOneWidget);
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Go down'))
+            .onPressed,
+        isNull,
+      );
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.runAsync(database.close);
+    });
+
     testWidgets('draw, review, reserve and cancel apartment at $size', (
       tester,
     ) async {

@@ -1,5 +1,9 @@
 # Project setup
 
+## Floor navigation validation — 2026-10-14
+
+This Windows workstation installed the pinned SDK using `tool/bootstrap.ps1`; an initial dependency-cache rename was denied by Windows and succeeded on the bootstrap retry. Formatting (33 files), analysis, all 35 tests, asset validation (158 assets/124 frames) and the final offline release Web build (201 resources) pass. An Android debug build was attempted and reports **No Android SDK found**. The older machine-specific Android setup below does not apply to this workstation. Android device execution remains unverified. See `PROJECTS.md` and Gameplay.md for browser review of the new floor navigation.
+
 ## Approved source
 
 The user approved the current [Canva artwork and game kit](https://www.canva.com/d/51ESDDCqVSdEOVT) on 2026-10-11. Follow [DesignKit.md](DesignKit.md) and preserve the BM mark from `design/brand/`. The game contract remains [Project.md](Project.md), [Platform.md](Platform.md), [Rules.md](Rules.md), [Logic.md](Logic.md) and [Design.md](Design.md).
