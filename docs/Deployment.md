@@ -1,5 +1,19 @@
 # Netlify Web deployment
 
+## Single balance and immediate purchase/refund release — 2026-10-14
+
+Source [`550bf01`](https://github.com/norfabagas/building-management-tycoon-game/commit/550bf01) shows one **Balance**, immediately deducts confirmed building/upgrade prices, and immediately refunds cancellation before building opening or upgrade completion. Construction timing and daily/Sunday income/cost schedules stay unchanged. Schema 5 migrates legacy queued orders exactly once without charging already-paid work again. Purchase/refund history does not mutate the wallet again at closing; refunds are not income or taxable revenue.
+
+- Pushed to `origin/main` and uploaded through the existing CLI workflow.
+- Deploy [`6acf193d578dc06d1622110b`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acf193d578dc06d1622110b) is current/ready according to the connector; production is https://bmt.niceblue.biz.id.
+- Live `main.dart.js` returns HTTP 200 and matches the tested release SHA-256: `E991772342C1ADB544EFDDAFD522C72322885C051025E0E29468C459A9406D65`.
+- The live offline manifest returns HTTP 200 with 201 resources. Hosting remains manual CLI, separate from GitHub pushes.
+- Browser startup on the isolated deploy-permalink origin succeeds and shows all five local slots. No game data was created; that temporary tab is closed.
+- All 75 tests pass, including the final 23 money/UI cases. Formatting, analysis, asset validation (158 resources/124 frames) and release Web build pass. Android debug compilation was attempted and remains blocked by the missing SDK.
+- An ignored in-memory localhost fixture verifies $40,000 → $30,000 on confirmation, then $30,000 → $40,000 on cancellation during construction. The next closing records the $10,000 refund with zero income/tax and no second balance change. The temporary review tab/server are closed. Production player saves were not edited. Gameplay.md links the screenshots.
+
+Close old tabs and reopen to activate the new code/cache; retain site storage. Older app clients reject schema 5. Existing room, rent, level/lift counts and initial manual-opening state migrate transactionally.
+
 ## Apartment floors, basements and lifts — 2026-10-14
 
 Source [`75c21ac`](https://github.com/norfabagas/building-management-tycoon-game/commit/75c21ac) adds **Upgrade building** beside the apartment title, cost/upkeep/time review, queued upgrades up to 10 floors, 3 basements, 3 standard lifts and 1 executive lift, construction progress, expanded per-floor room/parking detail and schema 4 migration. The user approved level rates/times and lift prices/upkeep/installation, with rent/happiness effects deferred. See Economy.md for the exact catalog. Existing businesses stay open while upgrading; initial manual opening remains required.

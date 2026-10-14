@@ -18,6 +18,8 @@ Flutter/Dart targets Android and Web, portrait and landscape, with MVVM and five
 
 The earlier upgrade and release notes below retain historical validation; the immediate-payment contract above takes precedence over their reservation/payment wording.
 
+Source `550bf01` is pushed to GitHub and published as Netlify deploy `6acf193d578dc06d1622110b`. The connector confirms current/ready. Production JavaScript matches the tested release (`E991772342C1ADB544EFDDAFD522C72322885C051025E0E29468C459A9406D65`); the live offline manifest returns HTTP 200 with 201 resources. See Deployment.md. Close older tabs and reopen without clearing site storage to activate schema 5.
+
 ## Building upgrades — 2026-10-14
 
 - **Upgrade building** appears beside the building title, including while initial construction is unfinished. Its menu shows all four upgrade types, current/maximum counts, cost, added daily upkeep, construction time and a review/confirmation step. Buying requires an open building; show disabled states for construction, an active job, insufficient available funds and the maximum. One upgrade runs per building; separate buildings may upgrade concurrently. Unpaid upgrades can be canceled.
