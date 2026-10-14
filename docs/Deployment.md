@@ -6,7 +6,9 @@ The requested floor-navigation update passes formatting, analysis, all 35 tests 
 
 The Netlify connector confirms project ID `326e5871-656b-4f7b-87c1-664e001d4ac4` and primary custom-domain URL https://bmt.niceblue.biz.id. The deployment-session CLI authorization succeeded. Source `792d3b2` was uploaded as deploy `6acefcd72165772656d61c1c`, and its production JavaScript SHA-256 matched the local release (`F6142494C9FB7A3D8DCF804B795F0E8CF393BC46E6C5601E930064FE69C14245`). The live offline manifest returned HTTP 200 with 201 resources, and the hosted profile screen launched successfully.
 
-The production check identified the hosting badge's possible overlap with the new navigation on narrow screens. A follow-up reserves 64 pixels beneath Web floor controls; Android spacing remains unchanged. Formatting, analysis and all 35 tests pass again. Final footer-clearance publication evidence is recorded below after upload.
+The production check identified the hosting badge's possible overlap with the new navigation on narrow screens. A follow-up reserves 64 pixels beneath Web floor controls; Android spacing remains unchanged. Formatting, analysis and all 35 tests pass again. The final Web build includes 201 offline resources. Updated desktop/portrait browser screenshots are in Gameplay.md; the review server is stopped.
+
+**Final publication:** source `82a049a`, deploy [`6acefdf545e77e78c0a6d783`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6acefdf545e77e78c0a6d783), production https://bmt.niceblue.biz.id. The Netlify connector confirms this is the current ready deploy. Production `main.dart.js` SHA-256 matches the tested final build: `F5AC08FA3723289617370DE9F6DDC28FAD9DA66DA812817219BEDF6963510C8D`. The final live offline manifest returns HTTP 200 and 201 resources. No real player saves were edited during validation.
 
 The site's API build settings have no Git provider/repository configured. Hosting therefore remains manual CLI upload; GitHub pushes do not deploy automatically. `.netlify/` remains ignored and CLI credentials are outside the tracked project.
 

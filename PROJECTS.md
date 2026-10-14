@@ -28,3 +28,5 @@ Browser review used an ignored, in-memory fixture entry point (`.tools/review_fl
 - GitHub: `norfabagas/building-management-tycoon-game`, existing `main` branch.
 - Netlify project ID: `326e5871-656b-4f7b-87c1-664e001d4ac4`; primary URL verified through the connector: https://bmt.niceblue.biz.id.
 - `docs/Deployment.md` records the upload procedure and previous release. `.netlify/` remains ignored. Never commit credentials or build outputs. Browser saves are origin-specific.
+- Final floor-navigation source `82a049a` is pushed to GitHub and published as Netlify deploy `6acefdf545e77e78c0a6d783` on 2026-10-14. The connector confirms current/ready, and the production JavaScript SHA-256 matches the tested Web build. The offline manifest returns HTTP 200 with 201 resources. Git-based hosting remains unconnected; deployments use the CLI.
+- GitHub Actions for initial source `792d3b2` returned `startup_failure` with zero jobs. Its cause is not established; do not claim remote CI or Android validation from that run.
