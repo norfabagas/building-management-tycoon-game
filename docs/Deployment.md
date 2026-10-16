@@ -1,5 +1,20 @@
 # Netlify Web deployment
 
+## Gameplay quality audit — 2026-10-16
+
+Source [`1cf74ae`](https://github.com/norfabagas/building-management-tycoon-game/commit/1cf74ae83244792d0f15013e206941684a727b5c) is pushed to GitHub main and published on the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad24326f0a099547884454c`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad24326f0a099547884454c) is ready/current, published 2026-10-16 at 22:30 WIB. Upload used the existing linked site with `deploy --prod --dir build/web --no-build`; its message records the source hash. Git continuous deployment remains unconnected.
+
+The [gameplay audit](GameplayValidation.md) explains investment-review changes, room-first detail, compact landscape presentation, the explicit opening shortcut, stable cash animation and transient offline synergy caching. Approved economy, artwork, BM mark, clock, local saves and schema remain unchanged. The build script now explicitly compiles `lib/main.dart`.
+
+- Formatting of 52 Dart files, Flutter analysis, all **132 tests**, the additional four usability checks, and asset validation (**158 resources / 124 frames**) pass. Android debug build was attempted and remains blocked by the missing SDK.
+- Final production Web build succeeds with **201 offline resources**, all present locally. No review fixture or new large design source was included. Screenshots/benchmarks remain ignored in `.tools/`.
+- Primary-site JavaScript, service worker and offline manifest return HTTP **200** and match the final local files byte-for-byte. SHA-256: `main.dart.js` = `4250c851b25a470272cc6225a9902e41e0f7fc097062ae28d58ec49990c758f8`; worker = `d04e2db60bc2b19a366ffa14290ce5fb47bd3cf59a7b8ccf9b743a1b9ac1426e`; manifest = `d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea`.
+- Isolated localhost play verified profile creation, drawing/purchase, queued construction, manual opening, admissions, pending rent, daily costs, Sunday collection and retained progress across the cache update. Final portrait/844×390 landscape review shows the real room art and fixed controls, with no console errors. Local evidence: `.tools/gameplay-audit-landscape.jpg` and `gameplay-audit-portrait.jpg`.
+- The isolated [deploy origin](https://6ad24326f0a099547884454c--building-management-tycoon-game.netlify.app) starts with five empty slots. No production-origin save was opened or modified. GitHub's status connector returned no statuses for the source; this is local validation, not evidence of a passing remote CI run.
+- Live Figma/native atomic components remain quota-blocked. Android hardware, physical pinch/speakers and disconnected-browser execution remain unverified. See the audit for measured performance and assessment limits.
+
+Retain site data to preserve saves. Load the primary URL to allow the offline update to install, then close all game tabs and reopen it to activate the new worker. If an older offline build was still cached, a second close/reopen after installation may be needed; do not clear storage. Deploy permalinks have separate local saves. Later documentation-only commits do not change this deployed bundle.
+
 ## Four building types and Figma gameplay — 2026-10-16
 
 Source [`5658c22`](https://github.com/norfabagas/building-management-tycoon-game/commit/5658c22b6941fbb3ab42efacfb48655c99c0af06) is pushed to `origin/main` and published at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id) as deploy [`6ad23abd9abc018af77fbd70`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad23abd9abc018af77fbd70). Netlify confirms ready/current, published at 21:54 WIB. The deploy title records the source hash; upload used the existing linked site and `deploy --prod --dir build/web --no-build` after a successful production build of `lib/main.dart`.

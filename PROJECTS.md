@@ -6,6 +6,8 @@ The [audit](docs/GameplayValidation.md) fixes investment clarity, B1-limited cap
 
 Formatting of 52 Dart files, analysis, all 132 tests, asset validation (158 resources / 124 frames) and the 201-resource Web release pass. The production build explicitly targets `lib/main.dart`; review fixtures remain ignored. Browser review retains the QA save across the update and checks actual admissions/rent/costs, portrait/landscape presentation and purchase consequences. Android SDK/device verification and live Figma/native atomization remain unavailable. See Deployment.md for verified publication evidence.
 
+Published source `1cf74ae` as ready/current Netlify deploy `6ad24326f0a099547884454c` at 22:30 WIB. Primary JavaScript/worker/manifest return 200 and match the tested build; the isolated deploy origin starts with five slots. Close/reopen installed updates while retaining site data. See Deployment.md for hashes and review limitations.
+
 ## Four-type Figma implementation — 2026-10-16
 
 The user approved [catalog 2](docs/FigmaCatalogProposal.md). Apartment, Hotel, Office tower and Food court now have distinct behavior, initial-floor selection, correct artwork/actors, parking allocations, income, luxury, needs, synergy, achievements/gems, decorations, active-job acceleration, local audio and motion. [FigmaAssessment.md](docs/FigmaAssessment.md) maps all 16 board topics to code/tests and documents the limits of quota-blocked live Figma/native component inspection.
