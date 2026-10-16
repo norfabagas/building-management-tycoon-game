@@ -4,7 +4,13 @@
 
 Rebuilt current GitHub source `bbd6d28` in a fresh release checkout after discovering stale local refs and Windows ACL failures in the old checkout. The release Web build succeeds with 201 offline resources. `main.dart.js` SHA-256 is `E991772342C1ADB544EFDDAFD522C72322885C051025E0E29468C459A9406D65`, matching the latest existing gameplay release. Formatting, analysis, all 75 tests and validation of 158 assets/124 frames pass; Android debug compilation is blocked by the absent Android SDK. Design-only repository cleanup does not change application/runtime bytes; see [DesignArchive.md](DesignArchive.md).
 
-The Netlify connector reports existing deploy `6acf193d578dc06d1622110b` as ready at `https://bmt.niceblue.biz.id`. A new production upload is pending CLI authorization: this workstation has no logged-in Netlify CLI session, and the connected tools offer deploy inspection without a deployment mutation. An agent login ticket was provided to the user. Do not interpret the existing ready deploy or the successful local build as a newly published release. After authorization, link site `326e5871-656b-4f7b-87c1-664e001d4ac4`, upload the complete `build/web/` directory with `--prod --no-build`, and verify both the deploy state and hosted JavaScript hash. Keep `.netlify/` ignored and preserve browser site data.
+The user completed CLI authorization and the new production upload succeeded on 2026-10-16. Source checkout `6eb2f54` was published to existing site `326e5871-656b-4f7b-87c1-664e001d4ac4` with `netlify deploy --prod --dir build/web --no-build`.
+
+- Production: [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id).
+- Deploy: [`6ad1b64af7f7b6f53f19e3f8`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad1b64af7f7b6f53f19e3f8), confirmed ready by the Netlify connector, published at 12:29 WIB.
+- Hosted `main.dart.js`, `offline_worker.js` and `offline-assets.json` each returned HTTP 200 and matched local bytes exactly. The offline manifest lists 201 resources with no missing local paths. The worker SHA-256 is `32cc792ce65b6880ff876ecf6f01694b7eca8d6be1704ad27d494b1b4e652a21`.
+- CLI linkage stays in ignored `.netlify/`; no credential was committed. Hosting remains manual CLI; GitHub pushes do not publish automatically.
+- This confirms publication and resource integrity, not a new interactive or disconnected-browser gameplay test. Close old game tabs and reopen to activate the updated worker without clearing browser site data or saves.
 
 ## Single balance and immediate purchase/refund release — 2026-10-14
 
