@@ -6,6 +6,8 @@ The user approved [catalog 2](docs/FigmaCatalogProposal.md). Apartment, Hotel, O
 
 Schema 7 migrates saves after original-catalog catch-up, preserving balances, pending rent and progress. All five slots remain local. Type-aware directories, reviewed purchases/refunds, a copy-only financial forecast and two-finger pinch/pan work across responsive layouts. The unchanged runtime pack remains in Git; large originals and review screenshots stay archived/ignored. The user requested GitHub push and existing-site Netlify deployment; the release record is in Deployment.md after final checks.
 
+Source `5658c22` is pushed and published as ready/current deploy `6ad23abd9abc018af77fbd70` at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). All 127 tests, formatting, analysis, assets and the 201-resource offline Web build pass; hosted bundle/worker/manifest bytes match. Browser startup confirms five local slots. Android build is blocked by the missing SDK; live Figma/native atomization remains quota-blocked. See [Deployment.md](docs/Deployment.md) and the [self-assessment](docs/FigmaAssessment.md).
+
 ## Rectangular buildings, 24-hour time and smooth daylight — 2026-10-16
 
 Rectangular apartments now extend along both actual footprint axes, repeat the approved facade bays and use a proportional roof with a compact service unit. Square plots keep the original approved sprite. Geometry, labels and click bounds follow the plot rather than a square image size. No artwork bytes, costs or capacities changed.
