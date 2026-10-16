@@ -8,6 +8,12 @@
 build/
 coverage/
 
+# Verified Figma archive: restore design originals only for regeneration.
+design/**/*.png
+!design/brand/bm-tower.png
+design/**/*.pptx
+docs/images/
+
 # Editor and machine configuration
 .idea/
 *.iml

@@ -1,5 +1,7 @@
 # Design Document
 
+The 2026-10-16 [Figma design archive](DesignArchive.md) now hosts repository design references and large originals. Use its manifest links and restore exact sources when regenerating assets; the BM master and all runtime exports remain in Git. Native interactive board components/prototypes are outside this archival migration.
+
 ## Visual Style
 - **Perspective:** Strictly 2D view. 
   - *Macro View:* Top-down or isometric 2D view of the entire CBD area grid (showing empty land and building exteriors).

@@ -1,5 +1,7 @@
 # Production game asset tooling
 
+Large raster originals and previews moved to the [Figma archive](../../docs/DesignArchive.md) on 2026-10-16. Runtime exports, procedural SVGs, scripts and specifications remain tracked. Restore the five approved atlases and five animation source sheets before running `build.mjs`. Ordinary validation/CI uses archived provenance when original raster files are absent and still verifies every runtime file. Run `node design/production/validate.mjs --require-local-sources` after restoration to audit source bytes as well. The `restore-source.mjs` helper verifies exact originals from Figma raw image URLs.
+
 Runtime assets: `../../assets/game/`. Specification and usage: [docs/Assets.md](../../docs/Assets.md). The original BM SVG and approved atlases are preserved. `build.mjs` exports vectors and atlas cells, registers character frames, builds the manifest/Dart constants and renders the gallery/contact sheets.
 
 ## Rebuild

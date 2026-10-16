@@ -6,6 +6,8 @@ An offline 2D building management tycoon for Android and Web, built with Flutter
 
 ## Run the project
 
+Design references and large source artwork now live in the [Figma archive](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ). Its [inventory and restoration guide](docs/DesignArchive.md) explains exact source recovery. Runtime artwork, the BM master and build tooling remain in Git.
+
 ```powershell
 ./tool/bootstrap.ps1
 ./tool/flutter.ps1 run -d chrome
@@ -18,6 +20,8 @@ The app includes the approved branding, five local slots, district naming, an un
 The HUD shows one **Balance**. Buildings and upgrades charge it immediately on confirmation; canceling a building before opening or an unfinished upgrade refunds the full purchase price immediately. Income, upkeep and taxes keep their daily/Sunday schedule.
 
 ## Documentation
+
+- [Figma design archive and restoration](docs/DesignArchive.md)
 
 - [Project and scope](docs/Project.md)
 - [Visual design and navigation](docs/Design.md)

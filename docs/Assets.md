@@ -1,5 +1,9 @@
 # Repository game assets
 
+## Figma source migration — 2026-10-16
+
+Large PNG design originals, animation sheets, previews and screenshots now live in the [verified Figma archive](DesignArchive.md). Runtime exports and their manifest remain unchanged in Git. Restore originals before regeneration; ordinary builds need no Figma access. The validator accepts matching archive provenance for absent raster sources and reports that limitation explicitly; `--require-local-sources` requires a complete restored-source audit. Local source paths below describe regeneration locations, not files included in a fresh clone.
+
 The current documented game now has a runtime asset pack in `assets/game/`, based on the approved 2026-10-11 artwork, the unchanged BM tower mark and the shared palette in [DesignKit.md](DesignKit.md). The original approved atlases stay in `design/tycoon/assets/`; rejected historical boards in `design/system/` are not runtime assets.
 
 ## Included files
@@ -56,4 +60,4 @@ The asset validator checks source/output hashes, image decoding, manifest paths,
 
 Contact sheets and the local gallery provide visual/motion review; data validation alone does not prove animation quality. The apartment starter now uses the approved apartment exterior directly, draws road connectivity and phase overlays, and plays resident idle frames from catalog timing in occupied rooms. Respect reduced motion. Full walk/stair/lift/effect and audio integration remain pending. Gameplay and validation are recorded in [Gameplay.md](Gameplay.md) and Setup.md.
 
-![Asset library overview](../design/production/previews/asset-overview.png)
+[Asset library overview](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=6-182)

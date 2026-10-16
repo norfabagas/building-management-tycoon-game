@@ -10,11 +10,11 @@ Schema 5 stores purchase/refund history and migrates schemas 1–4 atomically be
 
 Browser review of an ignored in-memory fixture verifies $40,000 → $30,000 immediately for a $10,000 building, then $30,000 → $40,000 when canceled during construction. The next closing retains that balance and lists the refund as history with zero income/tax. The temporary tab/server are closed; no production saves were changed.
 
-![Single Balance after the immediate building charge](images/immediate-building-charge.jpg)
+[Single Balance after the immediate building charge](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-158)
 
-![Immediate cancellation refund and removed plot](images/immediate-building-refund.jpg)
+[Immediate cancellation refund and removed plot](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-159)
 
-![Refund history without a second wallet](images/single-balance-finances.jpg)
+[Refund history without a second wallet](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-172)
 
 Select a building, then **Upgrade building** beside its title. The menu shows Add floor (10 total), Add basement (3 total), Standard lift (3) and Executive lift (1), with counts, price, time and added upkeep. Review and confirm each purchase. Initial construction must be open first. One upgrade can run per building; an unfinished upgrade can be canceled for an immediate full refund. Existing business continues during work. The map and building detail display the active job's progress.
 
@@ -26,15 +26,15 @@ Schema 4 adds completed level/lift counts and one upgrade order. Schemas 1/2/3 r
 
 Validation: formatting, analysis, all 68 tests and release Web build pass, including queued completion through every maximum, tax/upkeep, parking-limited admissions across floors, fixed lift quotes, migration, offline parity and rollback/concurrent reservations. UI tests cover phone portrait, landscape and desktop review/cancel/confirm, upper-floor room IDs, B3 navigation and disabled maximums. Asset validation passes 158 resources/124 frames. Android debug compilation is blocked by the missing Android SDK. An isolated ignored in-memory browser fixture verifies actual review/reservation/progress/completion, Floor 2 admissions and portrait/landscape controls without editing production saves.
 
-![Upgrade building beside the apartment title](images/upgrade-button.jpg)
+[Upgrade building beside the apartment title](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-170)
 
-![Upgrade cost, construction time and added upkeep review](images/upgrade-review.jpg)
+[Upgrade cost, construction time and added upkeep review](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-171)
 
-![Standard and executive lift cards with original-price quotes](images/upgrade-lift-cards.jpg)
+[Standard and executive lift cards with original-price quotes](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-173)
 
 Browser review also confirms standard lift completion, unchanged original-price quotes after adding Floor 2, and the installed lift module/count beside the stairs. The temporary review tab and server are closed; the fixture is not shipped.
 
-![Completed standard lift beside the stairs](images/installed-standard-lift.jpg)
+[Completed standard lift beside the stairs](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-162)
 
 ## Player flow
 
@@ -42,7 +42,7 @@ Feedback update on 2026-10-14: phases now last **5 seconds**, giving a **25-seco
 
 Validation: formatting, analysis and all 43 tests pass. Browser review on an isolated localhost origin confirms the faster calendar, short statuses and mouse construction flow. Synthetic two-finger tests cover both zoom limits, existing/empty preview restoration, trailing-finger suppression and building picking after pinch. Migration tests cover old-speed catch-up, fractional progress, rollback and unchanged/backward clock handling. Physical mobile gestures remain unverified without a device.
 
-![Short construction status and five-second phase countdown](images/pacing-and-copy.jpg)
+[Short construction status and five-second phase countdown](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-164)
 
 Load an existing district or create one of the five local slots. Existing metadata-only profiles receive an empty game snapshot with $40,000 at first gameplay load; their names and slots are preserved. Choose Build, select Apartment, draw a footprint on the map, review its derived rooms, B1 bays and costs, then confirm. Roads and the occupied construction plot are saved together. Buildings can be canceled for an immediate full purchase refund until they are opened; unfinished upgrades can also be canceled for a full refund.
 
@@ -52,9 +52,9 @@ The map uses the approved apartment exterior image directly, preserving its squa
 
 The exterior/progress/opening update passes formatting, analysis and all 50 tests. Browser review used a separate in-memory fixture and verified the approved map art, moving progress, completion remaining closed through several game days, manual opening, and the portrait button layout. The fixture is ignored and not shipped. Android build remains blocked by the missing SDK.
 
-![Approved apartment image and construction progress on the map](images/approved-apartment-map.jpg)
+[Approved apartment image and construction progress on the map](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-151)
 
-![Completed construction waiting for Open to Business](images/open-to-business.jpg)
+[Completed construction waiting for Open to Business](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-166)
 
 ## Map navigation
 
@@ -68,7 +68,7 @@ Zoom validation on 2026-10-12: formatting, analysis, all **32 tests**, Android d
 
 The deployed browser review confirmed both scale directions and a correct 2 × 4 footprint at 125%, without a selection from button clicks.
 
-![Bottom-right zoom controls at 125% during footprint planning](images/map-zoom.png)
+[Bottom-right zoom controls at 125% during footprint planning](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-165)
 
 ## Local persistence
 
@@ -92,9 +92,9 @@ An isolated in-memory browser fixture verified desktop, portrait and landscape f
 
 The hosted Web check exposed the bottom-right Netlify badge's overlap with navigation. Web floor detail now reserves 64 pixels beneath its toolbar; Android retains normal safe-area spacing. Analysis and all 35 tests were repeated successfully for this adjustment.
 
-![Floor 1 detail with bottom navigation](images/building-floor-1.jpg)
+[Floor 1 detail with bottom navigation](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-157)
 
-![B1 parking detail](images/building-b1.jpg)
+[B1 parking detail](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-150)
 
 On 2026-10-12, formatting, Flutter analysis and all **28 tests** passed. Coverage includes Noon-only payments, shell/B1 timing, Morning admissions, Sunday rent with Sunday accrual, departing-tenant ledger retention, daily tax/upkeep, negative balances, shared-road cancellation, concurrent reservations, failed-transaction preservation, unsupported saves, multi-week offline parity and portrait/landscape/desktop construction and room flows. The four gameplay UI tests were repeated after the final drawing/rendering fixes. Android debug and release Web builds passed; Web still includes all 201 offline resources and the unchanged 158-asset catalog.
 
@@ -102,4 +102,4 @@ Browser review on the local Web build confirmed saved-profile reload, elapsed-ti
 
 Production publication and hosting checks are recorded in [Deployment.md](Deployment.md). Hotel/office/F&B, luxury and lift happiness effects remain future work. Apartment floor/basement/lift upgrades are now implemented. Audio integration is still pending.
 
-![Deployed apartment starter after confirming the occupied plot and road ring](images/gameplay-starter.png)
+[Deployed apartment starter after confirming the occupied plot and road ring](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-161)

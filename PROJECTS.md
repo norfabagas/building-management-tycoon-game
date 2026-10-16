@@ -1,5 +1,11 @@
 # Building Management Tycoon
 
+## Figma migration and rebuild — 2026-10-16
+
+Moved all 348 repository graphics into the new [Figma design archive](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ), organized within the Starter plan's three-page limit. All nodes and aspect ratios were verified. Removed 73 large design/reference files (35.28 MiB) from the tracked tree while keeping runtime assets, the unchanged BM master and authoring tools. The manifest records source hashes, node links and PPTX recovery; [DesignArchive.md](docs/DesignArchive.md) documents raster-board limitations, source restoration and retained Git history.
+
+Formatting, analysis, all 75 tests, full restored-source validation (158 assets/124 frames) and the release Web build (201 offline resources) pass. Source restoration from Figma was tested byte-for-byte. Android build is blocked by the missing SDK. The current build matches the latest gameplay JavaScript hash; a new Netlify upload is awaiting the user's CLI authorization. See [Deployment.md](docs/Deployment.md). Work uses ignored `.tools/release-workspace/` because the older checkout/SDK has incompatible Windows ACLs.
+
 ## Contract and implementation
 
 Read `docs/Project.md`, `docs/Platform.md`, `docs/Rules.md`, `docs/Logic.md` and `docs/Design.md` before changing behavior. The approved design, BM identity and runtime asset contracts live in `docs/DesignKit.md`, `docs/Assets.md` and `assets/game/manifest.json`.

@@ -7,6 +7,11 @@ const require=createRequire(import.meta.url);
 const sharp=require(process.env.RUNTIME_NODE_MODULES?path.join(process.env.RUNTIME_NODE_MODULES,'sharp'):'sharp');
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const manifest=JSON.parse(await fs.readFile(path.join(root,'assets/game/manifest.json'),'utf8'));
+const archivePath=path.join(root,'design/figma-manifest.json');
+const archive=JSON.parse(await fs.readFile(archivePath,'utf8').catch(error=>{if(error.code==='ENOENT')return '{"assets":[]}';throw error;}));
+const archivedSources=new Map(archive.assets.map(asset=>[asset.source,asset]));
+const requireLocalSources=process.argv.includes('--require-local-sources');
+const checkedArchivedSources=new Set();
 const fail=message=>{throw Error(message);};
 const ids=new Set(),paths=new Set();
 const pubspec=await fs.readFile(path.join(root,'pubspec.yaml'),'utf8');
@@ -21,9 +26,18 @@ for(const asset of manifest.assets) {
   const bytes=await fs.readFile(path.join(root,asset.path));
   if(bytes.length!==asset.bytes||crypto.createHash('sha256').update(bytes).digest('hex')!==asset.sha256)fail(`Changed asset: ${asset.id}`);
   if(asset.source) {
-    const source=await fs.readFile(path.join(root,asset.source));
-    const canonical=asset.sourceHashMode==='lf-text'?source.toString('utf8').replaceAll('\r\n','\n'):source;
-    if(crypto.createHash('sha256').update(canonical).digest('hex')!==asset.sourceSha256)fail(`Source changed without re-export: ${asset.id}`);
+    let source;
+    try { source=await fs.readFile(path.join(root,asset.source)); }
+    catch(error) {
+      if(error.code!=='ENOENT')throw error;
+      const archived=archivedSources.get(asset.source);
+      if(requireLocalSources||!archived||!archived.nodeId||!archived.imageHash||archived.sha256!==asset.sourceSha256||asset.sourceHashMode==='lf-text')fail(`Missing unverified source: ${asset.source}. Restore the original from Figma; see docs/DesignArchive.md.`);
+      checkedArchivedSources.add(asset.source);
+    }
+    if(source) {
+      const canonical=asset.sourceHashMode==='lf-text'?source.toString('utf8').replaceAll('\r\n','\n'):source;
+      if(crypto.createHash('sha256').update(canonical).digest('hex')!==asset.sourceSha256)fail(`Source changed without re-export: ${asset.id}`);
+    }
   }
   if(asset.path.endsWith('.wav')) {
     if(bytes.toString('ascii',0,4)!=='RIFF'||bytes.toString('ascii',8,12)!=='WAVE')fail(`Invalid WAV ${asset.id}`);
@@ -66,3 +80,4 @@ for(let mask=0;mask<16;mask++)if(!ids.has(`tiles.road-${mask.toString(2).padStar
 for(const type of ['apartment','hotel','office','food-court'])for(const piece of ['lobby','floor','roof','luxury-1','luxury-2','luxury-3'])if(!ids.has(`buildings.${type}-${piece}`))fail(`Missing building module ${type}/${piece}`);
 for(const phase of ['morning','day','afternoon','night','noon'])if(!ids.has(`backgrounds.phase-${phase}`))fail(`Missing phase ${phase}`);
 console.log(`Validated ${ids.size} assets and ${framesChecked} referenced animation frames: hashes, decoding, bundling, alpha, clipping, audio and required coverage pass.`);
+if(checkedArchivedSources.size)console.log(`Source provenance matched ${checkedArchivedSources.size} archived originals; remote source bytes were not fetched. Use --require-local-sources for a full restored-source audit.`);

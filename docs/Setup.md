@@ -1,5 +1,11 @@
 # Project setup
 
+## Design sources and current workstation — 2026-10-16
+
+Large design originals and preview images moved to the [Figma archive](DesignArchive.md). App builds use checked-in runtime exports without downloading design sources. Restore the ten original raster sheets before asset regeneration and use `validate.mjs --require-local-sources` for a full source audit. Normal catalog validation reports archived-source provenance separately.
+
+The old D: checkout and Flutter cache have ACLs belonging to a previous Windows SID. Git ref replacement and Flutter cache replacement fail there. A clean checkout at `.tools/release-workspace/` uses current `origin/main` and a copied, current-user-owned pinned SDK/cache. Format, analysis, all 75 tests and the offline Web build pass there. Android debug compilation was attempted but this session has no Android SDK. Historical workstation/toolchain notes below do not establish that those Android paths exist in this session.
+
 ## Approved exterior and manual opening validation — 2026-10-14
 
 The map now uses the approved apartment image directly, with matching facade/ground picking. Construction has map/detail progress bars and percentages; completed buildings wait for **Open to Business**, with admissions at the next Morning after the action. Schema 3 preserves already-open schema 1/2 buildings and keeps completed-but-closed buildings closed through offline catch-up.
@@ -113,7 +119,7 @@ Automatic surrounding roads are implemented with the approved free one-tile ring
 - Android and Chrome pass `flutter doctor`. Remaining doctor warnings concern the intentionally project-local SDK PATH, the pinned detached release tag, and missing Windows desktop tools; this project targets Android and Web.
 - The GitHub Actions workflow is configured but has not been run remotely. Temporary browser/server review sessions were closed.
 
-![Verified launch screen](images/setup-launch.jpg)
+[Verified launch screen](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-167)
 
 ## Build verification for GitHub handoff — 2026-10-12
 

@@ -1,5 +1,9 @@
 # Game component design kit
 
+## Figma archive — 2026-10-16
+
+All repository graphics have been copied into the new [Building Management Tycoon — Game Design](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ). See [DesignArchive.md](DesignArchive.md) for the three-page organization, 348-file inventory, cleanup and restoration. This preserves original PNG boards and editable source SVGs. The native component/Auto Layout/prototype setup proposed later in this document remains future work; archive captions and asset collections use Auto Layout, but the board controls remain raster images. The approved Canva art and current game-contract documents remain authoritative for visuals and mechanics respectively.
+
 ## Status and sources
 
 The user approved this latest artwork and design on **2026-10-11**. Treat it as the visual source for the Flutter application. Project bootstrap status, runtime font fallback and feature boundaries are in [Setup.md](Setup.md).
@@ -199,6 +203,6 @@ Prototype acceptance: drag pans map and building; taps open context panels; no v
 
 ## Source and review
 
-Builder: [`../design/tycoon/build.mjs`](../design/tycoon/build.mjs). Source export: [`../design/tycoon/output/Building-Management-Tycoon-r5.pptx`](../design/tycoon/output/Building-Management-Tycoon-r5.pptx). Full-size previews: `design/tycoon/previews/`. Overview: [`../design/tycoon/overview.png`](../design/tycoon/overview.png). Assets and regeneration: [`../design/tycoon/README.md`](../design/tycoon/README.md). Built-in Imagegen prompt set: [`../design/tycoon/prompts.md`](../design/tycoon/prompts.md).
+Builder: [`../design/tycoon/build.mjs`](../design/tycoon/build.mjs). Source export: [`../design/tycoon/output/Building-Management-Tycoon-r5.pptx`](https://github.com/norfabagas/building-management-tycoon-game/blob/bbd6d283bd6b623682841af63e74215c454fee8a/design/tycoon/output/Building-Management-Tycoon-r5.pptx). Full-size previews: `design/tycoon/previews/`. Overview: [`../design/tycoon/overview.png`](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=2-19). Assets and regeneration: [`../design/tycoon/README.md`](../design/tycoon/README.md). Built-in Imagegen prompt set: [`../design/tycoon/prompts.md`](../design/tycoon/prompts.md).
 
 Review Canva page thumbnails and actual content against the documented rules. Check text readability, clipping, parking/occupancy consistency, five profile slots, calculated room capacity, upgrade limits, and financial-closing wording. Record the design URL, generated page count, and material gaps here. Native Figma setup, interactive prototype behaviors, and final animation artwork are separate steps.

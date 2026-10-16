@@ -2,6 +2,8 @@
 
 # Game component design system
 
+**2026-10-16 migration:** historical boards are preserved on the Figma archive page labeled **Historical boards — rejected**. See [DesignArchive.md](../../docs/DesignArchive.md) for exact node links and PPTX recovery. This folder now retains authoring code and documentation; preview/output paths below are regeneration locations. These designs are not the approved runtime reference.
+
 Historical Canva revision (the same design ID now contains the rebuilt kit): [Building Management Tycoon — Design System](https://www.canva.com/d/CL70GLWxm7fQ5G8).
 
 All 16 boards use a 1600 × 1000 canvas, Arial typography, fixed colors and spacing, shared button/field/panel helpers, and the BM tower icon. The source authors native shapes and editable text instead of generated illustrations. `previews/` contains full-size PNGs; `overview.png` shows all boards together. The final editable transport file is `output/Building-Management-Tycoon-v5.pptx`.

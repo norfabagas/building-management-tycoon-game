@@ -1,5 +1,7 @@
 # Tycoon game design kit
 
+**2026-10-16 migration:** original atlases and rendered boards are in the new [Figma archive](../../docs/DesignArchive.md); the original PPTX is recoverable from the immutable commit in `../figma-manifest.json`. Source paths below are regeneration locations. Builders and prompts remain in Git; restore original images before regeneration. These boards preserve the earlier approved artwork, while current game rules supersede their illustrative numbers.
+
 Current Canva kit: [Building Management Tycoon — Artwork and Game Design](https://www.canva.com/d/51ESDDCqVSdEOVT).
 
 Rebuilt from page 01 on 2026-10-11 after the user rejected the previous assets. The game uses the requirements in `docs/Project.md`, `docs/Design.md`, `docs/Rules.md`, `docs/Logic.md`, and `docs/Platform.md`.
