@@ -14,9 +14,11 @@ class AssetAnimation extends StatefulWidget {
     this.sequence = 'idle',
     this.width = 64,
     this.height = 96,
+    this.hideWhenComplete = false,
   });
   final String path, sequence;
   final double width, height;
+  final bool hideWhenComplete;
   @override
   State<AssetAnimation> createState() => _AssetAnimationState();
 }
@@ -30,6 +32,7 @@ class _AssetAnimationState extends State<AssetAnimation>
   List<int> _frames = [];
   int _columns = 1, _frameWidth = 1, _frameHeight = 1;
   bool _loop = true;
+  int _generation = 0;
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _AssetAnimationState extends State<AssetAnimation>
   }
 
   Future<void> _load() async {
+    final generation = ++_generation;
     final catalog = await (_catalog ??= rootBundle
         .loadString(ProductionAssets.manifest)
         .then((text) => jsonDecode(text)['assets'] as List));
@@ -55,7 +59,7 @@ class _AssetAnimationState extends State<AssetAnimation>
           codec.dispose();
           return frame.image;
         }));
-    if (!mounted) return;
+    if (!mounted || generation != _generation) return;
     setState(() {
       _image = image;
       _frames = List<int>.from(animation['frames'] as List);
@@ -88,6 +92,19 @@ class _AssetAnimationState extends State<AssetAnimation>
   }
 
   @override
+  void didUpdateWidget(AssetAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.path != widget.path ||
+        oldWidget.sequence != widget.sequence) {
+      _controller.stop();
+      _controller.value = 0;
+      _frames = [];
+      _image = null;
+      _load();
+    }
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _play();
@@ -100,21 +117,26 @@ class _AssetAnimationState extends State<AssetAnimation>
   }
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: widget.width,
-    height: widget.height,
-    child: ExcludeSemantics(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          final image = _image;
-          if (image == null || _frames.isEmpty) return const SizedBox.shrink();
-          final frame =
-              _frames[(_controller.value * _frames.length).floor().clamp(
-                0,
-                _frames.length - 1,
-              )];
-          return CustomPaint(
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        if (widget.hideWhenComplete &&
+            (MediaQuery.disableAnimationsOf(context) ||
+                (!_loop && _controller.isCompleted))) {
+          return const SizedBox.shrink();
+        }
+        final image = _image;
+        if (image == null || _frames.isEmpty) return const SizedBox.shrink();
+        final frame =
+            _frames[(_controller.value * _frames.length).floor().clamp(
+              0,
+              _frames.length - 1,
+            )];
+        return SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: CustomPaint(
             painter: _FramePainter(
               image,
               Rect.fromLTWH(
@@ -124,9 +146,9 @@ class _AssetAnimationState extends State<AssetAnimation>
                 _frameHeight.toDouble(),
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     ),
   );
 }

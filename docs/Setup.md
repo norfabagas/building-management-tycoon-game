@@ -1,5 +1,11 @@
 # Project setup
 
+## Four-type catalog and local audio — 2026-10-16
+
+Run `./tool/flutter.ps1 pub get` after pulling to install the locked local-audio platform implementations. Catalog 2 is approved in FigmaCatalogProposal.md. The normal production entry point remains `lib/main.dart`; in-memory review entry points live only in ignored `.tools/` and must never be deployed. Build the offline release with `dart run tool/build_web.dart`, which explicitly compiles the normal entry point and creates the local resource manifest. Existing manual Netlify linkage remains ignored. Schema 1–6 saves catch up under the original catalog before migrating to schema 7/catalog 2; retain site data and close old tabs before reopening the updated app.
+
+Audio follows the package's [AssetSource](https://pub.dev/documentation/audioplayers/latest/audioplayers/AssetSource-class.html) and [release-mode API](https://pub.dev/documentation/audioplayers/latest/audioplayers/ReleaseMode.html). The sound control starts local music/ambience after a gesture, stores the preference and offers Resume sound after reload/pause. Initial sessions are muted. Stop/release and failure paths are tested without platform audio through an injected local-player factory. Browser playback initialization succeeded during isolated review; physical speaker/device quality is not certified. Test/build/publication results are recorded in FigmaAssessment.md and Deployment.md.
+
 ## Rectangular buildings and midnight clock — 2026-10-16
 
 Schema 6 migrates the old five-phase clock to 24 seconds per day without resetting profiles or rebilling completed closings. Rectangular exteriors reuse the unchanged apartment raster for repeated facade bays on footprint-shaped geometry; no large source imagery or generated assets were added back to Git. Daylight is a cyclic directional gradient with 800 ms color interpolation between one-second updates. See the current overrides in Rules.md, Logic.md, Design.md and Assets.md.

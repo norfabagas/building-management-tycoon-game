@@ -1,5 +1,7 @@
 # Game component design kit
 
+The user approved [catalog 2](FigmaCatalogProposal.md) on 2026-10-16. All four types and associated progression now have runtime implementations; [FigmaAssessment.md](FigmaAssessment.md) records evidence and verification limits. Starter-only deferrals below are historical. The original Figma archive remains raster boards/source SVGs; native atomization is still blocked by the Starter MCP quota and is not implied by reusable Flutter widgets.
+
 The 2026-10-16 user override extends approved facade bays along rectangular footprint axes instead of scaling a square symbol on those plots. Square plots retain the original sprite. Roof geometry uses the same palette with a grey surface and cream trim. The clock now shows 24 hours at one hour per second, closes at 24:00 and interpolates daylight gradients. Earlier uniform-sprite and five-phase clock notes are historical; see Design.md and Logic.md.
 
 ## Figma archive — 2026-10-16

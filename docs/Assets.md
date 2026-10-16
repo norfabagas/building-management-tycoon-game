@@ -1,5 +1,9 @@
 # Repository game assets
 
+## Catalog 2 runtime integration — 2026-10-16
+
+All four exterior/interior/vacancy families are now used by playable types, including whole-office leases and F&B facilities. Long buildings retain footprint geometry on either axis; Food Court walls have a lower height. The approved five actors play the matching idle/walk/stair sequences; maintenance appears during construction. Lift shafts/carriages translate independently and door frames play on arrival. Dust, cash-closing coin and arrival effects are one-shot and omitted under reduced motion. Luxury cards show the appropriate next-tier preview; the map labels actual completed tiers. All ten local audio clips are reachable through gesture-enabled music/ambience and construction/closing/lift/UI feedback. Audio uses `AssetSource` only; runtime files, catalog hashes, source art and BM master bytes are unchanged. See Gameplay.md for behavior and FigmaAssessment.md for evidence/limits.
+
 ## Current override — 2026-10-16
 
 Rectangular map exteriors now use the existing approved apartment PNG as facade texture on footprint-shaped geometry; square plots retain the full sprite. Facade source quads in its 512×512 image are left [(105,105),(306,150),(306,455),(105,365)], right [(306,150),(424,103),(424,407),(306,455)]. Repeat facades per two ground tiles along long walls. The roof uses a grey material gradient with a cream rim; a small cream service unit is drawn from isometric geometry without stretching the original roof equipment. These are renderer texture coordinates, not new assets or gameplay frame/capacity rules. Runtime bytes and catalog references remain unchanged. Phase overlay assets remain cataloged but code-painted daylight replaces them on the map, with cyclic color interpolation and 800 ms transitions between one-second clock updates.

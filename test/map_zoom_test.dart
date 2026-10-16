@@ -14,6 +14,7 @@ Widget mapApp(
   ValueChanged<int>? onSelect,
   VoidCallback? onCancelFootprint,
   Footprint? preview,
+  bool decorationPreview = false,
 }) => MaterialApp(
   theme: buildGameTheme(),
   home: Scaffold(
@@ -28,6 +29,8 @@ Widget mapApp(
           onSelect: onSelect ?? (_) {},
           onCancelFootprint: onCancelFootprint,
           preview: preview,
+          decorationPreview: decorationPreview,
+          previewValid: decorationPreview ? true : null,
         ),
       ),
     ),
@@ -172,35 +175,43 @@ void main() {
     );
   }
 
-  testWidgets('pinch preserves an existing placement preview', (tester) async {
-    const existing = Footprint(3, 3, 2, 4);
-    Footprint? preview = existing;
-    await tester.pumpWidget(
-      mapApp(
-        DistrictGame(watermark: 0),
-        preview: existing,
-        onFootprint: (site) => preview = site,
-        onCancelFootprint: () => preview = null,
-      ),
+  for (final decoration in [false, true]) {
+    testWidgets(
+      'pinch preserves an existing placement preview (decoration: $decoration)',
+      (tester) async {
+        const existing = Footprint(3, 3, 2, 4);
+        Footprint? preview = existing;
+        await tester.pumpWidget(
+          mapApp(
+            DistrictGame(watermark: 0),
+            preview: existing,
+            decorationPreview: decoration,
+            onFootprint: (site) => preview = site,
+            onCancelFootprint: () => preview = null,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final centre = tester.getCenter(
+          find.byKey(const ValueKey('district-map')),
+        );
+        final first = await tester.startGesture(
+          centre - const Offset(40, 0),
+          pointer: 1,
+        );
+        final second = await tester.startGesture(
+          centre + const Offset(40, 0),
+          pointer: 2,
+        );
+        await first.moveBy(const Offset(-30, 0));
+        await second.moveBy(const Offset(30, 0));
+        await second.up();
+        await first.up();
+        await tester.pumpAndSettle();
+        expect(preview?.toJson(), existing.toJson());
+        await tester.pumpWidget(const SizedBox());
+      },
     );
-    await tester.pumpAndSettle();
-    final centre = tester.getCenter(find.byKey(const ValueKey('district-map')));
-    final first = await tester.startGesture(
-      centre - const Offset(40, 0),
-      pointer: 1,
-    );
-    final second = await tester.startGesture(
-      centre + const Offset(40, 0),
-      pointer: 2,
-    );
-    await first.moveBy(const Offset(-30, 0));
-    await second.moveBy(const Offset(30, 0));
-    await second.up();
-    await first.up();
-    await tester.pumpAndSettle();
-    expect(preview?.toJson(), existing.toJson());
-    await tester.pumpWidget(const SizedBox());
-  });
+  }
 
   test(
     'zoom keeps the same world point at the viewport centre after panning',

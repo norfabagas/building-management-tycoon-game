@@ -1,5 +1,11 @@
 # Building Management Tycoon
 
+## Four-type Figma implementation — 2026-10-16
+
+The user approved [catalog 2](docs/FigmaCatalogProposal.md). Apartment, Hotel, Office tower and Food court now have distinct behavior, initial-floor selection, correct artwork/actors, parking allocations, income, luxury, needs, synergy, achievements/gems, decorations, active-job acceleration, local audio and motion. [FigmaAssessment.md](docs/FigmaAssessment.md) maps all 16 board topics to code/tests and documents the limits of quota-blocked live Figma/native component inspection.
+
+Schema 7 migrates saves after original-catalog catch-up, preserving balances, pending rent and progress. All five slots remain local. Type-aware directories, reviewed purchases/refunds, a copy-only financial forecast and two-finger pinch/pan work across responsive layouts. The unchanged runtime pack remains in Git; large originals and review screenshots stay archived/ignored. The user requested GitHub push and existing-site Netlify deployment; the release record is in Deployment.md after final checks.
+
 ## Rectangular buildings, 24-hour time and smooth daylight — 2026-10-16
 
 Rectangular apartments now extend along both actual footprint axes, repeat the approved facade bays and use a proportional roof with a compact service unit. Square plots keep the original approved sprite. Geometry, labels and click bounds follow the plot rather than a square image size. No artwork bytes, costs or capacities changed.

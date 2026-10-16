@@ -4,10 +4,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+  testWidgets(
+    'offline lighting catch-up does not sweep through hundreds of days',
+    (tester) async {
+      Widget sky(double time) =>
+          MaterialApp(home: DaylightOverlay(milliseconds: time));
+      await tester.pumpWidget(sky(0));
+      await tester.pumpWidget(sky(100 * 24000 + 18000));
+      await tester.pump(const Duration(milliseconds: 400));
+      final painter =
+          tester.widget<CustomPaint>(find.byType(CustomPaint).last).painter!
+              as DaylightPainter;
+      expect(painter.milliseconds.abs(), lessThanOrEqualTo(6000));
+      await tester.pump(const Duration(seconds: 1));
+      final settled =
+          tester.widget<CustomPaint>(find.byType(CustomPaint).last).painter!
+              as DaylightPainter;
+      expect(settled.milliseconds % 24000, 18000);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   test(
     'schema 5 retains fractional hour progress before the first midnight',
     () {
       final json = DistrictGame(watermark: 1000, balance: 123456).toJson()
+        ..['catalog'] = 1
         ..['version'] = 5
         ..['phaseIndex'] = 3
         ..['remainder'] = 2500
@@ -98,6 +119,7 @@ void main() {
   });
   test('schema 5 closed Noon migrates without rebilling or repurchasing', () {
     final json = DistrictGame(watermark: 1000, day: 7, lastClosing: 7).toJson()
+      ..['catalog'] = 1
       ..['version'] = 5
       ..['phaseIndex'] = 4
       ..['phaseMilliseconds'] = 5000;
@@ -106,7 +128,7 @@ void main() {
     expect(state.day, 8);
     expect(state.lastClosing, 7);
     expect(state.balance, 4000000);
-    expect(state.toJson()['version'], 6);
+    expect(state.toJson()['version'], 7);
     final saved = state.toJson();
     DistrictSimulation.advance(state, 1000);
     expect(state.toJson(), saved);

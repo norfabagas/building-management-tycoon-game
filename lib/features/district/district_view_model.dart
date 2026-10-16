@@ -20,6 +20,9 @@ class DistrictViewModel extends ChangeNotifier {
   Timer? _timer;
   int? selectedBuildingId;
   int currentFloor = 1;
+  int travelDirection = 0;
+  int actionFeedback = 0;
+  bool actionSucceeded = true;
 
   ApartmentBuilding? get selectedBuilding {
     for (final building in game?.buildings ?? <ApartmentBuilding>[]) {
@@ -39,20 +42,24 @@ class DistrictViewModel extends ChangeNotifier {
           (selectedBuilding!.completedBasements > 0 &&
               currentFloor > -selectedBuilding!.completedBasements));
 
-  void selectBuilding(int? id) {
+  void selectBuilding(int? id, {int floor = 1}) {
     selectedBuildingId = id;
-    currentFloor = 1;
+    travelDirection = 0;
+    final completed = selectedBuilding?.completedFloors ?? 1;
+    currentFloor = floor.clamp(1, completed < 1 ? 1 : completed);
     notifyListeners();
   }
 
   void goUp() {
     if (!canGoUp) return;
+    travelDirection = 1;
     currentFloor = currentFloor == -1 ? 1 : currentFloor + 1;
     notifyListeners();
   }
 
   void goDown() {
     if (!canGoDown) return;
+    travelDirection = -1;
     currentFloor = currentFloor == 1 ? -1 : currentFloor - 1;
     notifyListeners();
   }
@@ -100,15 +107,27 @@ class DistrictViewModel extends ChangeNotifier {
       );
       if (_disposed) return true;
       game = next;
+      if (action != null) {
+        actionFeedback++;
+        actionSucceeded = true;
+      }
       if (next.advancedDays > 1) {
         returnSummary =
             'Away for ${next.advancedDays} days. Net change: ${formatMoney(next.balance - next.balanceBeforeAdvance)}. Uncollected rent: ${formatMoney(next.pendingRent)}.';
       }
       return true;
     } on GameplayException catch (failure) {
+      if (action != null) {
+        actionFeedback++;
+        actionSucceeded = false;
+      }
       if (!_disposed) error = failure.message;
       return false;
     } catch (_) {
+      if (action != null) {
+        actionFeedback++;
+        actionSucceeded = false;
+      }
       if (!_disposed) error = 'Progress could not be saved. Your last saved game is preserved. Retry before continuing.';
       return false;
     } finally {

@@ -1,6 +1,11 @@
 import 'dart:math' as math;
 
 import 'game_rules.dart';
+import 'building_catalog.dart';
+
+export 'game_rules.dart' show BuildingType;
+export 'building_catalog.dart';
+part 'district_progression.dart';
 
 /// User-approved apartment catalog; amounts are integer cents.
 abstract final class StarterCatalog {
@@ -79,7 +84,7 @@ class Footprint {
       json['width'] as int,
       json['length'] as int,
     );
-    if (result.width < 1 || result.length < 1 || result.rooms < 1) {
+    if (result.width < 1 || result.length < 1) {
       throw const FormatException('Invalid starter footprint');
     }
     return result;
@@ -103,7 +108,8 @@ enum BuildingUpgrade {
   floor('Add floor', GameRules.maximumAboveGroundFloors, 2),
   basement('Add basement', GameRules.maximumUndergroundFloors, 1),
   standardLift('Standard lift', GameRules.maximumStandardLifts, 1),
-  executiveLift('Executive lift', GameRules.maximumExecutiveLifts, 1);
+  executiveLift('Executive lift', GameRules.maximumExecutiveLifts, 1),
+  luxury('Luxury', 3, 1);
 
   const BuildingUpgrade(this.label, this.maximum, this.days);
   final String label;
@@ -114,19 +120,30 @@ enum BuildingUpgrade {
     basement => building.undergroundFloors,
     standardLift => building.standardLifts,
     executiveLift => building.executiveLifts,
+    luxury => building.luxury,
   };
 
   int cost(ApartmentBuilding building) => switch (this) {
-    floor => building.footprint.shellCost,
+    floor => building.footprint.tiles * building.type.shellPerTile,
     basement => building.footprint.basementCost,
-    standardLift => building.footprint.quote ~/ 4,
-    executiveLift => building.footprint.quote ~/ 2,
+    standardLift => building.type.quote(building.footprint.tiles) ~/ 4,
+    executiveLift => building.type.quote(building.footprint.tiles) ~/ 2,
+    luxury => building.originalQuote * 30 ~/ 100,
+  };
+
+  int duration(ApartmentBuilding building) =>
+      this == floor ? building.type.shellDays : days;
+  int addedMaintenance(ApartmentBuilding building) => switch (this) {
+    floor => building.type.floorMaintenance + (building.luxury - 1) * 2000,
+    luxury => building.completedFloors * 2000,
+    _ => maintenance,
   };
 
   int get maintenance => switch (this) {
     floor => StarterCatalog.maintenancePerFloor,
     basement => StarterCatalog.maintenancePerBasement,
     standardLift || executiveLift => 4000,
+    luxury => 2000,
   };
 }
 
@@ -144,21 +161,34 @@ class UpgradeOrder {
     required this.kind,
     this.stage = UpgradeStage.reserved,
     this.startedDay = 0,
+    this.rushed = false,
+    this.rushGems = 0,
   });
   final BuildingUpgrade kind;
   UpgradeStage stage;
   int startedDay;
+  bool rushed;
+  int rushGems;
   Map<String, Object> toJson() => {
     'kind': kind.name,
     'stage': stage.name,
     'startedDay': startedDay,
+    'rushed': rushed,
+    'rushGems': rushGems,
   };
   factory UpgradeOrder.fromJson(Map<String, dynamic> json) {
     final order = UpgradeOrder(
       kind: BuildingUpgrade.values.byName(json['kind'] as String),
       stage: UpgradeStage.values.byName(json['stage'] as String),
       startedDay: json['startedDay'] as int,
+      rushed: json['rushed'] as bool? ?? false,
+      rushGems: json['rushGems'] as int? ?? 0,
     );
+    if (order.rushGems < 0 ||
+        order.rushed != (order.rushGems > 0) ||
+        (order.rushed && order.stage != UpgradeStage.building)) {
+      throw const FormatException('Invalid acceleration');
+    }
     if (order.stage == UpgradeStage.building
         ? order.startedDay < 1
         : order.startedDay != 0) {
@@ -172,6 +202,17 @@ class ApartmentBuilding {
   ApartmentBuilding({
     required this.id,
     required this.footprint,
+    this.type = BuildingType.apartment,
+    this.initialFloors = 1,
+    int? originalQuote,
+    this.luxury = 1,
+    this.visitsToday = 0,
+    this.currentVisitors = 0,
+    this.visitorCapacity = 0,
+    this.salesToday = 0,
+    this.parkingToday = 0,
+    this.rushed = false,
+    this.rushGems = 0,
     this.stage = ConstructionStage.reserved,
     this.startedDay = 0,
     this.pendingRent = 0,
@@ -181,9 +222,21 @@ class ApartmentBuilding {
     this.executiveLifts = 0,
     this.upgrade,
     Set<int>? occupied,
-  }) : occupied = occupied ?? {};
+  }) : occupied = occupied ?? {},
+       originalQuote =
+           originalQuote ?? type.quote(footprint.tiles, initialFloors);
   final int id;
   final Footprint footprint;
+  final BuildingType type;
+  final int initialFloors, originalQuote;
+  int luxury,
+      visitsToday,
+      currentVisitors,
+      visitorCapacity,
+      salesToday,
+      parkingToday;
+  bool rushed;
+  int rushGems;
   ConstructionStage stage;
   int startedDay;
   int pendingRent;
@@ -195,20 +248,48 @@ class ApartmentBuilding {
       stage.index >= ConstructionStage.parkingDone.index;
   int get completedFloors => shellComplete ? aboveGroundFloors : 0;
   int get completedBasements => parkingComplete ? undergroundFloors : 0;
-  int get rooms => completedFloors * footprint.rooms;
+  int get unitsPerFloor => type.unitsPerFloor(footprint.tiles);
+  int get rooms => completedFloors * unitsPerFloor;
   int get bays => completedBasements * footprint.bays;
+  int get usedBays => type == BuildingType.foodCourt
+      ? currentVisitors
+      : occupied.length * type.baysPerUnit(footprint.tiles);
+  int get eligibleCapacity =>
+      math.min(rooms, bays ~/ type.baysPerUnit(footprint.tiles));
+  int get happiness =>
+      100 -
+      (math.max(0, completedFloors - 2) * 5 -
+              (standardLifts + executiveLifts) * 10)
+          .clamp(0, 30);
+  int get initialShellDays => type.shellDays * initialFloors;
+  String get name => '${type.label} $id';
+  String get status => stage == ConstructionStage.shell
+      ? 'Building ${type.label.toLowerCase()}'
+      : stage.label;
   int get valuation =>
-      completedFloors * footprint.shellCost +
+      completedFloors * footprint.tiles * type.shellPerTile +
       completedBasements * footprint.basementCost +
       standardLifts * BuildingUpgrade.standardLift.cost(this) +
-      executiveLifts * BuildingUpgrade.executiveLift.cost(this);
+      executiveLifts * BuildingUpgrade.executiveLift.cost(this) +
+      (luxury - 1) * BuildingUpgrade.luxury.cost(this);
   int get maintenance =>
-      completedFloors * StarterCatalog.maintenancePerFloor +
+      completedFloors * (type.floorMaintenance + (luxury - 1) * 2000) +
       completedBasements * StarterCatalog.maintenancePerBasement +
       standardLifts * BuildingUpgrade.standardLift.maintenance +
       executiveLifts * BuildingUpgrade.executiveLift.maintenance;
   Map<String, Object?> toJson() => {
     'id': id,
+    'type': type.name,
+    'initialFloors': initialFloors,
+    'originalQuote': originalQuote,
+    'luxury': luxury,
+    'visitsToday': visitsToday,
+    'currentVisitors': currentVisitors,
+    'visitorCapacity': visitorCapacity,
+    'salesToday': salesToday,
+    'parkingToday': parkingToday,
+    'rushed': rushed,
+    'rushGems': rushGems,
     'footprint': footprint.toJson(),
     'stage': stage.name,
     'startedDay': startedDay,
@@ -226,6 +307,17 @@ class ApartmentBuilding {
   }) {
     final building = ApartmentBuilding(
       id: json['id'] as int,
+      type: BuildingType.values.byName(json['type'] as String? ?? 'apartment'),
+      initialFloors: json['initialFloors'] as int? ?? 1,
+      originalQuote: json['originalQuote'] as int?,
+      luxury: json['luxury'] as int? ?? 1,
+      visitsToday: json['visitsToday'] as int? ?? 0,
+      currentVisitors: json['currentVisitors'] as int? ?? 0,
+      visitorCapacity: json['visitorCapacity'] as int? ?? 0,
+      salesToday: json['salesToday'] as int? ?? 0,
+      parkingToday: json['parkingToday'] as int? ?? 0,
+      rushed: json['rushed'] as bool? ?? false,
+      rushGems: json['rushGems'] as int? ?? 0,
       footprint: Footprint.fromJson(
         Map<String, dynamic>.from(json['footprint'] as Map),
       ),
@@ -244,6 +336,29 @@ class ApartmentBuilding {
       occupied: Set<int>.from(json['occupied'] as List),
     );
     if (building.id < 1 ||
+        building.rushGems < 0 ||
+        building.rushed != (building.rushGems > 0) ||
+        (building.rushed &&
+            building.stage != ConstructionStage.shell &&
+            building.stage != ConstructionStage.basement) ||
+        building.initialFloors < 1 ||
+        building.initialFloors > 10 ||
+        building.initialFloors > building.aboveGroundFloors ||
+        building.originalQuote !=
+            building.type.quote(
+              building.footprint.tiles,
+              building.initialFloors,
+            ) ||
+        building.luxury < 1 ||
+        building.luxury > 3 ||
+        building.unitsPerFloor < 1 ||
+        building.visitsToday < 0 ||
+        building.currentVisitors < 0 ||
+        building.currentVisitors > building.visitorCapacity ||
+        building.currentVisitors > building.visitsToday ||
+        building.visitorCapacity > building.eligibleCapacity ||
+        building.salesToday < 0 ||
+        building.parkingToday < 0 ||
         building.startedDay < 0 ||
         building.pendingRent < 0 ||
         building.aboveGroundFloors < 1 ||
@@ -255,7 +370,7 @@ class ApartmentBuilding {
         building.executiveLifts < 0 ||
         building.executiveLifts > GameRules.maximumExecutiveLifts ||
         (building.stage != ConstructionStage.ready &&
-            (building.aboveGroundFloors != 1 ||
+            (building.aboveGroundFloors != building.initialFloors ||
                 building.undergroundFloors != 1 ||
                 building.standardLifts != 0 ||
                 building.executiveLifts != 0 ||
@@ -264,7 +379,9 @@ class ApartmentBuilding {
             building.upgrade!.kind.count(building) >=
                 building.upgrade!.kind.maximum) ||
         building.occupied.any((room) => room < 0 || room >= building.rooms) ||
-        building.occupied.length > building.bays ||
+        building.usedBays > building.bays ||
+        (building.type == BuildingType.foodCourt &&
+            building.occupied.isNotEmpty) ||
         (building.stage != ConstructionStage.ready &&
             building.occupied.isNotEmpty)) {
       throw const FormatException('Invalid building state');
@@ -282,9 +399,13 @@ class ClosingStatement {
     required this.tax,
     required this.purchases,
     this.refunds = 0,
+    this.hotel = 0,
+    this.office = 0,
+    this.sales = 0,
   });
   final int day, rent, parking, maintenance, tax, purchases, refunds;
-  int get gross => rent + parking;
+  final int hotel, office, sales;
+  int get gross => rent + parking + hotel + office + sales;
   int get net => gross - maintenance - tax;
   Map<String, Object> toJson() => {
     'day': day,
@@ -294,6 +415,9 @@ class ClosingStatement {
     'tax': tax,
     'purchases': purchases,
     'refunds': refunds,
+    'hotel': hotel,
+    'office': office,
+    'sales': sales,
   };
   factory ClosingStatement.fromJson(Map<String, dynamic> json) =>
       ClosingStatement(
@@ -304,6 +428,9 @@ class ClosingStatement {
         tax: json['tax'] as int,
         purchases: json['purchases'] as int,
         refunds: json['refunds'] as int? ?? 0,
+        hotel: json['hotel'] as int? ?? 0,
+        office: json['office'] as int? ?? 0,
+        sales: json['sales'] as int? ?? 0,
       );
 }
 
@@ -322,9 +449,16 @@ class DistrictGame {
     this.earned = 0,
     this.purchasesSinceClosing = 0,
     this.refundsSinceClosing = 0,
+    this.catalogVersion = 2,
+    this.gems = 0,
+    this.soundEnabled = false,
+    Set<Achievement>? achievements,
+    List<DistrictDecoration>? decorations,
     List<ApartmentBuilding>? buildings,
     this.statement,
-  }) : buildings = buildings ?? [];
+  }) : buildings = buildings ?? [],
+       achievements = achievements ?? {},
+       decorations = decorations ?? [];
   int watermark,
       phaseMilliseconds,
       balance,
@@ -336,6 +470,10 @@ class DistrictGame {
       earned,
       purchasesSinceClosing,
       refundsSinceClosing;
+  int catalogVersion, gems;
+  bool soundEnabled;
+  final Set<Achievement> achievements;
+  final List<DistrictDecoration> decorations;
   final List<ApartmentBuilding> buildings;
   bool hourlyClock;
   ClosingStatement? statement;
@@ -359,8 +497,12 @@ class DistrictGame {
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': hourlyClock ? 6 : 5,
-    'catalog': 1,
+    'version': hourlyClock ? (catalogVersion == 2 ? 7 : 6) : 5,
+    'catalog': catalogVersion,
+    'gems': gems,
+    'soundEnabled': soundEnabled,
+    'achievements': achievements.map((a) => a.name).toList()..sort(),
+    'decorations': decorations.map((d) => d.toJson()).toList(),
     'phaseMilliseconds': phaseMilliseconds,
     'watermark': watermark,
     'balance': balance,
@@ -381,8 +523,9 @@ class DistrictGame {
             json['version'] != 3 &&
             json['version'] != 4 &&
             json['version'] != 5 &&
-            json['version'] != 6) ||
-        json['catalog'] != 1) {
+            json['version'] != 6 &&
+            json['version'] != 7) ||
+        json['catalog'] != (json['version'] == 7 ? 2 : 1)) {
       throw const FormatException('Unsupported game save');
     }
     final state = DistrictGame(
@@ -394,7 +537,20 @@ class DistrictGame {
       phaseMilliseconds: json['version'] == 1
           ? StarterCatalog.legacyPhaseMilliseconds
           : json['phaseMilliseconds'] as int,
-      hourlyClock: json['version'] == 6,
+      hourlyClock: (json['version'] as int) >= 6,
+      catalogVersion: json['catalog'] as int,
+      gems: json['gems'] as int? ?? 0,
+      soundEnabled: json['soundEnabled'] as bool? ?? false,
+      achievements: (json['achievements'] as List? ?? [])
+          .map((a) => Achievement.values.byName(a as String))
+          .toSet(),
+      decorations: (json['decorations'] as List? ?? [])
+          .map(
+            (d) => DistrictDecoration.fromJson(
+              Map<String, dynamic>.from(d as Map),
+            ),
+          )
+          .toList(),
       lastClosing: json['lastClosing'] as int,
       nextBuildingId: json['nextBuildingId'] as int,
       earned: json['earned'] as int,
@@ -431,6 +587,14 @@ class DistrictGame {
         state.remainder >= state.phaseMilliseconds ||
         state.lastClosing != state.day - (state.phaseIndex == 4 ? 0 : 1) ||
         state.earned < 0 ||
+        state.gems < 0 ||
+        state.decorations.map((d) => d.cell).toSet().length !=
+            state.decorations.length ||
+        state.decorations.any(
+          (d) =>
+              DistrictProgression.decorationError(state, d.cell, ignore: d) !=
+              null,
+        ) ||
         state.purchasesSinceClosing < 0 ||
         state.refundsSinceClosing < 0 ||
         state.nextBuildingId < 1 ||
@@ -466,6 +630,18 @@ class GameplayException implements Exception {
 }
 
 abstract final class DistrictSimulation {
+  /// A transaction-local preview only; no balance, rewards or time are published.
+  static ClosingStatement projectClosing(DistrictGame state) {
+    final preview = DistrictGame.fromJson(state.toJson());
+    advance(
+      preview,
+      preview.watermark +
+          StarterCatalog.dayMilliseconds -
+          preview.timeOfDayMilliseconds,
+    );
+    return preview.statement!;
+  }
+
   static String? upgradeError(
     DistrictGame state,
     ApartmentBuilding building,
@@ -499,6 +675,7 @@ abstract final class DistrictSimulation {
       throw const GameplayException('There is no upgrade to cancel.');
     }
     final refund = order.kind.cost(building);
+    state.gems += order.rushGems;
     state.balance += refund;
     state.refundsSinceClosing += refund;
     building.upgrade = null;
@@ -517,7 +694,7 @@ abstract final class DistrictSimulation {
         state.phaseIndex +
         (state.remainder + math.max(0, elapsedMilliseconds)) /
             state.phaseMilliseconds;
-    return (phases / (order.kind.days * 4)).clamp(0.0, .999);
+    return (phases / (order.kind.duration(building) * 4)).clamp(0.0, .999);
   }
 
   /// Completed work: the two-day shell is 2/3; the one-day B1 job is 1/3.
@@ -533,11 +710,17 @@ abstract final class DistrictSimulation {
             state.phaseMilliseconds;
     return switch (building.stage) {
       ConstructionStage.reserved || ConstructionStage.paid => 0,
-      ConstructionStage.shell => (elapsedPhases / 8).clamp(0.0, 1.0) * 2 / 3,
-      ConstructionStage.shellDone => 2 / 3,
+      ConstructionStage.shell =>
+        (elapsedPhases / (building.initialShellDays * 4)).clamp(0.0, 1.0) *
+            building.initialShellDays /
+            (building.initialShellDays + 1),
+      ConstructionStage.shellDone =>
+        building.initialShellDays / (building.initialShellDays + 1),
       ConstructionStage.basement =>
         // Reserve 100% for the committed completion state.
-        2 / 3 + (elapsedPhases / 4).clamp(0.0, .999) / 3,
+        building.initialShellDays / (building.initialShellDays + 1) +
+            (elapsedPhases / 4).clamp(0.0, .999) /
+                (building.initialShellDays + 1),
       ConstructionStage.parkingDone || ConstructionStage.ready => 1,
     };
   }
@@ -549,6 +732,7 @@ abstract final class DistrictSimulation {
       throw const GameplayException('Finish construction before opening.');
     }
     building.stage = ConstructionStage.ready;
+    DistrictProgression.evaluate(state);
   }
 
   static void advance(DistrictGame state, int now) {
@@ -569,6 +753,9 @@ abstract final class DistrictSimulation {
       } else {
         state.phaseIndex++;
         if (!state.hourlyClock && state.phaseIndex == 4) _close(state);
+        if (state.catalogVersion == 2 && state.phaseIndex < 4) {
+          _visitWindow(state);
+        }
       }
     }
     // Settle legacy offline time at its saved speed, then preserve phase progress.
@@ -582,16 +769,33 @@ abstract final class DistrictSimulation {
       _morning(state);
     }
     state.hourlyClock = true;
+    state.catalogVersion = 2;
+    DistrictProgression.evaluate(state);
   }
 
-  static String? placementError(DistrictGame state, Footprint site) {
-    if (site.width < 1 || site.length < 1 || site.rooms < 1) {
-      return 'Choose at least two land tiles for an apartment.';
+  static String? placementError(
+    DistrictGame state,
+    Footprint site, {
+    BuildingType type = BuildingType.apartment,
+    int floors = 1,
+  }) {
+    if (floors < 1 || floors > GameRules.maximumAboveGroundFloors) {
+      return 'Choose 1–10 above-ground floors.';
     }
-    if (site.quote > state.balance) {
+    if (site.width < 1 ||
+        site.length < 1 ||
+        type.unitsPerFloor(site.tiles) < 1) {
+      return 'Choose at least two land tiles for an apartment or hotel.';
+    }
+    if (type.quote(site.tiles, floors) > state.balance) {
       return 'Not enough money for the building and B1 parking.';
     }
     final roads = state.roads;
+    if (state.decorations.any(
+      (d) => site.contains(d.cell) || site.roadRing.contains(d.cell),
+    )) {
+      return 'Move decorations clear of the building and its surrounding road.';
+    }
     if (site.cells.any(roads.contains)) {
       return 'The footprint overlaps a road. Leave roads outside your building.';
     }
@@ -604,13 +808,25 @@ abstract final class DistrictSimulation {
     return null;
   }
 
-  static void place(DistrictGame state, Footprint site) {
-    final error = placementError(state, site);
+  static void place(
+    DistrictGame state,
+    Footprint site, {
+    BuildingType type = BuildingType.apartment,
+    int floors = 1,
+  }) {
+    final error = placementError(state, site, type: type, floors: floors);
     if (error != null) throw GameplayException(error);
-    state.balance -= site.quote;
-    state.purchasesSinceClosing += site.quote;
+    final quote = type.quote(site.tiles, floors);
+    state.balance -= quote;
+    state.purchasesSinceClosing += quote;
     state.buildings.add(
-      ApartmentBuilding(id: state.nextBuildingId++, footprint: site),
+      ApartmentBuilding(
+        id: state.nextBuildingId++,
+        footprint: site,
+        type: type,
+        initialFloors: floors,
+        aboveGroundFloors: floors,
+      ),
     );
   }
 
@@ -619,8 +835,9 @@ abstract final class DistrictSimulation {
     if (building.stage == ConstructionStage.ready) {
       throw const GameplayException('An open building cannot be canceled.');
     }
-    state.balance += building.footprint.quote;
-    state.refundsSinceClosing += building.footprint.quote;
+    state.balance += building.originalQuote;
+    state.gems += building.rushGems;
+    state.refundsSinceClosing += building.originalQuote;
     state.buildings.remove(building);
   }
 
@@ -642,6 +859,14 @@ abstract final class DistrictSimulation {
   static void _morning(DistrictGame state) {
     for (final building in state.buildings) {
       final upgrade = building.upgrade;
+      if (upgrade?.rushed == true) _completeUpgrade(building);
+      if (building.rushed) {
+        building.rushed = false;
+        building.rushGems = 0;
+        building.stage = building.stage == ConstructionStage.shell
+            ? ConstructionStage.shellDone
+            : ConstructionStage.parkingDone;
+      }
       if (upgrade?.stage == UpgradeStage.paid) {
         upgrade!.stage = UpgradeStage.building;
         upgrade.startedDay = state.day;
@@ -654,9 +879,16 @@ abstract final class DistrictSimulation {
         building.startedDay = state.day;
       }
       if (building.stage == ConstructionStage.ready) {
-        final capacity = math.min(building.rooms, building.bays);
+        final capacity = building.eligibleCapacity;
+        final happiness = state.catalogVersion < 2 ? 100 : building.happiness;
+        if (building.type == BuildingType.foodCourt) {
+          building.visitorCapacity = capacity;
+          continue;
+        }
+        if (building.type == BuildingType.hotel) building.occupied.clear();
+        final demandPercent = building.type == BuildingType.hotel ? 75 : 25;
         var remainingAdmissions = math.min(
-          (capacity + 3) ~/ 4,
+          (capacity * demandPercent * happiness + 9999) ~/ 10000,
           capacity - building.occupied.length,
         );
         for (
@@ -668,35 +900,89 @@ abstract final class DistrictSimulation {
         }
       }
     }
+    if (state.catalogVersion == 2) _visitWindow(state);
+    DistrictProgression.evaluate(state);
+  }
+
+  static int synergyPercent(DistrictGame state, ApartmentBuilding receiver) {
+    if (state.catalogVersion < 2) return 0;
+    final ring = receiver.footprint.roadRing.toSet();
+    var bonus = 0;
+    for (final neighbor in state.buildings) {
+      if (identical(neighbor, receiver)) continue;
+      final compatible = receiver.type == BuildingType.foodCourt
+          ? neighbor.type == BuildingType.apartment ||
+                neighbor.type == BuildingType.office
+          : neighbor.type == BuildingType.foodCourt;
+      if (compatible && neighbor.footprint.roadRing.any(ring.contains)) {
+        bonus += 5;
+      }
+    }
+    return math.min(15, bonus);
+  }
+
+  static int _boost(DistrictGame state, ApartmentBuilding building, int base) {
+    final percent =
+        (100 + (building.luxury - 1) * 15) *
+        (100 + synergyPercent(state, building));
+    return (base * percent + 5000) ~/ 10000;
+  }
+
+  static void _visitWindow(DistrictGame state) {
+    for (final building in state.buildings) {
+      if (building.type != BuildingType.foodCourt ||
+          building.stage != ConstructionStage.ready) {
+        continue;
+      }
+      final demand = const [25, 75, 100, 50][state.phaseIndex];
+      final count =
+          (building.visitorCapacity * demand * building.happiness + 9999) ~/
+          10000;
+      building.currentVisitors = count;
+      building.visitsToday += count;
+      building.salesToday += _boost(state, building, count * 2500);
+      building.parkingToday += count * StarterCatalog.parkingPerTenant;
+    }
+  }
+
+  static void _completeUpgrade(ApartmentBuilding building) {
+    switch (building.upgrade!.kind) {
+      case BuildingUpgrade.floor:
+        building.aboveGroundFloors++;
+      case BuildingUpgrade.basement:
+        building.undergroundFloors++;
+      case BuildingUpgrade.standardLift:
+        building.standardLifts++;
+      case BuildingUpgrade.executiveLift:
+        building.executiveLifts++;
+      case BuildingUpgrade.luxury:
+        building.luxury++;
+    }
+    building.upgrade = null;
   }
 
   static void _close(DistrictGame state) {
     if (state.lastClosing >= state.day) return;
     var rent = 0, parking = 0, maintenance = 0, valuation = 0;
+    var hotel = 0, office = 0, sales = 0;
     for (final building in state.buildings) {
       final upgrade = building.upgrade;
       if (upgrade?.stage == UpgradeStage.reserved) {
         upgrade!.stage = UpgradeStage.paid;
       } else if (upgrade?.stage == UpgradeStage.building &&
-          state.day >= upgrade!.startedDay + upgrade.kind.days - 1) {
-        switch (upgrade.kind) {
-          case BuildingUpgrade.floor:
-            building.aboveGroundFloors++;
-          case BuildingUpgrade.basement:
-            building.undergroundFloors++;
-          case BuildingUpgrade.standardLift:
-            building.standardLifts++;
-          case BuildingUpgrade.executiveLift:
-            building.executiveLifts++;
-        }
-        building.upgrade = null;
+          !upgrade!.rushed &&
+          state.day >=
+              upgrade.startedDay + upgrade.kind.duration(building) - 1) {
+        _completeUpgrade(building);
       }
       if (building.stage == ConstructionStage.reserved) {
         building.stage = ConstructionStage.paid;
       } else if (building.stage == ConstructionStage.shell &&
-          state.day >= building.startedDay + 1) {
+          !building.rushed &&
+          state.day >= building.startedDay + building.initialShellDays - 1) {
         building.stage = ConstructionStage.shellDone;
       } else if (building.stage == ConstructionStage.basement &&
+          !building.rushed &&
           state.day >= building.startedDay) {
         building.stage = ConstructionStage.parkingDone;
       }
@@ -704,12 +990,37 @@ abstract final class DistrictSimulation {
         final dailyPortion =
             StarterCatalog.weeklyRent ~/ 7 +
             (state.weekday < StarterCatalog.weeklyRent % 7 ? 1 : 0);
-        final accrual = dailyPortion * building.occupied.length;
+        final accrual = building.type == BuildingType.apartment
+            ? _boost(state, building, dailyPortion * building.occupied.length)
+            : 0;
         building.pendingRent += accrual;
-        final receipts =
-            StarterCatalog.parkingPerTenant * building.occupied.length;
+        final receipts = building.type == BuildingType.foodCourt
+            ? building.parkingToday
+            : StarterCatalog.parkingPerTenant * building.usedBays;
         parking += receipts;
-        state.earned += accrual + receipts;
+        final hotelRevenue = building.type == BuildingType.hotel
+            ? _boost(state, building, 16000 * building.occupied.length)
+            : 0;
+        final officeRevenue = building.type == BuildingType.office
+            ? _boost(
+                state,
+                building,
+                18000 * building.footprint.tiles * building.occupied.length,
+              )
+            : 0;
+        hotel += hotelRevenue;
+        office += officeRevenue;
+        sales += building.salesToday;
+        state.earned +=
+            accrual +
+            receipts +
+            hotelRevenue +
+            officeRevenue +
+            building.salesToday;
+        building.salesToday = 0;
+        building.parkingToday = 0;
+        building.visitsToday = 0;
+        building.currentVisitors = 0;
       }
       if (state.weekday == 6) {
         rent += building.pendingRent;
@@ -718,8 +1029,9 @@ abstract final class DistrictSimulation {
       maintenance += building.maintenance;
       valuation += building.valuation;
     }
-    final tax = (valuation + 1000) ~/ 2000 + ((rent + parking) + 25) ~/ 50;
-    state.balance += rent + parking - maintenance - tax;
+    final gross = rent + parking + hotel + office + sales;
+    final tax = (valuation + 1000) ~/ 2000 + (gross + 25) ~/ 50;
+    state.balance += gross - maintenance - tax;
     state.lastClosing = state.day;
     state.statement = ClosingStatement(
       day: state.day,
@@ -729,8 +1041,12 @@ abstract final class DistrictSimulation {
       tax: tax,
       purchases: state.purchasesSinceClosing,
       refunds: state.refundsSinceClosing,
+      hotel: hotel,
+      office: office,
+      sales: sales,
     );
     state.purchasesSinceClosing = 0;
     state.refundsSinceClosing = 0;
+    DistrictProgression.evaluate(state);
   }
 }

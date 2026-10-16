@@ -214,6 +214,7 @@ void main() {
   test('schema 1/2/3 migration retains rooms and rent; corrupt caps and orders are rejected', () {
     for (final version in [1, 2, 3]) {
       final source = district().toJson()
+        ..['catalog'] = 1
         ..['version'] = version
         ..['phaseMilliseconds'] = 5000;
       for (final b in source['buildings'] as List) {

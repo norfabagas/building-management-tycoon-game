@@ -30,14 +30,30 @@ abstract final class Daylight {
   }
 }
 
-class DaylightOverlay extends StatelessWidget {
+class DaylightOverlay extends StatefulWidget {
   const DaylightOverlay({super.key, required this.milliseconds});
   final double milliseconds;
   @override
+  State<DaylightOverlay> createState() => _DaylightOverlayState();
+}
+
+class _DaylightOverlayState extends State<DaylightOverlay> {
+  late double _target = widget.milliseconds;
+  @override
+  void didUpdateWidget(DaylightOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final delta = widget.milliseconds - oldWidget.milliseconds;
+    // Offline catch-up must crossfade to the new sky, not wind through weeks.
+    _target += delta.abs() <= 6000 ? delta : (delta + 12000) % 24000 - 12000;
+  }
+
+  @override
   Widget build(BuildContext context) => IgnorePointer(
     child: TweenAnimationBuilder<double>(
-      tween: Tween(begin: milliseconds, end: milliseconds),
-      duration: const Duration(milliseconds: 800),
+      tween: Tween(begin: _target, end: _target),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 800),
       builder: (context, time, _) =>
           CustomPaint(painter: DaylightPainter(time)),
     ),

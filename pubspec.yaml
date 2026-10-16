@@ -17,6 +17,7 @@ dependencies:
   sembast_sqflite: ^2.2.3
   sqflite: ^2.4.4+1
   path_provider: ^2.1.6
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:

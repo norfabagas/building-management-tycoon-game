@@ -2,7 +2,11 @@
 
 ## Current override — 2026-10-16
 
+The full-Figma audit is tracked in [FigmaAssessment.md](FigmaAssessment.md). The user approved [catalog 2](FigmaCatalogProposal.md); four types, initial-floor input, luxury, needs, synergy, achievements/gems, decorations, local audio and motion now have domain behavior and reachable controls. Directories open the actual saved floor/catalog and return to their originating directory on exit. Wide build selection uses four cards; narrow selection stacks them. Use the correct exterior/interior/vacancy/actor family, whole-office leases and F&B facilities. Colors, BM identity and bundled fallback fonts remain unchanged. The 24-hour single-Balance HUD and selected-floor view override older board examples. Camera, plans and selected floors survive resizing; two-finger pinch/pan and the existing footer clearance remain supported.
+
 The 2026-10-16 request overrides square exterior scaling on rectangular plots. Rectangular buildings follow both projected footprint axes: repeat approved facade texture bays along long walls and shape the grey roof and cream trim to the actual roof polygon. Keep a stable height based on the short side; square plots retain the original approved sprite. Drawing, bounds and picking share geometry. No new building capacity or price comes from the exterior. The HUD shows 24-hour HH:mm time, 1 hour per real second, and closing at 24:00. Replace abrupt phase PNG changes with continuously interpolated directional daylight gradients, including a continuous midnight wrap; keep overlays below controls.
+
+Long offline/resume time jumps now choose a short cyclic daylight transition instead of animating through every missed day. Normal clock updates still move forward across midnight; reduced motion applies lighting immediately. This avoids strobing during catch-up without changing simulation time or settlement.
 
 The 2026-10-16 [Figma design archive](DesignArchive.md) now hosts repository design references and large originals. Use its manifest links and restore exact sources when regenerating assets; the BM master and all runtime exports remain in Git. Native interactive board components/prototypes are outside this archival migration.
 

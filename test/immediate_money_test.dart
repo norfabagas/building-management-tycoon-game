@@ -38,6 +38,7 @@ void main() {
                 ),
               ],
             ).toJson()
+            ..['catalog'] = 1
             ..['version'] = 4
             ..['phaseMilliseconds'] = 5000;
       await GameRepository.store.record('1').put(database, source);
@@ -129,7 +130,9 @@ void main() {
         tick(state, 25);
         expect(
           kind.count(building),
-          kind == BuildingUpgrade.floor || kind == BuildingUpgrade.basement
+          kind == BuildingUpgrade.floor ||
+                  kind == BuildingUpgrade.basement ||
+                  kind == BuildingUpgrade.luxury
               ? 1
               : 0,
         );
@@ -180,6 +183,7 @@ void main() {
                   ),
                 ],
               ).toJson()
+              ..['catalog'] = 1
               ..['version'] = version
               ..['phaseMilliseconds'] = 5000;
         old.remove('purchasesSinceClosing');
@@ -190,7 +194,7 @@ void main() {
             ? 3000000
             : 4000000;
         expect(migrated.balance, expected);
-        expect(migrated.toJson()['version'], 6);
+        expect(migrated.toJson()['version'], 7);
         expect(
           (await repository.update(profile, 0)).toJson(),
           migrated.toJson(),
@@ -221,6 +225,7 @@ void main() {
               ),
             ],
           ).toJson()
+          ..['catalog'] = 1
           ..['version'] = 4
           ..['phaseMilliseconds'] = 5000;
     old.remove('purchasesSinceClosing');

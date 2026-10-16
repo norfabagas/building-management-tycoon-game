@@ -12,9 +12,16 @@ import '../../domain/local_profile.dart';
 import '../../shared/widgets/asset_animation.dart';
 import '../../shared/widgets/game_brand.dart';
 import '../../shared/widgets/game_button.dart';
+import '../../shared/game_audio.dart';
 import 'building_upgrade_panel.dart';
 import 'district_map.dart';
 import 'district_view_model.dart';
+import 'building_presentation.dart';
+import 'building_type_picker.dart';
+import 'district_tools_panel.dart';
+import 'acceleration_button.dart';
+import 'vertical_transport.dart';
+import 'map_camera_view_model.dart';
 
 class DistrictScreen extends StatefulWidget {
   const DistrictScreen({
@@ -36,6 +43,19 @@ class _DistrictScreenState extends State<DistrictScreen>
   );
   bool _buildMenu = false, _drawing = false, _review = false, _finance = false;
   bool _upgrades = false;
+  bool _tenants = false, _districtUpgrades = false;
+  BuildingType _buildType = BuildingType.apartment;
+  int _initialFloors = 1;
+  String? _collection;
+  DecorationKind _decorationKind = DecorationKind.tree;
+  int? _movingDecoration;
+  final _audio = GameAudio();
+  final _mapCamera = MapCameraViewModel();
+  int? _seenClosing;
+  int _cashFeedback = 0;
+  int _seenAction = 0;
+  Set<String>? _seenJobs;
+  bool _audioBusy = false;
   Footprint? _preview;
   int? get _selected => _model.selectedBuildingId;
   set _selected(int? id) {
@@ -50,10 +70,15 @@ class _DistrictScreenState extends State<DistrictScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(_model.load());
+    _model.addListener(_onGameChanged);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      unawaited(_audio.setEnabled(false));
+    }
     if (state == AppLifecycleState.resumed ||
         state == AppLifecycleState.inactive) {
       unawaited(_model.save());
@@ -63,6 +88,9 @@ class _DistrictScreenState extends State<DistrictScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _model.removeListener(_onGameChanged);
+    _mapCamera.dispose();
+    unawaited(_audio.dispose());
     _model.dispose();
     super.dispose();
   }
@@ -72,14 +100,21 @@ class _DistrictScreenState extends State<DistrictScreen>
     _drawing = false;
     _review = false;
     _finance = false;
+    _tenants = false;
+    _districtUpgrades = false;
+    _collection = null;
     _selected = null;
     _preview = null;
+    _initialFloors = 1;
   });
   void _closePanel() => setState(() {
     _buildMenu = false;
     _drawing = false;
     _review = false;
     _finance = false;
+    _tenants = false;
+    _districtUpgrades = false;
+    _collection = null;
     _selected = null;
     _preview = null;
   });
@@ -87,7 +122,12 @@ class _DistrictScreenState extends State<DistrictScreen>
     final site = _preview;
     if (site == null) return;
     final success = await _model.save(
-      (state) => DistrictSimulation.place(state, site),
+      (state) => DistrictSimulation.place(
+        state,
+        site,
+        type: _buildType,
+        floors: _initialFloors,
+      ),
     );
     if (success && mounted) {
       setState(() {
@@ -105,6 +145,22 @@ class _DistrictScreenState extends State<DistrictScreen>
     appBar: AppBar(
       toolbarHeight: 52,
       title: const GameBrand(size: 30, fontSize: 16),
+      actions: [
+        AnimatedBuilder(
+          animation: _model,
+          builder: (context, _) => IconButton(
+            tooltip: _audio.enabled
+                ? 'Mute sound'
+                : _model.game?.soundEnabled == true
+                ? 'Resume sound'
+                : 'Enable sound',
+            onPressed: _model.game == null || _model.busy || _audioBusy
+                ? null
+                : _toggleSound,
+            icon: Icon(_audio.enabled ? Icons.volume_up : Icons.volume_off),
+          ),
+        ),
+      ],
     ),
     body: SafeArea(
       child: AnimatedBuilder(
@@ -138,7 +194,12 @@ class _DistrictScreenState extends State<DistrictScreen>
             builder: (context, constraints) {
               final sidePanel = constraints.maxWidth >= 700;
               final smallHeight = constraints.maxHeight < 450;
-              final activePanel = _buildMenu || _finance;
+              final activePanel =
+                  _buildMenu ||
+                  _finance ||
+                  _tenants ||
+                  _districtUpgrades ||
+                  _collection != null;
               return Padding(
                 // Keep floor controls above the hosted Web footer badge.
                 padding: EdgeInsets.fromLTRB(
@@ -188,6 +249,11 @@ class _DistrictScreenState extends State<DistrictScreen>
                           'Day ${game.day}',
                           _model.clockLabel,
                         ),
+                        _stat(
+                          ProductionAssets.iconsGem,
+                          'Gems',
+                          '${game.gems}',
+                        ),
                       ],
                     ),
                     if (_model.error case final error?)
@@ -214,12 +280,23 @@ class _DistrictScreenState extends State<DistrictScreen>
                         ),
                       ),
                     const SizedBox(height: 10),
+                    if (_cashFeedback > 0 &&
+                        !MediaQuery.disableAnimationsOf(context))
+                      AssetAnimation(
+                        key: ValueKey('cash-$_cashFeedback'),
+                        path: ProductionAssets.effectsCoin,
+                        sequence: 'play',
+                        width: 32,
+                        height: 32,
+                        hideWhenComplete: true,
+                      ),
                     Expanded(
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
                           Offstage(
-                            offstage: _selected != null,
+                            offstage:
+                                _selected != null || (_buildMenu && !_drawing),
                             child: sidePanel
                                 ? Row(
                                     crossAxisAlignment:
@@ -252,6 +329,22 @@ class _DistrictScreenState extends State<DistrictScreen>
                                   ),
                           ),
                           if (_selected != null) _floorView(game),
+                          if (_selected == null && _buildMenu && !_drawing)
+                            Material(
+                              color: GameColors.surface,
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                  color: GameColors.border,
+                                  width: 2,
+                                ),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: SingleChildScrollView(
+                                padding: const EdgeInsets.all(16),
+                                child: _buildPanel(game),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -259,29 +352,62 @@ class _DistrictScreenState extends State<DistrictScreen>
                     if (_selected != null)
                       _floorNavigation()
                     else
-                      Row(
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           GameButton(
                             label: 'Build',
                             onPressed: blocked ? null : _chooseBuild,
                           ),
-                          const SizedBox(width: 10),
+                          GameButton(
+                            label: 'Tenants',
+                            secondary: true,
+                            onPressed: () => _showDirectory(tenants: true),
+                          ),
+                          GameButton(
+                            label: 'Upgrades',
+                            secondary: true,
+                            onPressed: () => _showDirectory(tenants: false),
+                          ),
                           GameButton(
                             label: 'Finances',
                             secondary: true,
                             onPressed: () => setState(() {
                               _finance = true;
+                              _tenants = false;
+                              _districtUpgrades = false;
+                              _collection = null;
                               _buildMenu = false;
                               _drawing = false;
                               _preview = null;
                               _selected = null;
                             }),
                           ),
-                          const Spacer(),
                           IconButton(
                             tooltip: 'Center map',
                             onPressed: () => setState(() => _reset++),
                             icon: const Icon(Icons.center_focus_strong),
+                          ),
+                          PopupMenuButton<String>(
+                            tooltip: 'District activities',
+                            onSelected: (value) => setState(() {
+                              _closePlanning();
+                              _tenants = false;
+                              _districtUpgrades = false;
+                              _collection = value;
+                            }),
+                            itemBuilder: (_) => const [
+                              PopupMenuItem(
+                                value: 'Achievements',
+                                child: Text('Achievements'),
+                              ),
+                              PopupMenuItem(
+                                value: 'Decorations',
+                                child: Text('Decorations'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -295,14 +421,129 @@ class _DistrictScreenState extends State<DistrictScreen>
     ),
   );
 
+  void _onGameChanged() {
+    final game = _model.game;
+    if (game == null) return;
+    String? cue;
+    if (_seenClosing != null &&
+        game.lastClosing > _seenClosing! &&
+        (game.statement?.gross ?? 0) > 0) {
+      _cashFeedback++;
+      cue = ProductionAssets.audioFinancialClosing;
+    }
+    _seenClosing = game.lastClosing;
+    if (_seenAction != _model.actionFeedback) {
+      cue ??= _model.actionSucceeded
+          ? ProductionAssets.audioUiConfirm
+          : ProductionAssets.audioUiError;
+      _seenAction = _model.actionFeedback;
+    }
+    final jobs = <String>{};
+    for (final building in game.buildings) {
+      if (building.stage == ConstructionStage.shell ||
+          building.stage == ConstructionStage.basement ||
+          building.upgrade?.stage == UpgradeStage.building) {
+        final job =
+            '${building.id}-${building.stage}-${building.startedDay}-${building.upgrade?.kind}-${building.upgrade?.startedDay}';
+        jobs.add(job);
+        if (_seenJobs != null && !_seenJobs!.contains(job)) {
+          cue ??=
+              building.stage == ConstructionStage.basement ||
+                  building.upgrade?.kind == BuildingUpgrade.basement
+              ? ProductionAssets.audioConstructionDrill
+              : ProductionAssets.audioConstructionHammer;
+        }
+      }
+    }
+    _seenJobs = jobs;
+    if (cue != null) {
+      unawaited(_audio.effect(cue));
+    }
+    unawaited(
+      _audio.updateMusic(
+        game.buildings.where((b) => b.stage == ConstructionStage.ready).length,
+      ),
+    );
+  }
+
+  Future<void> _toggleSound() async {
+    if (_audioBusy) return;
+    setState(() => _audioBusy = true);
+    try {
+      final enabled = !_audio.enabled;
+      final started = await _audio.setEnabled(
+        enabled,
+        businesses: _model.game!.buildings
+            .where((b) => b.stage == ConstructionStage.ready)
+            .length,
+      );
+      if (!mounted) return;
+      if (!started) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Sound could not start. Tap the sound control to retry.',
+            ),
+          ),
+        );
+        return;
+      }
+      final saved = await _model.save((state) => state.soundEnabled = enabled);
+      if (!saved) await _audio.setEnabled(false);
+      if (mounted) setState(() {});
+    } finally {
+      if (mounted) setState(() => _audioBusy = false);
+    }
+  }
+
+  void _showDirectory({required bool tenants}) => setState(() {
+    _closePlanning();
+    _collection = null;
+    _tenants = tenants;
+    _districtUpgrades = !tenants;
+  });
+
+  void _closePlanning() {
+    _buildMenu = false;
+    _drawing = false;
+    _review = false;
+    _finance = false;
+    _preview = null;
+    _selected = null;
+  }
+
+  void _openDirectoryBuilding(int id, {int floor = 1, bool upgrades = false}) =>
+      setState(() {
+        _upgrades = false;
+        _model.selectBuilding(id, floor: floor);
+        _upgrades = upgrades;
+      });
+
   Widget _map(DistrictGame game) => DistrictMap(
+    camera: _mapCamera,
     game: game,
     elapsedMilliseconds: _model.elapsedMilliseconds,
     drawing: _drawing && !_review && _model.error == null,
     preview: _preview,
+    previewValid: _preview == null
+        ? null
+        : _collection == 'Decorations'
+        ? _decorationError(game, _preview!) == null
+        : DistrictSimulation.placementError(
+                game,
+                _preview!,
+                type: _buildType,
+                floors: _initialFloors,
+              ) ==
+              null,
+    decorationPreview: _collection == 'Decorations',
     selected: _selected,
     reset: _reset,
-    onFootprint: (site) => setState(() => _preview = site),
+    onFootprint: (site) => setState(
+      () => _preview = _collection == 'Decorations'
+          ? Footprint(site.x, site.y, 1, 1)
+          : site,
+    ),
     onCancelFootprint: () => setState(() => _preview = null),
     onSelect: (id) => setState(() {
       _selected = id;
@@ -310,6 +551,9 @@ class _DistrictScreenState extends State<DistrictScreen>
       _drawing = false;
       _preview = null;
       _finance = false;
+      _tenants = false;
+      _districtUpgrades = false;
+      _collection = null;
     }),
   );
 
@@ -331,7 +575,7 @@ class _DistrictScreenState extends State<DistrictScreen>
             child: GameButton(
               label: 'Exit building',
               secondary: true,
-              onPressed: _closePanel,
+              onPressed: () => setState(() => _selected = null),
             ),
           ),
           const SizedBox(width: 8),
@@ -424,6 +668,10 @@ class _DistrictScreenState extends State<DistrictScreen>
       padding: const EdgeInsets.all(16),
       child: _finance
           ? _financePanel(game)
+          : _collection != null
+          ? _collectionPanel(game)
+          : _tenants || _districtUpgrades
+          ? _directoryPanel(game)
           : _buildMenu
           ? _buildPanel(game)
           : _welcome(game),
@@ -435,18 +683,198 @@ class _DistrictScreenState extends State<DistrictScreen>
       Expanded(
         child: Text(
           title,
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
         ),
       ),
       ?action,
-      if (_buildMenu || _finance || _selected != null)
+      if (_buildMenu ||
+          _finance ||
+          _tenants ||
+          _districtUpgrades ||
+          _collection != null ||
+          _selected != null)
         IconButton(
           tooltip: 'Close panel',
           onPressed: _closePanel,
           icon: const Icon(Icons.close),
         ),
+    ],
+  );
+
+  String? _decorationError(DistrictGame game, Footprint site) =>
+      DistrictProgression.decorationError(
+        game,
+        LandCell(site.x, site.y),
+        ignore: _movingDecoration == null
+            ? null
+            : game.decorations[_movingDecoration!],
+      );
+
+  Widget _collectionPanel(DistrictGame game) {
+    final blocked = _model.busy || _model.error != null;
+    final site = _preview;
+    final moving = _movingDecoration != null;
+    final error = site == null ? null : _decorationError(game, site);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _heading(_collection!),
+        const SizedBox(height: 8),
+        if (_collection == 'Decorations' && _drawing) ...[
+          Image.asset(
+            _decorationKind.artwork,
+            height: 100,
+            width: 100,
+            fit: BoxFit.contain,
+          ),
+          Text(
+            '${moving ? 'Move' : 'Place'} ${_decorationKind.label.toLowerCase()}',
+          ),
+          const Text('Tap one free land tile on the map.'),
+          _line('Tile', site == null ? 'Choose on map' : '${site.x},${site.y}'),
+          _line(
+            'Price',
+            moving ? 'Free move' : '${_decorationKind.price} gems',
+          ),
+          if (error != null)
+            Text(error, style: const TextStyle(color: GameColors.danger)),
+          GameButton(
+            label: _review ? 'Confirm placement' : 'Review placement',
+            onPressed: blocked || site == null || error != null
+                ? null
+                : () async {
+                    if (!_review) {
+                      setState(() => _review = true);
+                      return;
+                    }
+                    final success = await _model.save((state) {
+                      final cell = LandCell(site.x, site.y);
+                      if (moving) {
+                        DistrictProgression.moveDecoration(
+                          state,
+                          _movingDecoration!,
+                          cell,
+                        );
+                      } else {
+                        DistrictProgression.placeDecoration(
+                          state,
+                          _decorationKind,
+                          cell,
+                        );
+                      }
+                    });
+                    if (success && mounted) {
+                      setState(() {
+                        _drawing = false;
+                        _review = false;
+                        _preview = null;
+                        _movingDecoration = null;
+                      });
+                    }
+                  },
+          ),
+          TextButton(
+            onPressed: () => setState(() {
+              _drawing = false;
+              _review = false;
+              _preview = null;
+              _movingDecoration = null;
+            }),
+            child: const Text('Cancel placement'),
+          ),
+        ] else
+          DistrictToolsPanel(
+            game: game,
+            achievements: _collection == 'Achievements',
+            onChooseDecoration: blocked
+                ? null
+                : (kind) => setState(() {
+                    _decorationKind = kind;
+                    _movingDecoration = null;
+                    _drawing = true;
+                    _review = false;
+                    _preview = null;
+                  }),
+            onMoveDecoration: blocked
+                ? null
+                : (index) => setState(() {
+                    _movingDecoration = index;
+                    _decorationKind = game.decorations[index].kind;
+                    _drawing = true;
+                    _review = false;
+                    _preview = null;
+                  }),
+          ),
+      ],
+    );
+  }
+
+  Widget _directoryPanel(DistrictGame game) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      _heading(_tenants ? 'District tenants' : 'District upgrades'),
+      const SizedBox(height: 8),
+      Text(
+        _tenants
+            ? 'Choose a tenant to view their floor. Vacancies need a free parking bay before the next Morning admission.'
+            : 'Choose a building to review levels, parking and lifts.',
+      ),
+      const SizedBox(height: 12),
+      if (game.buildings.isEmpty)
+        const Text('No buildings yet. Use Build to start your district.'),
+      for (final building in game.buildings) ...[
+        const Divider(),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Image.asset(
+            building.type.exterior,
+            width: 48,
+            height: 56,
+            excludeFromSemantics: true,
+          ),
+          title: Text(building.name),
+          subtitle: Text(
+            _tenants
+                ? '${building.type == BuildingType.foodCourt ? building.currentVisitors : building.occupied.length} ${building.type.unitLabel} · ${building.bays} bays'
+                : '${building.completedFloors} floors · ${building.completedBasements} basements · ${building.upgrade?.kind.label ?? building.stage.label}',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () =>
+              _openDirectoryBuilding(building.id, upgrades: _districtUpgrades),
+        ),
+        if (_tenants && building.type == BuildingType.foodCourt)
+          Text(
+            '${building.currentVisitors} parties visiting · ${building.visitsToday} visits today',
+          ),
+        if (_tenants &&
+            building.occupied.isEmpty &&
+            building.type != BuildingType.foodCourt)
+          Text(
+            building.stage == ConstructionStage.ready
+                ? 'No tenants yet.'
+                : 'Open this building after construction to admit tenants.',
+          ),
+        if (_tenants)
+          for (final room in building.occupied.toList()..sort())
+            ListTile(
+              key: ValueKey('tenant-${building.id}-$room'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.person_outline),
+              title: Text(
+                '${building.type == BuildingType.office ? 'Lease' : 'Room'} ${room + 1} · ${building.type.role}',
+              ),
+              subtitle: Text(
+                'Floor ${room ~/ building.unitsPerFloor + 1} · ${building.type.baysPerUnit(building.footprint.tiles)} reserved parking bays',
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openDirectoryBuilding(
+                building.id,
+                floor: room ~/ building.unitsPerFloor + 1,
+              ),
+            ),
+      ],
     ],
   );
   Widget _line(String label, String value) => Padding(
@@ -465,7 +893,11 @@ class _DistrictScreenState extends State<DistrictScreen>
           child: Text(
             value,
             textAlign: TextAlign.right,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: value.startsWith('−') ? GameColors.danger : null,
+            ),
           ),
         ),
       ],
@@ -476,23 +908,29 @@ class _DistrictScreenState extends State<DistrictScreen>
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       _heading(
-        game.buildings.isEmpty ? 'Your first apartment' : 'Your district',
+        game.buildings.isEmpty ? 'Your first building' : 'Your district',
       ),
       const SizedBox(height: 8),
-      Image.asset(
-        ProductionAssets.roomsApartment,
-        height: 150,
-        width: double.infinity,
-        fit: BoxFit.contain,
-        excludeFromSemantics: true,
+      Row(
+        children: [
+          for (final type in BuildingType.values)
+            Expanded(
+              child: Image.asset(
+                type.exterior,
+                height: 100,
+                fit: BoxFit.contain,
+                semanticLabel: type.label,
+              ),
+            ),
+        ],
       ),
       const SizedBox(height: 10),
       const Text(
-        'Tap Build and drag to select land. Open completed buildings to welcome tenants.',
+        'Tap Build to choose a type, draw land and select floors. Open completed buildings to welcome tenants and visitors.',
       ),
       const SizedBox(height: 12),
       const Text(
-        'Rent: weekly. Parking: daily. 1 game hour = 1 second. Close at 24:00.',
+        'Apartments pay Sunday; other income pays daily. 1 game hour = 1 second. Close at 24:00.',
         style: TextStyle(color: GameColors.muted, fontSize: 14),
       ),
       if (_model.returnSummary case final summary?) ...[
@@ -503,7 +941,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       for (final building in game.buildings)
         ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text('Apartment ${building.id}'),
+          title: Text(building.name),
           subtitle: Text(
             building.stage == ConstructionStage.ready
                 ? building.stage.label
@@ -519,7 +957,12 @@ class _DistrictScreenState extends State<DistrictScreen>
     final site = _preview;
     final error = site == null
         ? null
-        : DistrictSimulation.placementError(game, site);
+        : DistrictSimulation.placementError(
+            game,
+            site,
+            type: _buildType,
+            floors: _initialFloors,
+          );
     final blocked = _model.busy || _model.error != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -528,39 +971,19 @@ class _DistrictScreenState extends State<DistrictScreen>
           !_drawing
               ? 'Choose a building'
               : _review
-              ? 'Review apartment'
+              ? 'Review ${_buildType.label.toLowerCase()}'
               : 'Draw your footprint',
         ),
         if (!_drawing) ...[
+          const Text('1 Type  ›  2 Footprint  ›  3 Floors  ›  4 Review'),
           const SizedBox(height: 10),
-          Image.asset(
-            ProductionAssets.buildingsApartment,
-            height: 120,
-            width: double.infinity,
-            fit: BoxFit.contain,
-            excludeFromSemantics: true,
-          ),
-          const Text(
-            'Apartment',
-            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          const Text('One floor · Default stairs · B1 parking included'),
-          const SizedBox(height: 12),
-          GameButton(
-            label: 'Choose apartment',
-            onPressed: blocked ? null : () => setState(() => _drawing = true),
-          ),
-          const SizedBox(height: 20),
-          const Divider(),
-          const Text(
-            'Hotel, Office and Food court',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            'Coming soon.',
-            style: TextStyle(color: GameColors.muted, fontSize: 14),
+          BuildingTypePicker(
+            onChoose: blocked
+                ? null
+                : (type) => setState(() {
+                    _buildType = type;
+                    _drawing = true;
+                  }),
           ),
         ] else ...[
           const SizedBox(height: 8),
@@ -576,14 +999,62 @@ class _DistrictScreenState extends State<DistrictScreen>
                 ? 'Draw on the map'
                 : '${site.width} × ${site.length} tiles',
           ),
-          _line('Above-ground floors', '1'),
-          _line('Calculated rooms', '${site?.rooms ?? 0}'),
+          Row(
+            children: [
+              const Expanded(child: Text('Above-ground floors')),
+              IconButton(
+                key: const ValueKey('initial-floor-minus'),
+                tooltip: 'Fewer floors',
+                onPressed: blocked || _review || _initialFloors == 1
+                    ? null
+                    : () => setState(() => _initialFloors--),
+                icon: const Icon(Icons.remove),
+              ),
+              Text(
+                '$_initialFloors',
+                key: const ValueKey('initial-floor-count'),
+              ),
+              IconButton(
+                key: const ValueKey('initial-floor-plus'),
+                tooltip: 'More floors',
+                onPressed: blocked || _review || _initialFloors == 10
+                    ? null
+                    : () => setState(() => _initialFloors++),
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          _line(
+            'Calculated ${_buildType.unitLabel}',
+            '${site == null ? 0 : _buildType.unitsPerFloor(site.tiles) * _initialFloors}',
+          ),
           _line('B1 parking bays', '${site?.bays ?? 0}'),
-          _line('Shell · 2 game days', formatMoney(site?.shellCost ?? 0)),
+          _line(
+            'Shell · ${_buildType.shellDays * _initialFloors} game days',
+            formatMoney(
+              (site?.tiles ?? 0) * _buildType.shellPerTile * _initialFloors,
+            ),
+          ),
           _line('B1 · 1 game day', formatMoney(site?.basementCost ?? 0)),
           _line('Surrounding road', 'Included · 1 tile wide'),
           const Divider(),
-          _line('Total cost', formatMoney(site?.quote ?? 0)),
+          _line(
+            'Total cost',
+            formatMoney(
+              site == null ? 0 : _buildType.quote(site.tiles, _initialFloors),
+            ),
+          ),
+          _line(
+            'Completed daily upkeep',
+            formatMoney(
+              _initialFloors * _buildType.floorMaintenance +
+                  StarterCatalog.maintenancePerBasement,
+            ),
+          ),
+          _line(
+            'Parking per ${_buildType == BuildingType.office ? 'lease' : 'unit'}',
+            '${_buildType.baysPerUnit(site?.tiles ?? 0)} bays',
+          ),
           if (error != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -607,9 +1078,9 @@ class _DistrictScreenState extends State<DistrictScreen>
               child: const Text('Redraw footprint'),
             ),
           const SizedBox(height: 12),
-          const Text(
-            'Charged immediately. Construction: 2 game days, plus 1 for parking.',
-            style: TextStyle(color: GameColors.muted, fontSize: 13),
+          Text(
+            'Charged immediately. Construction: ${_buildType.shellDays * _initialFloors} game days, plus 1 for parking. Default stairs included.',
+            style: const TextStyle(color: GameColors.muted, fontSize: 13),
           ),
         ],
       ],
@@ -618,12 +1089,19 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _financePanel(DistrictGame game) {
     final closing = game.statement;
+    final projected = DistrictSimulation.projectClosing(game);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _heading('Finances'),
         _line('Pending apartment rent', formatMoney(game.pendingRent)),
         _line('Next rent', 'Sunday · Day ${game.nextSunday}'),
+        _line('Next 24:00 cash estimate', formatMoney(projected.gross)),
+        _line('Projected operating net', formatMoney(projected.net)),
+        const Text(
+          'Estimate assumes no further player changes today.',
+          style: TextStyle(color: GameColors.muted, fontSize: 13),
+        ),
         const SizedBox(height: 8),
         const Text(
           'Rent is collected on Sundays.',
@@ -636,11 +1114,19 @@ class _DistrictScreenState extends State<DistrictScreen>
         ),
         if (closing != null) ...[
           _line('Apartment rent received', formatMoney(closing.rent)),
+          _line('Hotel room income', formatMoney(closing.hotel)),
+          _line('Office leases', formatMoney(closing.office)),
+          _line('Food court sales', formatMoney(closing.sales)),
           _line('Parking received', formatMoney(closing.parking)),
           _line('Maintenance', formatMoney(-closing.maintenance)),
           _line('Tax', formatMoney(-closing.tax)),
           const Divider(),
           _line('Operating net', formatMoney(closing.net)),
+          if (closing.net < 0)
+            const Text(
+              'Loss today: expenses exceeded cash received. Pending apartment rent is paid on Sunday.',
+              style: TextStyle(color: GameColors.danger),
+            ),
           _line('Purchases', formatMoney(-closing.purchases)),
           _line('Refunds', formatMoney(closing.refunds)),
         ],
@@ -664,20 +1150,24 @@ class _DistrictScreenState extends State<DistrictScreen>
     if (matches.isEmpty) return _welcome(game);
     final building = matches.first;
     final ready = building.stage == ConstructionStage.ready;
-    final firstRoom = (_model.currentFloor - 1) * building.footprint.rooms;
-    final lastRoom = firstRoom + building.footprint.rooms;
+    final firstRoom = (_model.currentFloor - 1) * building.unitsPerFloor;
+    final lastRoom = firstRoom + building.unitsPerFloor;
     final floorTenants = building.occupied
         .where((room) => room >= firstRoom && room < lastRoom)
         .length;
+    final floorVisitors =
+        (building.currentVisitors -
+                (_model.currentFloor - 1) * building.unitsPerFloor)
+            .clamp(0, building.unitsPerFloor);
     final usedBays =
-        (building.occupied.length -
+        (building.usedBays -
                 (-_model.currentFloor - 1) * building.footprint.bays)
             .clamp(0, building.footprint.bays);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _heading(
-          'Apartment ${building.id}',
+          building.name,
           action: TextButton.icon(
             onPressed: () => setState(() => _upgrades = true),
             icon: Image.asset(
@@ -690,7 +1180,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           ),
         ),
         Text(
-          building.stage.label,
+          building.status,
           style: const TextStyle(
             color: GameColors.primary,
             fontWeight: FontWeight.w700,
@@ -722,6 +1212,18 @@ class _DistrictScreenState extends State<DistrictScreen>
           'Lifts / executive lifts',
           '${building.standardLifts} / ${building.executiveLifts}',
         ),
+        _line('Luxury', 'Tier ${building.luxury} / 3'),
+        AccelerationButton(model: _model, building: building),
+        _line('Happiness', '${building.happiness} / 100'),
+        _line(
+          'Synergy',
+          '+${DistrictSimulation.synergyPercent(game, building)}% new rent/sales',
+        ),
+        if (building.happiness < 100)
+          const Text(
+            'Needs better vertical access. Add lifts to improve new demand.',
+            style: TextStyle(color: GameColors.danger),
+          ),
         if (building.upgrade case final upgrade?) ...[
           const SizedBox(height: 8),
           Text(
@@ -743,9 +1245,9 @@ class _DistrictScreenState extends State<DistrictScreen>
             ConstructionStage.reserved => 'Paid. Construction queued.',
             ConstructionStage.paid => 'Paid. Construction starts tomorrow.',
             ConstructionStage.shell =>
-              'Building apartments · Days ${building.startedDay}–${building.startedDay + 1}.',
+              'Building ${building.type.label.toLowerCase()} · Days ${building.startedDay}–${building.startedDay + building.initialShellDays - 1}.',
             ConstructionStage.shellDone =>
-              'Apartments complete. Parking starts tomorrow.',
+              'Floors complete. Parking starts tomorrow.',
             ConstructionStage.basement =>
               'Building parking · Day ${building.startedDay}.',
             ConstructionStage.parkingDone =>
@@ -753,7 +1255,7 @@ class _DistrictScreenState extends State<DistrictScreen>
             ConstructionStage.ready => '',
           }),
           const SizedBox(height: 14),
-          Text('Full refund: ${formatMoney(building.footprint.quote)}'),
+          Text('Full refund: ${formatMoney(building.originalQuote)}'),
           const SizedBox(height: 8),
           GameButton(
             label: 'Cancel building',
@@ -769,28 +1271,83 @@ class _DistrictScreenState extends State<DistrictScreen>
             children: [
               Image.asset(ProductionAssets.iconsHome, width: 30, height: 30),
               const SizedBox(width: 8),
-              Text(
-                '${_model.floorLabel} · Rooms',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+              Expanded(
+                child: Text(
+                  '${_model.floorLabel} · ${building.type == BuildingType.office
+                      ? 'Whole-floor lease'
+                      : building.type == BuildingType.foodCourt
+                      ? 'Food court'
+                      : 'Rooms'}',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          _line('Tenants', '$floorTenants / ${building.footprint.rooms} rooms'),
           _line(
-            'Building tenants',
-            '${building.occupied.length} / ${building.rooms} rooms',
+            switch (building.type) {
+              BuildingType.foodCourt => 'Visiting parties',
+              BuildingType.hotel => 'Guests',
+              BuildingType.office => 'Leased floors',
+              BuildingType.apartment => 'Tenants',
+            },
+            building.type == BuildingType.foodCourt
+                ? '$floorVisitors / ${building.unitsPerFloor} parties'
+                : '$floorTenants / ${building.unitsPerFloor} ${building.type.unitLabel}',
+          ),
+          _line(
+            switch (building.type) {
+              BuildingType.foodCourt => 'Building visitors',
+              BuildingType.hotel => 'Building guests',
+              BuildingType.office => 'Building leases',
+              BuildingType.apartment => 'Building tenants',
+            },
+            '${building.type == BuildingType.foodCourt ? building.currentVisitors : building.occupied.length} / ${building.rooms} ${building.type.unitLabel}',
           ),
           _line(
             'Building parking',
-            '${building.occupied.length} / ${building.bays} bays used',
+            '${building.usedBays} / ${building.bays} bays used',
           ),
-          _line('Pending weekly rent', formatMoney(building.pendingRent)),
-          _line('Weekly rent per room', formatMoney(StarterCatalog.weeklyRent)),
-          if (ready)
+          if (building.type == BuildingType.apartment) ...[
+            _line('Pending weekly rent', formatMoney(building.pendingRent)),
+            _line(
+              'Weekly rent per room',
+              formatMoney(StarterCatalog.weeklyRent),
+            ),
+          ] else if (building.type == BuildingType.hotel)
+            _line('Daily base room rate', formatMoney(16000))
+          else if (building.type == BuildingType.office)
+            _line(
+              'Daily base floor lease',
+              formatMoney(18000 * building.footprint.tiles),
+            ),
+          if (ready && building.type == BuildingType.foodCourt) ...[
+            Image.asset(
+              building.type.roomArtwork,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.contain,
+            ),
+            _line('Visits today', '${building.visitsToday} parties'),
+            _line('Sales awaiting midnight', formatMoney(building.salesToday)),
+            _line(
+              'Visitor parking awaiting midnight',
+              formatMoney(building.parkingToday),
+            ),
+            const Text(
+              'Each party reserves one bay. Bays turn over every six hours; daily sales and parking settle at 24:00.',
+            ),
+            if (floorVisitors > 0)
+              AssetAnimation(
+                path: building.type.actor,
+                sequence: 'walk',
+                width: 44,
+                height: 66,
+              ),
+          ] else if (ready)
             LayoutBuilder(
               builder: (context, constraints) {
                 final columns = math.max(
@@ -814,10 +1371,31 @@ class _DistrictScreenState extends State<DistrictScreen>
               'Open the building after construction to welcome tenants.',
             ),
           const SizedBox(height: 16),
-          Image.asset(
-            ProductionAssets.transportStairs,
-            height: 90,
-            excludeFromSemantics: true,
+          SizedBox(
+            width: 150,
+            height: 100,
+            child: Stack(
+              children: [
+                Image.asset(
+                  ProductionAssets.transportStairs,
+                  height: 90,
+                  width: 140,
+                  excludeFromSemantics: true,
+                ),
+                if (building.occupied.isNotEmpty ||
+                    building.currentVisitors > 0)
+                  Positioned(
+                    left: 56,
+                    bottom: 12,
+                    child: AssetAnimation(
+                      path: building.type.actor,
+                      sequence: _model.travelDirection == 0 ? 'walk' : 'stairs',
+                      width: 32,
+                      height: 48,
+                    ),
+                  ),
+              ],
+            ),
           ),
           if (building.standardLifts > 0 || building.executiveLifts > 0)
             Wrap(
@@ -857,10 +1435,17 @@ class _DistrictScreenState extends State<DistrictScreen>
             excludeFromSemantics: true,
           ),
           _line('Parking capacity', '${building.footprint.bays} bays'),
-          _line('Tenant bays used', '$usedBays'),
+          _line(
+            building.type == BuildingType.foodCourt
+                ? 'Visitor bays used'
+                : building.type == BuildingType.hotel
+                ? 'Guest bays used'
+                : 'Tenant bays used',
+            '$usedBays',
+          ),
           _line('Available bays', '${building.footprint.bays - usedBays}'),
           const Text(
-            'Parking is reserved for tenants.',
+            'Parking limits concurrent tenants or visitor parties.',
             style: TextStyle(fontSize: 13, color: GameColors.muted),
           ),
         ],
@@ -870,14 +1455,14 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _lift(String asset, String label) => Column(
     children: [
-      Image.asset(
-        asset,
-        height: 90,
-        width: 100,
-        fit: BoxFit.contain,
-        excludeFromSemantics: true,
+      VerticalTransport(
+        key: ValueKey('lift-$_selected-${_model.currentFloor}-$asset'),
+        executive: asset == ProductionAssets.transportExecutiveLift,
+        direction: _model.travelDirection,
+        onArrival: () =>
+            unawaited(_audio.effect(ProductionAssets.audioLiftDing)),
       ),
-      Text(label),
+      SizedBox(width: 150, child: Text(label, textAlign: TextAlign.center)),
     ],
   );
 
@@ -887,6 +1472,27 @@ class _DistrictScreenState extends State<DistrictScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (building.stage == ConstructionStage.shell ||
+            building.stage == ConstructionStage.basement)
+          Row(
+            children: [
+              const AssetAnimation(
+                path: ProductionAssets.charactersMaintenanceAnimation,
+                sequence: 'walk',
+                width: 38,
+                height: 57,
+              ),
+              if (!MediaQuery.disableAnimationsOf(context))
+                AssetAnimation(
+                  key: ValueKey('dust-${building.id}-${building.stage}'),
+                  path: ProductionAssets.effectsDust,
+                  sequence: 'play',
+                  width: 48,
+                  height: 48,
+                  hideWhenComplete: true,
+                ),
+            ],
+          ),
         Text(
           'Construction · $percent%',
           key: const ValueKey('construction-percent'),
@@ -931,16 +1537,16 @@ class _DistrictScreenState extends State<DistrictScreen>
                   children: [
                     Image.asset(
                       occupied
-                          ? ProductionAssets.roomsApartment
-                          : ProductionAssets.roomsApartmentVacantShell,
+                          ? building.type.roomArtwork
+                          : building.type.vacantArtwork,
                       fit: BoxFit.contain,
                     ),
                     if (occupied)
-                      const Positioned(
+                      Positioned(
                         right: 8,
                         bottom: 4,
                         child: AssetAnimation(
-                          path: ProductionAssets.charactersResidentAnimation,
+                          path: building.type.actor,
                           width: 26,
                           height: 39,
                         ),
@@ -954,11 +1560,13 @@ class _DistrictScreenState extends State<DistrictScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Room ${room + 1}',
+                      '${building.type == BuildingType.office ? 'Lease' : 'Room'} ${room + 1}',
                       style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                     Text(
-                      occupied ? 'Occupied · 1 bay' : 'Vacant',
+                      occupied
+                          ? 'Occupied · ${building.type.baysPerUnit(building.footprint.tiles)} ${building.type.baysPerUnit(building.footprint.tiles) == 1 ? 'bay' : 'bays'}'
+                          : 'Vacant',
                       style: const TextStyle(
                         fontSize: 12,
                         color: GameColors.muted,
@@ -990,21 +1598,65 @@ class _DistrictScreenState extends State<DistrictScreen>
   }
 
   Future<void> _vacate(int id, int room) async {
+    final building = _model.game!.buildings.firstWhere((b) => b.id == id);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Room ${room + 1}'),
-        content: const Text(
-          'Remove this tenant? Uncollected rent is kept. A new tenant can move in tomorrow.',
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          '${building.type == BuildingType.office ? 'Lease' : 'Room'} ${room + 1} · ${building.type.role}',
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset(
+                building.type.roomArtwork,
+                height: 130,
+                width: 240,
+                fit: BoxFit.contain,
+                excludeFromSemantics: true,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Parking: ${building.type.baysPerUnit(building.footprint.tiles)} reserved ${building.type == BuildingType.office ? 'bays' : 'bay'}',
+              ),
+              Text('Happiness: ${building.happiness} / 100'),
+              if (building.type == BuildingType.apartment)
+                Text(
+                  'Weekly room rent: ${formatMoney(StarterCatalog.weeklyRent)}',
+                ),
+              if (building.type == BuildingType.hotel)
+                Text('Daily base rate: ${formatMoney(16000)}'),
+              if (building.type == BuildingType.office)
+                Text(
+                  'Daily base lease: ${formatMoney(18000 * building.footprint.tiles)}',
+                ),
+              const SizedBox(height: 12),
+              Text(
+                building.type == BuildingType.hotel
+                    ? 'Check out this guest? Guest demand refreshes next Morning.'
+                    : building.type == BuildingType.office
+                    ? 'End this whole-floor lease? All reserved bays are released. New leases begin at a later Morning.'
+                    : 'Remove this tenant? Uncollected rent is kept. A new tenant can move in tomorrow.',
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Keep tenant'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Vacate room'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              building.type == BuildingType.hotel
+                  ? 'Check out guest'
+                  : building.type == BuildingType.office
+                  ? 'End floor lease'
+                  : 'Vacate room',
+            ),
           ),
         ],
       ),

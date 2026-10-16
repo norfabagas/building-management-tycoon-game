@@ -65,7 +65,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Apartment 1 · Upgrades'), findsOneWidget);
       expect(find.text('1 / 10'), findsOneWidget);
-      expect(find.text('1 / 3'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('upgrade-basement')),
+          matching: find.text('1 / 3'),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('0 / 3'), findsOneWidget);
       expect(find.text('0 / 1'), findsOneWidget);
       final floorCard = find.byKey(const ValueKey('upgrade-floor'));
@@ -437,6 +443,7 @@ void main() {
         expect(canceled.roads, isEmpty);
         expect(canceled.balance, 4000000);
         expect(find.text(r'$40,000.00'), findsOneWidget);
+        await tester.ensureVisible(find.text('Finances'));
         await tester.tap(find.text('Finances'));
         await tester.pumpAndSettle();
         expect(find.text('No transactions yet'), findsOneWidget);

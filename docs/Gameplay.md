@@ -1,4 +1,18 @@
-# Apartment starter gameplay
+# Game gameplay
+
+## Four-type Figma implementation — 2026-10-16
+
+The user approved [catalog 2](FigmaCatalogProposal.md) and requested GitHub push and Netlify publication. Earlier starter-only boundaries below are historical. Build now offers Apartment, Hotel, Office tower and Food court, with four canonical cards on wide screens and responsive cards on narrow screens. Select 1–10 initial floors after drawing land; review type-specific rooms/whole-floor leases/party capacity, B1, cost, upkeep and duration. Permanent land, surrounding roads, immediate charging, full unfinished refunds and manual opening remain intact.
+
+Hotel guests refresh each Morning and pay daily; offices lease whole floors with weighted bay reservations; Food Court parties turn over in four windows, storing daily visits/sales/parking for midnight. Each uses the correct room, vacant shell and actor family. Apartment Sunday rent and old pending ledgers are preserved. Tenant/guest/lease contexts show their actual rate, bay reservation and happiness. Luxury, lift access and capped neighbor synergy affect only approved new demand/revenue. All-type floor/basement/lift/luxury upgrades use their own costs/durations and saved limits. Acceleration reviews the active job and gem cost, activates next Morning and never skips manual opening.
+
+Build, Tenants, Upgrades and Finances are reachable from the map; District activities opens Achievements and Decorations. Saved one-time achievements award gems automatically. Decoration review/cancel is free; confirmation spends the specified gems; moving is free and cannot overlap plots, roads or other decorations. Finances separates receivables, daily Hotel/Office/Food Court income, parking, expenses/tax and purchase/refund history. A copy of the simulation estimates the next closing without advancing the real save or granting rewards. Loss states use red feedback; offline net is already applied and has no duplicate claim action.
+
+All five role animation sheets, stair/walk poses, lift carriages/doors, construction dust, cash-closing coins and arrival effects are integrated. Reduced motion holds neutral frames and omits optional effects. Local music evolves at two/four open businesses; ambience, construction, closing, lift and UI effects use bundled WAVs. Sound starts muted, uses an explicit gesture and stores its preference per profile. After reload or lifecycle pause, Resume sound requires a new gesture; playback failure does not affect saving. No remote audio, accounts, analytics, ads, payments or services were added.
+
+Two fingers zoom/pan around their moving focal point between 50% and 200%; buttons retain 25% steps. Pinching restores the previous construction/decoration preview and suppresses trailing-finger placement/selection. The camera belongs to the screen session so resizing preserves zoom/pan; selected floors and plans also survive layout changes. Portrait panels and landscape floor content scroll beneath fixed navigation, with the existing Web footer clearance retained.
+
+See [FigmaAssessment.md](FigmaAssessment.md) for the 16-board assessment, tests/builds, visual checks and limits. Current live Figma inspection/native component editing remains quota-blocked; implementation follows the verified archive and approved overrides. Large originals, review fixtures and screenshots remain ignored rather than reintroduced into Git.
 
 ## Current clock and exterior override — 2026-10-16
 
@@ -109,3 +123,9 @@ Browser review on the local Web build confirmed saved-profile reload, elapsed-ti
 Production publication and hosting checks are recorded in [Deployment.md](Deployment.md). Hotel/office/F&B, luxury and lift happiness effects remain future work. Apartment floor/basement/lift upgrades are now implemented. Audio integration is still pending.
 
 [Deployed apartment starter after confirming the occupied plot and road ring](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ?node-id=3-161)
+
+## Initial audit checkpoint before catalog approval — 2026-10-16
+
+The first audit found three unplayable types and missing systems. The catalog required a decision under AGENTS.md's prohibition on silently choosing economy values. The user subsequently approved it; the current implementation at the top of this document and [updated assessment](FigmaAssessment.md) supersede that initial checkpoint. Live Figma inspection remains blocked by the Starter MCP quota.
+
+Tenants and Upgrades now open district directories from the native toolbar. A tenant entry navigates to the floor containing that saved room; its context shows weekly rent, reserved parking and the existing keep/vacate actions. Upgrades opens the chosen building's existing review panel. Exit restores the originating directory and the mounted map camera. Controls wrap on narrow screens. These changes add presentation navigation only and preserve the save schema, money, pending rent and occupancy rules.

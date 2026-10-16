@@ -32,6 +32,7 @@ void main() {
                 ),
               ],
             ).toJson()
+            ..['catalog'] = 1
             ..['version'] = 2
             ..['phaseMilliseconds'] = 5000;
       await GameRepository.store.record('$slot').put(database, source);
@@ -56,7 +57,7 @@ void main() {
       (s) => DistrictSimulation.openBusiness(s, 1),
     );
     expect(opened.buildings.single.stage, ConstructionStage.ready);
-    expect(opened.toJson()['version'], 6);
+    expect(opened.toJson()['version'], 7);
     final repeated = await repository.update(
       profile(1),
       now,
@@ -88,6 +89,7 @@ void main() {
               ),
             ],
           ).toJson()
+          ..['catalog'] = 1
           ..['version'] = 1
           ..remove('phaseMilliseconds');
     await GameRepository.store.record('1').put(database, legacy);
@@ -98,7 +100,7 @@ void main() {
     expect(migrated.balance, 3996880);
     expect(migrated.pendingRent, 84345);
     expect(migrated.phaseMilliseconds, 6000);
-    expect(migrated.toJson()['version'], 6);
+    expect(migrated.toJson()['version'], 7);
     expect(
       (await repository.update(profile(1), 270000)).toJson(),
       migrated.toJson(),
@@ -110,6 +112,7 @@ void main() {
 
   test('legacy remainder scales even on an unchanged or backward clock', () {
     final legacy = DistrictGame(watermark: 1000, remainder: 30000).toJson()
+      ..['catalog'] = 1
       ..['version'] = 1
       ..remove('phaseMilliseconds');
     for (final now in [0, 1000]) {
@@ -128,6 +131,7 @@ void main() {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
     final legacy = DistrictGame(watermark: 0, remainder: 59999).toJson()
+      ..['catalog'] = 1
       ..['version'] = 1
       ..remove('phaseMilliseconds');
     await GameRepository.store.record('1').put(database, legacy);

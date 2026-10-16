@@ -7,6 +7,8 @@ import '../../app/production_assets.dart';
 import '../../domain/district_game.dart';
 import '../../shared/widgets/game_button.dart';
 import 'district_view_model.dart';
+import 'building_presentation.dart';
+import 'acceleration_button.dart';
 
 class BuildingUpgradePanel extends StatelessWidget {
   const BuildingUpgradePanel({
@@ -29,7 +31,7 @@ class BuildingUpgradePanel extends StatelessWidget {
         label: const Text('Back to floors'),
       ),
       Text(
-        'Apartment ${building.id} · Upgrades',
+        '${building.name} · Upgrades',
         style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
       ),
       const SizedBox(height: 8),
@@ -62,6 +64,7 @@ class BuildingUpgradePanel extends StatelessWidget {
         ),
       ],
       const SizedBox(height: 16),
+      AccelerationButton(model: model, building: building),
       LayoutBuilder(
         builder: (context, constraints) {
           final columns = constraints.maxWidth >= 660 ? 2 : 1;
@@ -85,17 +88,21 @@ class BuildingUpgradePanel extends StatelessWidget {
     final error = DistrictSimulation.upgradeError(model.game!, building, kind);
     final benefit = switch (kind) {
       BuildingUpgrade.floor =>
-        'Floor ${count + 1} · +${building.footprint.rooms} rooms',
+        'Floor ${count + 1} · +${building.unitsPerFloor} ${building.type.unitLabel}',
       BuildingUpgrade.basement =>
         'B${count + 1} · +${building.footprint.bays} parking bays',
       BuildingUpgrade.standardLift => 'Standard lift ${count + 1}',
       BuildingUpgrade.executiveLift => 'Executive lift',
+      BuildingUpgrade.luxury => 'Tier ${count + 1} · +15% new rent/sales',
     };
     final asset = switch (kind) {
-      BuildingUpgrade.floor => ProductionAssets.roomsApartment,
+      BuildingUpgrade.floor => building.type.roomArtwork,
       BuildingUpgrade.basement => ProductionAssets.transportParkingEmpty,
       BuildingUpgrade.standardLift => ProductionAssets.transportStandardLift,
       BuildingUpgrade.executiveLift => ProductionAssets.transportExecutiveLift,
+      BuildingUpgrade.luxury => building.type.luxuryArtwork(
+        (count + 1).clamp(1, 3),
+      ),
     };
     return Container(
       key: ValueKey('upgrade-${kind.name}'),
@@ -143,9 +150,11 @@ class BuildingUpgradePanel extends StatelessWidget {
             Text(benefit),
             const SizedBox(height: 6),
             Text(
-              '${formatMoney(kind.cost(building))} · ${kind.days} game ${kind.days == 1 ? 'day' : 'days'}',
+              '${formatMoney(kind.cost(building))} · ${kind.duration(building)} game ${kind.duration(building) == 1 ? 'day' : 'days'}',
             ),
-            Text('+${formatMoney(kind.maintenance)} upkeep / day'),
+            Text(
+              '+${formatMoney(kind.addedMaintenance(building))} upkeep / day',
+            ),
             const SizedBox(height: 8),
           ],
           if (kind == BuildingUpgrade.standardLift ||
@@ -153,7 +162,7 @@ class BuildingUpgradePanel extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: Text(
-                'No rent or happiness bonus yet.',
+                'Improves vertical access and new demand in tall buildings.',
                 style: TextStyle(fontSize: 13, color: GameColors.muted),
               ),
             ),
@@ -193,9 +202,11 @@ class BuildingUpgradePanel extends StatelessWidget {
               Text(benefit),
               const SizedBox(height: 12),
               Text('Price: ${formatMoney(kind.cost(building))}'),
-              Text('Added upkeep: ${formatMoney(kind.maintenance)} / day'),
               Text(
-                'Construction: ${kind.days} game ${kind.days == 1 ? 'day' : 'days'}',
+                'Added upkeep: ${formatMoney(kind.addedMaintenance(building))} / day',
+              ),
+              Text(
+                'Construction: ${kind.duration(building)} game ${kind.duration(building) == 1 ? 'day' : 'days'}',
               ),
               const SizedBox(height: 12),
               const Text(
@@ -206,7 +217,7 @@ class BuildingUpgradePanel extends StatelessWidget {
               if (kind == BuildingUpgrade.standardLift ||
                   kind == BuildingUpgrade.executiveLift)
                 const Text(
-                  'Lift price is based on the original building price. No rent or happiness bonus yet.',
+                  'Lift price uses the original one-floor + B1 quote. Each lift reduces the vertical-access demand penalty by 10 points.',
                 ),
             ],
           ),
