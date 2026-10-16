@@ -1,5 +1,13 @@
 # Netlify Web deployment
 
+## Rectangular buildings and 24-hour daylight release — 2026-10-16
+
+Source `1fcb976` is published at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id) as deploy [`6ad1bcb716eba45303af59bb`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad1bcb716eba45303af59bb). The connector confirms ready; publication completed at 12:57 WIB. This release adds footprint-shaped rectangular apartments, 24 hours per 24 real seconds, book closing at 24:00 and smooth directional daylight. Schema 6 safely migrates prior clock saves; old clients reject that schema.
+
+Formatting, Flutter analysis and all **81 tests** pass. The final clock/geometry subset also passes all 15 tests. The unchanged catalog validates 158 runtime assets and 124 frames. Software-rendered visual review checked 2×8, 8×2 and square buildings and prompted correction of a stretched roof texture before release. The final roof uses a proportional grey surface, cream rim and compact service unit. This review fixture is ignored and is not a production entry point; no player save was modified during review. Android debug compilation remains blocked by the missing SDK.
+
+The final release Web build packages 201 offline resources; every manifest path exists. Hosted `main.dart.js`, `offline_worker.js` and `offline-assets.json` return HTTP 200 and match the tested local files exactly. JavaScript SHA-256: `17d308f6993a12d86a566fccfaf310cb0c269641b1875d92cfe10c9225cc733a`; service worker SHA-256: `c7f2b1aaa5108f27193fc2bec22b3882a3c98319c7d3de95380d9f6a12e4fda9`. No new interactive/disconnected-origin browser test was performed. Close existing game tabs and reopen to activate the new worker; retain browser site data to preserve local saves.
+
 ## Rebuild and deployment request — 2026-10-16
 
 Rebuilt current GitHub source `bbd6d28` in a fresh release checkout after discovering stale local refs and Windows ACL failures in the old checkout. The release Web build succeeds with 201 offline resources. `main.dart.js` SHA-256 is `E991772342C1ADB544EFDDAFD522C72322885C051025E0E29468C459A9406D65`, matching the latest existing gameplay release. Formatting, analysis, all 75 tests and validation of 158 assets/124 frames pass; Android debug compilation is blocked by the absent Android SDK. Design-only repository cleanup does not change application/runtime bytes; see [DesignArchive.md](DesignArchive.md).

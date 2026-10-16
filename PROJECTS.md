@@ -8,6 +8,8 @@ One game hour equals one real second. The 24:00 event closes the completed day b
 
 All 81 tests pass, covering clock migration, exact closing boundaries, Sunday rent, offline parity, rollback, responsive controls, elongated geometry in both axes and midnight lighting interpolation. Asset validation remains 158 files/124 frames. Android build remains blocked by the absent SDK. See Setup.md and Deployment.md for final build/publication checks.
 
+Published source `1fcb976` as ready Netlify deploy `6ad1bcb716eba45303af59bb`. Production JavaScript, service worker and offline manifest match the validated release Web build byte-for-byte (201 offline resources). The clock/geometry subset passes all 15 tests. See [Deployment.md](docs/Deployment.md) for hashes, review limits and update activation.
+
 ## Figma migration and rebuild — 2026-10-16
 
 Moved all 348 repository graphics into the new [Figma design archive](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ), organized within the Starter plan's three-page limit. All nodes and aspect ratios were verified. Removed 73 large design/reference files (35.28 MiB) from the tracked tree while keeping runtime assets, the unchanged BM master and authoring tools. The manifest records source hashes, node links and PPTX recovery; [DesignArchive.md](docs/DesignArchive.md) documents raster-board limitations, source restoration and retained Git history.
