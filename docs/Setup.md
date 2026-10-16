@@ -1,5 +1,11 @@
 # Project setup
 
+## Rectangular buildings and midnight clock — 2026-10-16
+
+Schema 6 migrates the old five-phase clock to 24 seconds per day without resetting profiles or rebilling completed closings. Rectangular exteriors reuse the unchanged apartment raster for repeated facade bays on footprint-shaped geometry; no large source imagery or generated assets were added back to Git. Daylight is a cyclic directional gradient with 800 ms color interpolation between one-second updates. See the current overrides in Rules.md, Logic.md, Design.md and Assets.md.
+
+All 81 tests pass, including midnight/Sunday settlement, legacy migration, transaction rollback, offline parity, directional footprint ratios and the absence of a backward lighting sweep at midnight. A software-rendered review fixture checked 2×8, 8×2 and square exteriors; it remains ignored in `.tools/`. Asset validation passes all 158 runtime resources/124 referenced frames with unchanged artwork bytes. Android debug compilation was attempted and remains blocked by the missing Android SDK. Final Web build/publication evidence is recorded in Deployment.md.
+
 ## Design sources and current workstation — 2026-10-16
 
 Large design originals and preview images moved to the [Figma archive](DesignArchive.md). App builds use checked-in runtime exports without downloading design sources. Restore the ten original raster sheets before asset regeneration and use `validate.mjs --require-local-sources` for a full source audit. Normal catalog validation reports archived-source provenance separately.

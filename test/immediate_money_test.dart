@@ -4,8 +4,10 @@ import 'package:building_management_tycoon/domain/local_profile.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sembast/sembast_memory.dart';
 
-void tick(DistrictGame state, int phases) =>
-    DistrictSimulation.advance(state, phases * 5000);
+void tick(DistrictGame state, int phases) => DistrictSimulation.advance(
+  state,
+  (phases ~/ 5) * 24000 + (phases % 5) * 6000,
+);
 
 final profile = LocalProfile(
   slot: 1,
@@ -18,23 +20,26 @@ void main() {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
     for (final stage in [UpgradeStage.paid, UpgradeStage.building]) {
-      final source = DistrictGame(
-        watermark: 0,
-        balance: 3500000,
-        nextBuildingId: 2,
-        buildings: [
-          ApartmentBuilding(
-            id: 1,
-            footprint: const Footprint(0, 0, 2, 4),
-            stage: ConstructionStage.ready,
-            upgrade: UpgradeOrder(
-              kind: BuildingUpgrade.standardLift,
-              stage: stage,
-              startedDay: stage == UpgradeStage.building ? 1 : 0,
-            ),
-          ),
-        ],
-      ).toJson()..['version'] = 4;
+      final source =
+          DistrictGame(
+              watermark: 0,
+              balance: 3500000,
+              nextBuildingId: 2,
+              buildings: [
+                ApartmentBuilding(
+                  id: 1,
+                  footprint: const Footprint(0, 0, 2, 4),
+                  stage: ConstructionStage.ready,
+                  upgrade: UpgradeOrder(
+                    kind: BuildingUpgrade.standardLift,
+                    stage: stage,
+                    startedDay: stage == UpgradeStage.building ? 1 : 0,
+                  ),
+                ),
+              ],
+            ).toJson()
+            ..['version'] = 4
+            ..['phaseMilliseconds'] = 5000;
       await GameRepository.store.record('1').put(database, source);
       final migrated = await repository.update(profile, 0);
       expect(migrated.balance, 3500000);
@@ -162,18 +167,21 @@ void main() {
         ConstructionStage.paid,
         ConstructionStage.shell,
       ]) {
-        final old = DistrictGame(
-          watermark: 0,
-          nextBuildingId: 2,
-          buildings: [
-            ApartmentBuilding(
-              id: 1,
-              footprint: const Footprint(0, 0, 2, 2),
-              stage: stage,
-              startedDay: stage == ConstructionStage.shell ? 1 : 0,
-            ),
-          ],
-        ).toJson()..['version'] = version;
+        final old =
+            DistrictGame(
+                watermark: 0,
+                nextBuildingId: 2,
+                buildings: [
+                  ApartmentBuilding(
+                    id: 1,
+                    footprint: const Footprint(0, 0, 2, 2),
+                    stage: stage,
+                    startedDay: stage == ConstructionStage.shell ? 1 : 0,
+                  ),
+                ],
+              ).toJson()
+              ..['version'] = version
+              ..['phaseMilliseconds'] = 5000;
         old.remove('purchasesSinceClosing');
         old.remove('refundsSinceClosing');
         await GameRepository.store.record('1').put(database, old);
@@ -182,7 +190,7 @@ void main() {
             ? 3000000
             : 4000000;
         expect(migrated.balance, expected);
-        expect(migrated.toJson()['version'], 5);
+        expect(migrated.toJson()['version'], 6);
         expect(
           (await repository.update(profile, 0)).toJson(),
           migrated.toJson(),
@@ -198,20 +206,23 @@ void main() {
   test('schema 4 queued upgrade migration and refund rollback preserve original data', () async {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
-    final old = DistrictGame(
-      watermark: 0,
-      nextBuildingId: 2,
-      buildings: [
-        ApartmentBuilding(
-          id: 1,
-          footprint: const Footprint(0, 0, 2, 4),
-          stage: ConstructionStage.ready,
-          occupied: {0},
-          pendingRent: 12345,
-          upgrade: UpgradeOrder(kind: BuildingUpgrade.standardLift),
-        ),
-      ],
-    ).toJson()..['version'] = 4;
+    final old =
+        DistrictGame(
+            watermark: 0,
+            nextBuildingId: 2,
+            buildings: [
+              ApartmentBuilding(
+                id: 1,
+                footprint: const Footprint(0, 0, 2, 4),
+                stage: ConstructionStage.ready,
+                occupied: {0},
+                pendingRent: 12345,
+                upgrade: UpgradeOrder(kind: BuildingUpgrade.standardLift),
+              ),
+            ],
+          ).toJson()
+          ..['version'] = 4
+          ..['phaseMilliseconds'] = 5000;
     old.remove('purchasesSinceClosing');
     old.remove('refundsSinceClosing');
     await GameRepository.store.record('1').put(database, old);

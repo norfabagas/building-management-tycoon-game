@@ -1,5 +1,9 @@
 # Design Document
 
+## Current override — 2026-10-16
+
+The 2026-10-16 request overrides square exterior scaling on rectangular plots. Rectangular buildings follow both projected footprint axes: repeat approved facade texture bays along long walls and shape the grey roof and cream trim to the actual roof polygon. Keep a stable height based on the short side; square plots retain the original approved sprite. Drawing, bounds and picking share geometry. No new building capacity or price comes from the exterior. The HUD shows 24-hour HH:mm time, 1 hour per real second, and closing at 24:00. Replace abrupt phase PNG changes with continuously interpolated directional daylight gradients, including a continuous midnight wrap; keep overlays below controls.
+
 The 2026-10-16 [Figma design archive](DesignArchive.md) now hosts repository design references and large originals. Use its manifest links and restore exact sources when regenerating assets; the BM master and all runtime exports remain in Git. Native interactive board components/prototypes are outside this archival migration.
 
 ## Visual Style

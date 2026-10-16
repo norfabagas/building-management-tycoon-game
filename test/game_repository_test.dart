@@ -16,21 +16,24 @@ void main() {
     final database = await openNewInMemoryDatabase();
     final repository = GameRepository(open: () async => database);
     for (final slot in [1, 2]) {
-      final source = DistrictGame(
-        watermark: 0,
-        nextBuildingId: 2,
-        buildings: [
-          ApartmentBuilding(
-            id: 1,
-            footprint: const Footprint(0, 0, 2, 4),
-            stage: slot == 1
-                ? ConstructionStage.parkingDone
-                : ConstructionStage.ready,
-            occupied: slot == 1 ? {} : {0},
-            pendingRent: slot == 1 ? 0 : 12000,
-          ),
-        ],
-      ).toJson()..['version'] = 2;
+      final source =
+          DistrictGame(
+              watermark: 0,
+              nextBuildingId: 2,
+              buildings: [
+                ApartmentBuilding(
+                  id: 1,
+                  footprint: const Footprint(0, 0, 2, 4),
+                  stage: slot == 1
+                      ? ConstructionStage.parkingDone
+                      : ConstructionStage.ready,
+                  occupied: slot == 1 ? {} : {0},
+                  pendingRent: slot == 1 ? 0 : 12000,
+                ),
+              ],
+            ).toJson()
+            ..['version'] = 2
+            ..['phaseMilliseconds'] = 5000;
       await GameRepository.store.record('$slot').put(database, source);
     }
     const now = 400000;
@@ -53,7 +56,7 @@ void main() {
       (s) => DistrictSimulation.openBusiness(s, 1),
     );
     expect(opened.buildings.single.stage, ConstructionStage.ready);
-    expect(opened.toJson()['version'], 5);
+    expect(opened.toJson()['version'], 6);
     final repeated = await repository.update(
       profile(1),
       now,
@@ -94,14 +97,14 @@ void main() {
     expect(migrated.lastClosing, 1);
     expect(migrated.balance, 3996880);
     expect(migrated.pendingRent, 84345);
-    expect(migrated.phaseMilliseconds, 5000);
-    expect(migrated.toJson()['version'], 5);
+    expect(migrated.phaseMilliseconds, 6000);
+    expect(migrated.toJson()['version'], 6);
     expect(
       (await repository.update(profile(1), 270000)).toJson(),
       migrated.toJson(),
     );
-    expect((await repository.update(profile(1), 274999)).phaseIndex, 0);
-    expect((await repository.update(profile(1), 275000)).phaseIndex, 1);
+    expect((await repository.update(profile(1), 275999)).phaseIndex, 0);
+    expect((await repository.update(profile(1), 276000)).phaseIndex, 1);
     await database.close();
   });
 
@@ -113,9 +116,9 @@ void main() {
       final state = DistrictGame.fromJson(legacy);
       DistrictSimulation.advance(state, now);
       expect(state.watermark, 1000);
-      expect(state.remainder, 2500);
+      expect(state.remainder, 3000);
       expect(state.phaseIndex, 0);
-      DistrictSimulation.advance(state, 3500);
+      DistrictSimulation.advance(state, 4000);
       expect(state.phaseIndex, 1);
       expect(state.remainder, 0);
     }
@@ -139,7 +142,7 @@ void main() {
     await database.close();
   });
 
-  test('countdown follows five-second phase boundaries', () async {
+  test('six-hour windows and 24-hour HUD follow elapsed seconds', () async {
     final database = await openNewInMemoryDatabase();
     var now = 0;
     final model = DistrictViewModel(
@@ -148,14 +151,16 @@ void main() {
       now: () => DateTime.fromMillisecondsSinceEpoch(now),
     );
     await model.save();
-    expect(model.secondsRemaining, 5);
-    now = 4999;
+    expect(model.secondsRemaining, 6);
+    expect(model.clockLabel, '00:00');
+    now = 5999;
     expect(model.secondsRemaining, 1);
-    now = 5000;
+    now = 6000;
     expect(model.secondsRemaining, 0);
     await model.save();
     expect(model.game!.phaseIndex, 1);
-    expect(model.secondsRemaining, 5);
+    expect(model.secondsRemaining, 6);
+    expect(model.clockLabel, '06:00');
     model.dispose();
     await database.close();
   });

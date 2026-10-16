@@ -1,5 +1,9 @@
 # Repository game assets
 
+## Current override — 2026-10-16
+
+Rectangular map exteriors now use the existing approved apartment PNG as facade texture on footprint-shaped geometry; square plots retain the full sprite. Facade source quads in its 512×512 image are left [(105,105),(306,150),(306,455),(105,365)], right [(306,150),(424,103),(424,407),(306,455)]. Repeat facades per two ground tiles along long walls. The roof uses a grey material gradient with a cream rim; a small cream service unit is drawn from isometric geometry without stretching the original roof equipment. These are renderer texture coordinates, not new assets or gameplay frame/capacity rules. Runtime bytes and catalog references remain unchanged. Phase overlay assets remain cataloged but code-painted daylight replaces them on the map, with cyclic color interpolation and 800 ms transitions between one-second clock updates.
+
 ## Figma source migration — 2026-10-16
 
 Large PNG design originals, animation sheets, previews and screenshots now live in the [verified Figma archive](DesignArchive.md). Runtime exports and their manifest remain unchanged in Git. Restore originals before regeneration; ordinary builds need no Figma access. The validator accepts matching archive provenance for absent raster sources and reports that limitation explicitly; `--require-local-sources` requires a complete restored-source audit. Local source paths below describe regeneration locations, not files included in a fresh clone.

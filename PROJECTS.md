@@ -1,5 +1,13 @@
 # Building Management Tycoon
 
+## Rectangular buildings, 24-hour time and smooth daylight — 2026-10-16
+
+Rectangular apartments now extend along both actual footprint axes, repeat the approved facade bays and use a proportional roof with a compact service unit. Square plots keep the original approved sprite. Geometry, labels and click bounds follow the plot rather than a square image size. No artwork bytes, costs or capacities changed.
+
+One game hour equals one real second. The 24:00 event closes the completed day before calendar rollover and new-day admissions. Schema 6 first catches legacy offline time up at its saved 5/60-second cadence, then migrates phase fractions; previously closed legacy Noon advances without duplicate settlement. Daily/Sunday billing, immediate purchases/refunds and level limits remain intact. Daylight uses cyclic, directional color gradients with 800 ms interpolation; midnight does not animate backward through the day.
+
+All 81 tests pass, covering clock migration, exact closing boundaries, Sunday rent, offline parity, rollback, responsive controls, elongated geometry in both axes and midnight lighting interpolation. Asset validation remains 158 files/124 frames. Android build remains blocked by the absent SDK. See Setup.md and Deployment.md for final build/publication checks.
+
 ## Figma migration and rebuild — 2026-10-16
 
 Moved all 348 repository graphics into the new [Figma design archive](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ), organized within the Starter plan's three-page limit. All nodes and aspect ratios were verified. Removed 73 large design/reference files (35.28 MiB) from the tracked tree while keeping runtime assets, the unchanged BM master and authoring tools. The manifest records source hashes, node links and PPTX recovery; [DesignArchive.md](docs/DesignArchive.md) documents raster-board limitations, source restoration and retained Git history.

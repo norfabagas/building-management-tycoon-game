@@ -36,7 +36,7 @@ Widget mapApp(
 
 void main() {
   test(
-    'approved exterior stays square and bottom anchored for rectangular plots',
+    'rectangular exteriors follow both land axes with a stable vertical height',
     () {
       for (final zoom in [.5, 1.0, 2.0]) {
         final projection = MapProjection(
@@ -47,12 +47,22 @@ void main() {
         for (final site in [
           const Footprint(0, 0, 2, 4),
           const Footprint(3, 3, 4, 2),
+          const Footprint(-3, 1, 1, 8),
+          const Footprint(1, -3, 8, 1),
         ]) {
           final land = projection.footprint(site).getBounds();
           final exterior = projection.buildingRect(site);
           expect(exterior.width, land.width);
-          expect(exterior.height, exterior.width);
+          expect(
+            exterior.height,
+            land.height + projection.buildingHeight(site),
+          );
           expect(exterior.bottomCenter, land.bottomCenter);
+          final roof = projection.buildingCorners(site, roof: true);
+          expect(
+            (roof[1] - roof[0]).distance / (roof[3] - roof[0]).distance,
+            closeTo(site.width / site.length, .000001),
+          );
         }
       }
     },

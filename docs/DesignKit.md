@@ -1,5 +1,7 @@
 # Game component design kit
 
+The 2026-10-16 user override extends approved facade bays along rectangular footprint axes instead of scaling a square symbol on those plots. Square plots retain the original sprite. Roof geometry uses the same palette with a grey surface and cream trim. The clock now shows 24 hours at one hour per second, closes at 24:00 and interpolates daylight gradients. Earlier uniform-sprite and five-phase clock notes are historical; see Design.md and Logic.md.
+
 ## Figma archive — 2026-10-16
 
 All repository graphics have been copied into the new [Building Management Tycoon — Game Design](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ). See [DesignArchive.md](DesignArchive.md) for the three-page organization, 348-file inventory, cleanup and restoration. This preserves original PNG boards and editable source SVGs. The native component/Auto Layout/prototype setup proposed later in this document remains future work; archive captions and asset collections use Auto Layout, but the board controls remain raster images. The approved Canva art and current game-contract documents remain authoritative for visuals and mechanics respectively.

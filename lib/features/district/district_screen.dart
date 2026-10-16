@@ -165,7 +165,7 @@ class _DistrictScreenState extends State<DistrictScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${game.weekdayLabel} · ${game.phase.label}',
+                          game.weekdayLabel,
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
@@ -186,7 +186,7 @@ class _DistrictScreenState extends State<DistrictScreen>
                         _stat(
                           ProductionAssets.iconsClock,
                           'Day ${game.day}',
-                          '${_model.secondsRemaining}s to next phase',
+                          _model.clockLabel,
                         ),
                       ],
                     ),
@@ -492,7 +492,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       ),
       const SizedBox(height: 12),
       const Text(
-        'Rent: weekly. Parking: daily. One game day takes 25 seconds.',
+        'Rent: weekly. Parking: daily. 1 game hour = 1 second. Close at 24:00.',
         style: TextStyle(color: GameColors.muted, fontSize: 14),
       ),
       if (_model.returnSummary case final summary?) ...[
@@ -652,7 +652,7 @@ class _DistrictScreenState extends State<DistrictScreen>
         ],
         const SizedBox(height: 10),
         const Text(
-          'Phases change every 5 seconds. Your district keeps running while you are away.',
+          '24-hour clock: 1 hour = 1 second. Books close at 24:00. Your district keeps running while you are away.',
           style: TextStyle(fontSize: 13, color: GameColors.muted),
         ),
       ],

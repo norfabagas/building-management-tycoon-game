@@ -22,7 +22,7 @@ DistrictGame district() => DistrictGame(
 );
 
 void at(DistrictGame state, int day, [GamePhase phase = GamePhase.morning]) =>
-    DistrictSimulation.advance(state, ((day - 1) * 5 + phase.index) * 5000);
+    DistrictSimulation.advance(state, (day - 1) * 24000 + phase.index * 6000);
 
 void finish(DistrictGame state, BuildingUpgrade kind) {
   DistrictSimulation.orderUpgrade(state, 1, kind);
@@ -62,14 +62,15 @@ void main() {
           building,
           elapsedMilliseconds: 2500,
         ),
-        closeTo(.5 / 9, .00001),
+        closeTo(2500 / 48000, .00001),
       );
       at(state, 2, GamePhase.noon);
       expect(building.aboveGroundFloors, 1);
       at(state, 3, GamePhase.noon);
       expect(building.aboveGroundFloors, 2);
       expect(building.rooms, 12);
-      expect(building.occupied, {0, 1, 2, 3, 4, 5});
+      // Midnight completes work, then runs the new day's admissions.
+      expect(building.occupied, {0, 1, 2, 3, 4, 5, 6, 7, 8});
       expect(building.footprint.toJson(), original);
       expect(building.stage, ConstructionStage.ready);
       expect(building.valuation, 3600000);
@@ -212,7 +213,9 @@ void main() {
 
   test('schema 1/2/3 migration retains rooms and rent; corrupt caps and orders are rejected', () {
     for (final version in [1, 2, 3]) {
-      final source = district().toJson()..['version'] = version;
+      final source = district().toJson()
+        ..['version'] = version
+        ..['phaseMilliseconds'] = 5000;
       for (final b in source['buildings'] as List) {
         for (final field in [
           'aboveGroundFloors',

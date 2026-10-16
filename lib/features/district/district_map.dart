@@ -9,6 +9,7 @@ import '../../app/game_theme.dart';
 import '../../app/production_assets.dart';
 import '../../domain/district_game.dart';
 import 'map_camera_view_model.dart';
+import 'daylight.dart';
 
 class DistrictMap extends StatefulWidget {
   const DistrictMap({
@@ -239,18 +240,13 @@ class _DistrictMapState extends State<DistrictMap> {
                             ),
                           ),
                         ),
-                        IgnorePointer(
-                          child: Image.asset(
-                            const [
-                              ProductionAssets.backgroundsPhaseMorning,
-                              ProductionAssets.backgroundsPhaseDay,
-                              ProductionAssets.backgroundsPhaseAfternoon,
-                              ProductionAssets.backgroundsPhaseNight,
-                              ProductionAssets.backgroundsPhaseNoon,
-                            ][widget.game.phaseIndex],
-                            fit: BoxFit.fill,
-                            excludeFromSemantics: true,
-                          ),
+                        DaylightOverlay(
+                          milliseconds:
+                              ((widget.game.day - 1) *
+                                          StarterCatalog.dayMilliseconds +
+                                      widget.game.timeOfDayMilliseconds +
+                                      widget.elapsedMilliseconds)
+                                  .toDouble(),
                         ),
                         Positioned(
                           left: 14,
@@ -378,9 +374,27 @@ class MapProjection {
     return Path()..addPolygon(points, true);
   }
 
-  /// The approved 512-square exterior is centred on the plot and bottom anchored.
+  double buildingHeight(Footprint site) =>
+      math.min(site.width, site.length) * tile * .7;
+
+  List<Offset> buildingCorners(Footprint site, {bool roof = false}) => [
+    point(site.x, site.y),
+    point(site.x + site.width, site.y),
+    point(site.x + site.width, site.y + site.length),
+    point(site.x, site.y + site.length),
+  ].map((p) => p - Offset(0, roof ? buildingHeight(site) : 0)).toList();
+
+  /// Square references retain their sprite; rectangular geometry follows land.
   Rect buildingRect(Footprint site) {
     final bounds = footprint(site).getBounds();
+    if (site.width != site.length) {
+      return Rect.fromLTRB(
+        bounds.left,
+        bounds.top - buildingHeight(site),
+        bounds.right,
+        bounds.bottom,
+      );
+    }
     return Rect.fromLTWH(
       bounds.left,
       bounds.bottom - bounds.width,
@@ -550,10 +564,6 @@ class _DistrictPainter extends CustomPainter {
           );
         }
       }
-      final center = projection.point(
-        site.x + site.width / 2,
-        site.y + site.length / 2,
-      );
       final working =
           building.stage != ConstructionStage.ready || building.upgrade != null;
       final progress = building.upgrade != null
@@ -581,7 +591,11 @@ class _DistrictPainter extends CustomPainter {
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      final position = center + Offset(-label.width / 2, projection.tile * .5);
+      final landBounds = projection.footprint(site).getBounds();
+      final position = Offset(
+        landBounds.center.dx - label.width / 2,
+        landBounds.bottom + 8,
+      );
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(
@@ -650,9 +664,105 @@ class _DistrictPainter extends CustomPainter {
     }
   }
 
-  /// Reuse the approved exterior without remapping or distorting its artwork.
+  /// Extend approved facade bays along the actual isometric footprint axes.
   void _apartment(Canvas canvas, Footprint site) {
     final image = images[ProductionAssets.buildingsApartment]!;
+    if (site.width != site.length) {
+      final base = projection.buildingCorners(site);
+      final roof = projection.buildingCorners(site, roof: true);
+      final paint = Paint()
+        ..filterQuality = FilterQuality.medium
+        ..shader = ImageShader(
+          image,
+          TileMode.clamp,
+          TileMode.clamp,
+          Matrix4.identity().storage,
+        );
+      void quad(List<Offset> points, List<Offset> texture) {
+        canvas.drawVertices(
+          ui.Vertices(
+            ui.VertexMode.triangles,
+            points,
+            textureCoordinates: texture,
+            indices: [0, 1, 2, 0, 2, 3],
+          ),
+          BlendMode.srcOver,
+          paint,
+        );
+      }
+
+      void wall(int start, int end, int tiles, List<Offset> uv) {
+        final bays = (tiles / 2).ceil();
+        for (var i = 0; i < bays; i++) {
+          final a = i / bays, b = (i + 1) / bays;
+          quad([
+            Offset.lerp(roof[start], roof[end], a)!,
+            Offset.lerp(roof[start], roof[end], b)!,
+            Offset.lerp(base[start], base[end], b)!,
+            Offset.lerp(base[start], base[end], a)!,
+          ], uv);
+        }
+      }
+
+      wall(3, 2, site.width, const [
+        Offset(105, 105),
+        Offset(306, 150),
+        Offset(306, 455),
+        Offset(105, 365),
+      ]);
+      wall(2, 1, site.length, const [
+        Offset(306, 150),
+        Offset(424, 103),
+        Offset(424, 407),
+        Offset(306, 455),
+      ]);
+      final roofPath = Path()..addPolygon(roof, true);
+      canvas.drawPath(
+        roofPath,
+        Paint()
+          ..shader = const LinearGradient(
+            colors: [Color(0xFFB5BCB6), Color(0xFF929E98)],
+          ).createShader(roofPath.getBounds()),
+      );
+      canvas.drawPath(
+        Path()..addPolygon(roof, true),
+        Paint()
+          ..color = const Color(0xFFE6D5B5)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 5 * projection.zoom,
+      );
+      // A compact service unit keeps its own proportions on either long axis.
+      final unit = math.min(site.width, site.length) * .28;
+      final x = site.x + site.width / 2 - unit / 2;
+      final y = site.y + site.length / 2 - unit / 2;
+      final bottom = projection.buildingCorners(Footprint(0, 0, 1, 1));
+      for (var i = 0; i < 4; i++) {
+        final dx = i == 1 || i == 2 ? unit : 0;
+        final dy = i == 2 || i == 3 ? unit : 0;
+        bottom[i] =
+            projection.point(x + dx, y + dy) -
+            Offset(0, projection.buildingHeight(site));
+      }
+      final top = bottom
+          .map((p) => p - Offset(0, projection.tile * .22))
+          .toList();
+      void face(List<Offset> points, Color color) {
+        final path = Path()..addPolygon(points, true);
+        canvas.drawPath(path, Paint()..color = color);
+        canvas.drawPath(
+          path,
+          Paint()
+            ..color = GameColors.ink
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = projection.zoom,
+        );
+      }
+
+      face([top[3], top[2], bottom[2], bottom[3]], const Color(0xFFD8C796));
+      face([top[2], top[1], bottom[1], bottom[2]], const Color(0xFFB7AB84));
+      face(top, const Color(0xFFFFFCF1));
+      return;
+    }
     canvas.drawImageRect(
       image,
       Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),

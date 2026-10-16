@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 void at(DistrictGame state, int day, [GamePhase phase = GamePhase.morning]) =>
     DistrictSimulation.advance(
       state,
-      ((day - 1) * 5 + phase.index) * StarterCatalog.phaseMilliseconds,
+      (day - 1) * StarterCatalog.dayMilliseconds +
+          phase.index * StarterCatalog.phaseMilliseconds,
     );
 
 DistrictGame matureApartment() => DistrictGame(
@@ -40,7 +41,7 @@ void main() {
       at(state, 1, GamePhase.noon);
       expect(state.balance, 2000000);
       expect(state.statement!.purchases, 2000000);
-      expect(state.buildings.single.stage, ConstructionStage.paid);
+      expect(state.buildings.single.stage, ConstructionStage.shell);
       at(state, 1, GamePhase.noon);
       expect(state.balance, 2000000);
     },
@@ -56,7 +57,7 @@ void main() {
     expect(building.stage, ConstructionStage.shell);
     expect(building.occupied, isEmpty);
     at(state, 3, GamePhase.noon);
-    expect(building.stage, ConstructionStage.shellDone);
+    expect(building.stage, ConstructionStage.basement);
     expect(building.valuation, 1600000);
     expect(state.statement!.maintenance, 4000);
     expect(state.statement!.tax, 800);
@@ -91,7 +92,7 @@ void main() {
       building,
       elapsedMilliseconds: 2500,
     );
-    expect(moving, closeTo(.5 / 9 * 2 / 3, .00001));
+    expect(moving, closeTo(2500 / 48000 * 2 / 3, .00001));
     at(state, 3, GamePhase.noon);
     expect(
       DistrictSimulation.constructionProgress(state, building),
@@ -142,9 +143,9 @@ void main() {
     final opened = state.toJson();
     DistrictSimulation.openBusiness(state, 1);
     expect(state.toJson(), opened);
-    at(state, 5);
+    at(state, 6);
     expect(state.buildings.single.occupied.length, 2);
-    at(state, 5, GamePhase.noon);
+    at(state, 6, GamePhase.noon);
     expect(state.statement!.parking, 2000);
     expect(state.pendingRent, 24000);
   });
@@ -174,28 +175,26 @@ void main() {
     },
   );
 
-  test(
-    'departing tenants retain ledger; partial week uses actual occupied days',
-    () {
-      final state = matureApartment();
-      at(state, 5, GamePhase.noon);
-      final pending = state.pendingRent;
-      for (var room = 0; room < 6; room++) {
-        DistrictSimulation.vacate(state, 1, room);
-      }
-      expect(state.pendingRent, pending);
-      at(state, 7, GamePhase.noon);
-      // Saturday admits two; Sunday admits another two. Friday earnings survive departure.
-      expect(state.statement!.rent, 432000);
-      expect(state.pendingRent, 0);
-    },
-  );
+  test('departing tenants retain ledger; partial week uses actual occupied days', () {
+    final state = matureApartment();
+    at(state, 5, GamePhase.noon);
+    final pending = state.pendingRent;
+    for (var room = 0; room < 6; room++) {
+      DistrictSimulation.vacate(state, 1, room);
+    }
+    expect(state.pendingRent, pending);
+    at(state, 7, GamePhase.noon);
+    // Vacating after Friday closing is after Saturday's midnight admissions.
+    // Sunday admits two before its closing; Friday earnings survive departure.
+    expect(state.statement!.rent, 384000);
+    expect(state.pendingRent, 0);
+  });
 
   test('offline multiple weeks equals phase-by-phase play; repeat/backward clock pays nothing twice', () {
     final offline = matureApartment();
     final online = matureApartment();
     at(offline, 22, GamePhase.afternoon);
-    for (var phase = 1; phase <= 107; phase++) {
+    for (var phase = 1; phase <= 86; phase++) {
       DistrictSimulation.advance(
         online,
         phase * StarterCatalog.phaseMilliseconds,

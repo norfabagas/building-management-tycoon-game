@@ -10,7 +10,10 @@ abstract final class StarterCatalog {
   static const parkingPerTenant = 1000;
   static const maintenancePerFloor = 4000;
   static const maintenancePerBasement = 4000;
-  static const phaseMilliseconds = 5000;
+  static const hourMilliseconds = 1000;
+  static const dayMilliseconds = 24000;
+  static const phaseMilliseconds = 6000;
+  static const previousPhaseMilliseconds = 5000;
   static const legacyPhaseMilliseconds = 60000;
 }
 
@@ -313,6 +316,7 @@ class DistrictGame {
     this.phaseIndex = 0,
     this.remainder = 0,
     this.phaseMilliseconds = StarterCatalog.phaseMilliseconds,
+    this.hourlyClock = true,
     this.lastClosing = 0,
     this.nextBuildingId = 1,
     this.earned = 0,
@@ -333,10 +337,12 @@ class DistrictGame {
       purchasesSinceClosing,
       refundsSinceClosing;
   final List<ApartmentBuilding> buildings;
+  bool hourlyClock;
   ClosingStatement? statement;
   int advancedDays = 0;
   int balanceBeforeAdvance = 0;
   GamePhase get phase => GamePhase.values[phaseIndex];
+  int get timeOfDayMilliseconds => phaseIndex * phaseMilliseconds + remainder;
   int get weekday => (day - 1) % 7;
   String get weekdayLabel => const [
     'Monday',
@@ -353,7 +359,7 @@ class DistrictGame {
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': 5,
+    'version': hourlyClock ? 6 : 5,
     'catalog': 1,
     'phaseMilliseconds': phaseMilliseconds,
     'watermark': watermark,
@@ -374,7 +380,8 @@ class DistrictGame {
             json['version'] != 2 &&
             json['version'] != 3 &&
             json['version'] != 4 &&
-            json['version'] != 5) ||
+            json['version'] != 5 &&
+            json['version'] != 6) ||
         json['catalog'] != 1) {
       throw const FormatException('Unsupported game save');
     }
@@ -387,13 +394,14 @@ class DistrictGame {
       phaseMilliseconds: json['version'] == 1
           ? StarterCatalog.legacyPhaseMilliseconds
           : json['phaseMilliseconds'] as int,
+      hourlyClock: json['version'] == 6,
       lastClosing: json['lastClosing'] as int,
       nextBuildingId: json['nextBuildingId'] as int,
       earned: json['earned'] as int,
-      purchasesSinceClosing: json['version'] == 5
+      purchasesSinceClosing: (json['version'] as int) >= 5
           ? json['purchasesSinceClosing'] as int
           : 0,
-      refundsSinceClosing: json['version'] == 5
+      refundsSinceClosing: (json['version'] as int) >= 5
           ? json['refundsSinceClosing'] as int
           : 0,
       buildings: (json['buildings'] as List)
@@ -412,11 +420,14 @@ class DistrictGame {
     );
     if (state.day < 1 ||
         state.phaseIndex < 0 ||
-        state.phaseIndex > 4 ||
+        state.phaseIndex > (state.hourlyClock ? 3 : 4) ||
         state.remainder < 0 ||
-        (state.phaseMilliseconds != StarterCatalog.phaseMilliseconds &&
-            state.phaseMilliseconds !=
-                StarterCatalog.legacyPhaseMilliseconds) ||
+        (state.hourlyClock
+            ? state.phaseMilliseconds != StarterCatalog.phaseMilliseconds
+            : state.phaseMilliseconds !=
+                      StarterCatalog.previousPhaseMilliseconds &&
+                  state.phaseMilliseconds !=
+                      StarterCatalog.legacyPhaseMilliseconds) ||
         state.remainder >= state.phaseMilliseconds ||
         state.lastClosing != state.day - (state.phaseIndex == 4 ? 0 : 1) ||
         state.earned < 0 ||
@@ -428,7 +439,7 @@ class DistrictGame {
         state.buildings.any((b) => b.id >= state.nextBuildingId)) {
       throw const FormatException('Invalid game snapshot');
     }
-    if (json['version'] != 5) {
+    if ((json['version'] as int) < 5) {
       // Old queued orders held funds outside the wallet. Debit them once before
       // catch-up; later closings only advance their construction stage.
       final queuedCost = state.buildings.fold<int>(
@@ -502,11 +513,11 @@ abstract final class DistrictSimulation {
     if (order == null) return 1;
     if (order.stage != UpgradeStage.building) return 0;
     final phases =
-        (state.day - order.startedDay) * 5 +
+        (state.day - order.startedDay) * 4 +
         state.phaseIndex +
         (state.remainder + math.max(0, elapsedMilliseconds)) /
             state.phaseMilliseconds;
-    return (phases / (order.kind.days * 5 - 1)).clamp(0.0, .999);
+    return (phases / (order.kind.days * 4)).clamp(0.0, .999);
   }
 
   /// Completed work: the two-day shell is 2/3; the one-day B1 job is 1/3.
@@ -516,13 +527,13 @@ abstract final class DistrictSimulation {
     int elapsedMilliseconds = 0,
   }) {
     final elapsedPhases =
-        (state.day - building.startedDay) * 5 +
+        (state.day - building.startedDay) * 4 +
         state.phaseIndex +
         (state.remainder + math.max(0, elapsedMilliseconds)) /
             state.phaseMilliseconds;
     return switch (building.stage) {
       ConstructionStage.reserved || ConstructionStage.paid => 0,
-      ConstructionStage.shell => (elapsedPhases / 9).clamp(0.0, 1.0) * 2 / 3,
+      ConstructionStage.shell => (elapsedPhases / 8).clamp(0.0, 1.0) * 2 / 3,
       ConstructionStage.shellDone => 2 / 3,
       ConstructionStage.basement =>
         // Reserve 100% for the committed completion state.
@@ -546,18 +557,31 @@ abstract final class DistrictSimulation {
     state.watermark = math.max(now, state.watermark);
     while (elapsed >= interval) {
       elapsed -= interval;
-      if (state.phaseIndex == 4) {
+      if (state.hourlyClock && state.phaseIndex == 3) {
+        _close(state);
+        state.day++;
+        state.phaseIndex = 0;
+        _morning(state);
+      } else if (state.phaseIndex == 4) {
         state.day++;
         state.phaseIndex = 0;
         _morning(state);
       } else {
         state.phaseIndex++;
-        if (state.phaseIndex == 4) _close(state);
+        if (!state.hourlyClock && state.phaseIndex == 4) _close(state);
       }
     }
     // Settle legacy offline time at its saved speed, then preserve phase progress.
     state.remainder = elapsed * StarterCatalog.phaseMilliseconds ~/ interval;
     state.phaseMilliseconds = StarterCatalog.phaseMilliseconds;
+    if (!state.hourlyClock && state.phaseIndex == 4) {
+      // Legacy closing was already settled. Do not rewind into that paid day.
+      state.day++;
+      state.phaseIndex = 0;
+      state.remainder = 0;
+      _morning(state);
+    }
+    state.hourlyClock = true;
   }
 
   static String? placementError(DistrictGame state, Footprint site) {

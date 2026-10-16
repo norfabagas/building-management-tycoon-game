@@ -1,5 +1,9 @@
 # Selected economy: Relaxed idle
 
+## Current override — 2026-10-16
+
+The 2026-10-16 clock override is 24 game hours per day at 1 hour per real second. All daily/Sunday receipts, expenses and construction completions now settle exactly at 24:00, before the next day's admissions. Earlier Noon labels refer to this closing event. No prices, upkeep coefficients, day-based build durations or purchase/refund rules change.
+
 The user selected **Option 1** on 2026-10-12, with one override: **apartment rent is paid weekly on Sunday at Noon; all other income is paid daily at Noon**. This document records the selected model and its settlement logic. [EconomyOptions.md](EconomyOptions.md) preserves the original comparison; Options 2 and 3 are not selected.
 
 The user approved the apartment starter release on 2026-10-12 and apartment level/lift upgrades on 2026-10-14. The catalog below governs this playable loop. Other building types, luxury, gems and advanced demand remain unavailable pending their catalogs; the original worked example is still illustrative.

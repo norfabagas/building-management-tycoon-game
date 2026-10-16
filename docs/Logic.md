@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Current override — 2026-10-16
+
+Schema 6 uses four six-second phase windows, representing 00:00–06:00, 06:00–12:00, 12:00–18:00 and 18:00–24:00. At midnight, close the old day once before advancing the calendar and running the next Morning actions. Legacy schemas 1–5 first catch up using their stored five-phase cadence (60 or 5 seconds per phase), then preserve the fraction within the current daylight phase in its new six-second window. An already-closed legacy Noon advances once into the next Morning instead of billing twice. Preserve backward-clock watermark, transactional rollback and all balances/ledgers. Old clients reject schema 6. Construction progress uses elapsed new game days, not the former five-phase divisor.
+
 ## Implementation status
 
 The Flutter app uses MVVM with `ChangeNotifier`. `DistrictSimulation` implements the approved apartment starter catalog, five 5-second phases, queued purchases, sequential shell/B1 construction, Morning admissions, Sunday rent, daily parking/expenses/tax and chronological offline catch-up. `GameRepository` reads, simulates and writes a full versioned snapshot in a Sembast transaction (SQLite on Android; IndexedDB on Web) before the district view model publishes success. `SaveManager` retains the five-slot legacy/profile metadata store. Unsupported or corrupt snapshots are preserved. See [Gameplay.md](Gameplay.md) and [Setup.md](Setup.md) for implementation details and the remaining building/upgrade catalogs.

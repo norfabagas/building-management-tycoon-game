@@ -1,5 +1,11 @@
 # Apartment starter gameplay
 
+## Current clock and exterior override — 2026-10-16
+
+The day is now 24 game hours at 1 hour per real second. The HUD shows HH:mm; 24:00 closes the completed day exactly once, then advances the weekday and starts the next Morning's actions. Sunday rent still includes Sunday's accrual, and purchases/refunds remain immediate. Legacy clock saves migrate atomically to schema 6 after catch-up at their previous speed; completed closing IDs and all saved progress are preserved. Earlier Noon/25-second descriptions below are historical.
+
+Rectangular apartment exteriors follow saved width/length on the two projected land axes, using repeated approved facade textures and a proportional grey roof. Square plots retain the original illustration. The source sprite's storey count is still illustrative and does not grant capacity. A cyclic directional gradient smoothly interpolates changing daylight rather than swapping phase PNGs. None of these changes add online play or change economy coefficients.
+
 The user approved this starter implementation on 2026-10-12. Follow [Economy.md](Economy.md) for the explicit starter catalog and original weekly apartment billing contract. The empty-canvas bootstrap is replaced with a buildable district.
 
 ## Apartment upgrades — 2026-10-14

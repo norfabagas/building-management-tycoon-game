@@ -146,6 +146,16 @@ class DistrictViewModel extends ChangeNotifier {
         .clamp(0, interval ~/ 1000);
   }
 
+  String get clockLabel {
+    final milliseconds =
+        ((game?.timeOfDayMilliseconds ?? 0) + elapsedMilliseconds) %
+        StarterCatalog.dayMilliseconds;
+    final hour = milliseconds ~/ StarterCatalog.hourMilliseconds;
+    final minute =
+        (milliseconds % StarterCatalog.hourMilliseconds) * 60 ~/ 1000;
+    return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+  }
+
   @override
   void dispose() {
     _disposed = true;
