@@ -1,5 +1,11 @@
 # Building Management Tycoon
 
+## Gameplay quality audit — 2026-10-16
+
+The [audit](docs/GameplayValidation.md) fixes investment clarity, B1-limited capacity review, selected-floor hierarchy, short-landscape usability, portrait opening discovery and layout-stable cash feedback. It retains the approved art, offline five-slot saves, 24-second days and catalog values. A transient synergy cache removes repeated geometry work during chronological offline advancement: the 20-business/30-real-day local benchmark improves from about 90 seconds to 1.5 seconds with identical final cash/gems/closing count. No new schema, economy adjustment or runtime artwork is introduced.
+
+Formatting of 52 Dart files, analysis, all 132 tests, asset validation (158 resources / 124 frames) and the 201-resource Web release pass. The production build explicitly targets `lib/main.dart`; review fixtures remain ignored. Browser review retains the QA save across the update and checks actual admissions/rent/costs, portrait/landscape presentation and purchase consequences. Android SDK/device verification and live Figma/native atomization remain unavailable. See Deployment.md for verified publication evidence.
+
 ## Four-type Figma implementation — 2026-10-16
 
 The user approved [catalog 2](docs/FigmaCatalogProposal.md). Apartment, Hotel, Office tower and Food court now have distinct behavior, initial-floor selection, correct artwork/actors, parking allocations, income, luxury, needs, synergy, achievements/gems, decorations, active-job acceleration, local audio and motion. [FigmaAssessment.md](docs/FigmaAssessment.md) maps all 16 board topics to code/tests and documents the limits of quota-blocked live Figma/native component inspection.

@@ -2,6 +2,8 @@
 
 ## Scope and result
 
+The subsequent [gameplay quality audit](GameplayValidation.md) records player-facing findings, improvements and performance evidence. It adds purchase consequences, compact landscape information, progressive disclosure and a portrait opening shortcut without changing approved economic values. Refer to the latest Deployment.md entry for the current validation/release; older counts below describe the preceding catalog release.
+
 Target: [Building Management Tycoon — Game Design](https://www.figma.com/design/CCbs9OcpTNV01vqAvylWwZ), all 16 approved boards, as preserved by `design/figma-manifest.json`, `design/tycoon/build.mjs` and the verified local archive. The user explicitly approved [catalog 2](FigmaCatalogProposal.md) with “Setujui katalog usulan”. Earlier starter-only deferrals are superseded.
 
 All 16 board topics now map to functional game code and verification below. Apartment, Hotel, Office tower and Food court are playable types with distinct admission, parking and income behavior. This is a functional implementation assessment, not a claim of pixel-identical static boards or certification of unknown current Figma edits. Live `get_design_context` remains blocked by the Starter MCP quota. The earlier request to atomize components inside Figma also remains blocked; reusable Flutter widgets do not constitute editing that Figma file.

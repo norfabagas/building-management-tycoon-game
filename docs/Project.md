@@ -22,6 +22,8 @@ Casual to mid-core players who enjoy simulation, strategy, and purely offline id
 
 ## Current milestone
 
+The user requested a complete gameplay/quality validation after catalog 2. [GameplayValidation.md](GameplayValidation.md) records findings, player-facing corrections, whole-ledger replay and offline performance evidence. Keep approved prices/rules intact; clarify consequential choices and improve responsive floor visibility using the existing art. Publication and platform limitations are recorded in Deployment.md.
+
 The user approved catalog 2 on 2026-10-16, expanding the current implementation task to all four Figma building types and the associated luxury, needs, synergy, gems, decorations, audio and motion systems. [FigmaCatalogProposal.md](FigmaCatalogProposal.md) now records the approved values; [FigmaAssessment.md](FigmaAssessment.md) tracks actual implementation and verification rather than assuming parity from bundled graphics. Source publication and test/build results must be recorded after the final checks. The later request explicitly includes pushing GitHub and deploying the existing Netlify site.
 
 The 2026-10-16 update adds footprint-shaped rectangular apartment exteriors, a 24-hour clock at one hour per real second, midnight book closing and smooth directional daylight gradients. Schema 6 migrates existing clocks without rebilling completed closings or resetting progress. The five save slots, prices, capacities, limits and daily/Sunday billing rules remain unchanged; former Noon references mean 24:00. See Rules.md, Logic.md and Design.md for the current override.

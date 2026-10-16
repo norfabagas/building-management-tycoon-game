@@ -114,7 +114,11 @@ void main() {
         viewport(tester, size);
         final db = (await tester.runAsync(openNewInMemoryDatabase))!;
         final state = DistrictGame(
-          watermark: DateTime.now().millisecondsSinceEpoch,
+          // Keep seeded daily counters stable while real asynchronous images
+          // load on busy CI machines. Clock advancement is tested separately.
+          watermark: DateTime.now()
+              .add(const Duration(days: 1))
+              .millisecondsSinceEpoch,
           nextBuildingId: 5,
           buildings: [
             for (var i = 0; i < 4; i++)

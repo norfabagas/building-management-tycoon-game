@@ -22,6 +22,47 @@ DistrictGame district(ApartmentBuilding building) =>
     DistrictGame(watermark: 0, nextBuildingId: 2, buildings: [building]);
 
 void main() {
+  test('catch-up synergy follows layout changes and long replay preserves every ledger', () {
+    final state = DistrictGame(
+      watermark: 0,
+      nextBuildingId: 3,
+      buildings: [
+        ApartmentBuilding(
+          id: 1,
+          footprint: const Footprint(0, 0, 2, 2),
+          stage: ConstructionStage.ready,
+        ),
+        ApartmentBuilding(
+          id: 2,
+          footprint: const Footprint(3, 0, 2, 2),
+          type: BuildingType.foodCourt,
+          stage: ConstructionStage.ready,
+        ),
+      ],
+    );
+    final stepped = DistrictGame.fromJson(state.toJson());
+    const days = 365;
+    DistrictSimulation.advance(state, days * 24000);
+    for (var i = 1; i <= days * 4; i++) {
+      DistrictSimulation.advance(stepped, i * 6000);
+    }
+    expect(state.toJson(), stepped.toJson());
+    expect(DistrictSimulation.synergyPercent(state, state.buildings.first), 5);
+    DistrictSimulation.place(
+      state,
+      const Footprint(0, 3, 2, 2),
+      type: BuildingType.foodCourt,
+    );
+    expect(DistrictSimulation.synergyPercent(state, state.buildings.first), 10);
+    final before = DistrictGame.fromJson(state.toJson());
+    DistrictSimulation.advance(state, (days + 1) * 24000);
+    for (var i = days * 4 + 1; i <= (days + 1) * 4; i++) {
+      DistrictSimulation.advance(before, i * 6000);
+    }
+    expect(state.toJson(), before.toJson());
+    DistrictSimulation.cancel(state, 3);
+    expect(DistrictSimulation.synergyPercent(state, state.buildings.first), 5);
+  });
   test('next closing estimate includes remaining food windows without changing save state', () {
     final food = business(BuildingType.foodCourt);
     final state = district(food);

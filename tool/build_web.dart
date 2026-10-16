@@ -11,7 +11,14 @@ Future<void> main() async {
       : 'flutter';
   final process = await Process.start(
     flutter,
-    ['build', 'web', '--release', '--no-web-resources-cdn'],
+    [
+      'build',
+      'web',
+      '--release',
+      '--target',
+      'lib/main.dart',
+      '--no-web-resources-cdn',
+    ],
     runInShell: Platform.isWindows,
     environment: {'PUB_CACHE': Directory('.tools/pub-cache').absolute.path},
     mode: ProcessStartMode.inheritStdio,

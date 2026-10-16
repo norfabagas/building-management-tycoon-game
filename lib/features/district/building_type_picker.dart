@@ -64,6 +64,15 @@ class BuildingTypePicker extends StatelessWidget {
                       color: GameColors.muted,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    type.baseRevenueLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const Text(
+                    'B1 parking: +\$500 / tile · 1 extra day',
+                    style: TextStyle(fontSize: 12, color: GameColors.muted),
+                  ),
                   const SizedBox(height: 10),
                   GameButton(
                     label: 'Choose ${type.label.toLowerCase()}',

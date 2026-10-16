@@ -43,6 +43,12 @@ extension BuildingArtwork on BuildingType {
     BuildingType.office => 'Whole-floor leases · Daily corporate rent',
     BuildingType.foodCourt => 'Visitor parties · Sales in four daily windows',
   };
+  String get baseRevenueLabel => switch (this) {
+    BuildingType.apartment => '\$840 / room / week · Paid Sunday',
+    BuildingType.hotel => '\$160 / occupied room / day',
+    BuildingType.office => '\$180 × land tiles / leased floor / day',
+    BuildingType.foodCourt => '\$25 / visiting party · Four windows a day',
+  };
 }
 
 extension DecorationArtwork on DecorationKind {

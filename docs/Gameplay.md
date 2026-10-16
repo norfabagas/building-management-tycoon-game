@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Gameplay quality audit — 2026-10-16
+
+Type cards now explain base income and B1 cost. Purchase review shows the remaining cash and how much of the completed capacity B1 can actually support; demand, bonuses and tax remain separate. Completed unopened businesses have a map shortcut to the explicit opening review. Selected-floor rooms/facilities precede generic building accounting, with larger room cutaways and expandable Building details. Short landscape uses a compact HUD and side-by-side overview/floor where width allows; fixed floor navigation/footer clearance remain. Closing coins animate over the Balance icon without moving the map. See [GameplayValidation.md](GameplayValidation.md) for findings, the preserved economic contract, offline performance, tests and remaining limits.
+
 ## Four-type Figma implementation — 2026-10-16
 
 The user approved [catalog 2](FigmaCatalogProposal.md) and requested GitHub push and Netlify publication. Earlier starter-only boundaries below are historical. Build now offers Apartment, Hotel, Office tower and Food court, with four canonical cards on wide screens and responsive cards on narrow screens. Select 1–10 initial floors after drawing land; review type-specific rooms/whole-floor leases/party capacity, B1, cost, upkeep and duration. Permanent land, surrounding roads, immediate charging, full unfinished refunds and manual opening remain intact.

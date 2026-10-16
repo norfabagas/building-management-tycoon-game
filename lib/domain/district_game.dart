@@ -471,6 +471,9 @@ class DistrictGame {
       purchasesSinceClosing,
       refundsSinceClosing;
   int catalogVersion, gems;
+  // Layout cannot change during synchronous catch-up. Never retain this cache
+  // across player actions or serialize it into a save.
+  Map<int, int>? _advancingSynergy;
   bool soundEnabled;
   final Set<Achievement> achievements;
   final List<DistrictDecoration> decorations;
@@ -736,6 +739,15 @@ abstract final class DistrictSimulation {
   }
 
   static void advance(DistrictGame state, int now) {
+    state._advancingSynergy = {};
+    try {
+      _advance(state, now);
+    } finally {
+      state._advancingSynergy = null;
+    }
+  }
+
+  static void _advance(DistrictGame state, int now) {
     final interval = state.phaseMilliseconds;
     var elapsed = math.max(0, now - state.watermark) + state.remainder;
     state.watermark = math.max(now, state.watermark);
@@ -906,6 +918,14 @@ abstract final class DistrictSimulation {
 
   static int synergyPercent(DistrictGame state, ApartmentBuilding receiver) {
     if (state.catalogVersion < 2) return 0;
+    return state._advancingSynergy?.putIfAbsent(
+          receiver.id,
+          () => _calculateSynergy(state, receiver),
+        ) ??
+        _calculateSynergy(state, receiver);
+  }
+
+  static int _calculateSynergy(DistrictGame state, ApartmentBuilding receiver) {
     final ring = receiver.footprint.roadRing.toSet();
     var bonus = 0;
     for (final neighbor in state.buildings) {

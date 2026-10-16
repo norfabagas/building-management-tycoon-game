@@ -211,51 +211,102 @@ class _DistrictScreenState extends State<DistrictScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.profile.areaName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: smallHeight ? 20 : 25,
-                              fontWeight: FontWeight.w700,
+                    if (smallHeight && constraints.maxWidth >= 600)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    widget.profile.areaName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  ' · ${game.weekdayLabel}',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          game.weekdayLabel,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                          for (final stat in [
+                            _stat(
+                              ProductionAssets.iconsDollar,
+                              'Balance',
+                              formatMoney(game.balance),
+                              compact: true,
+                            ),
+                            _stat(
+                              ProductionAssets.iconsClock,
+                              'Day ${game.day}',
+                              _model.clockLabel,
+                              compact: true,
+                            ),
+                            _stat(
+                              ProductionAssets.iconsGem,
+                              'Gems',
+                              '${game.gems}',
+                              compact: true,
+                            ),
+                          ])
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: stat,
+                            ),
+                        ],
+                      )
+                    else ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.profile.areaName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: smallHeight ? 20 : 25,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: [
-                        _stat(
-                          ProductionAssets.iconsDollar,
-                          'Balance',
-                          formatMoney(game.balance),
-                        ),
-                        _stat(
-                          ProductionAssets.iconsClock,
-                          'Day ${game.day}',
-                          _model.clockLabel,
-                        ),
-                        _stat(
-                          ProductionAssets.iconsGem,
-                          'Gems',
-                          '${game.gems}',
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 8),
+                          Text(
+                            game.weekdayLabel,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          _stat(
+                            ProductionAssets.iconsDollar,
+                            'Balance',
+                            formatMoney(game.balance),
+                          ),
+                          _stat(
+                            ProductionAssets.iconsClock,
+                            'Day ${game.day}',
+                            _model.clockLabel,
+                          ),
+                          _stat(
+                            ProductionAssets.iconsGem,
+                            'Gems',
+                            '${game.gems}',
+                          ),
+                        ],
+                      ),
+                    ],
                     if (_model.error case final error?)
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
@@ -280,16 +331,6 @@ class _DistrictScreenState extends State<DistrictScreen>
                         ),
                       ),
                     const SizedBox(height: 10),
-                    if (_cashFeedback > 0 &&
-                        !MediaQuery.disableAnimationsOf(context))
-                      AssetAnimation(
-                        key: ValueKey('cash-$_cashFeedback'),
-                        path: ProductionAssets.effectsCoin,
-                        sequence: 'play',
-                        width: 32,
-                        height: 32,
-                        hideWhenComplete: true,
-                      ),
                     Expanded(
                       child: Stack(
                         fit: StackFit.expand,
@@ -519,43 +560,74 @@ class _DistrictScreenState extends State<DistrictScreen>
         _upgrades = upgrades;
       });
 
-  Widget _map(DistrictGame game) => DistrictMap(
-    camera: _mapCamera,
-    game: game,
-    elapsedMilliseconds: _model.elapsedMilliseconds,
-    drawing: _drawing && !_review && _model.error == null,
-    preview: _preview,
-    previewValid: _preview == null
-        ? null
-        : _collection == 'Decorations'
-        ? _decorationError(game, _preview!) == null
-        : DistrictSimulation.placementError(
-                game,
-                _preview!,
-                type: _buildType,
-                floors: _initialFloors,
-              ) ==
-              null,
-    decorationPreview: _collection == 'Decorations',
-    selected: _selected,
-    reset: _reset,
-    onFootprint: (site) => setState(
-      () => _preview = _collection == 'Decorations'
-          ? Footprint(site.x, site.y, 1, 1)
-          : site,
-    ),
-    onCancelFootprint: () => setState(() => _preview = null),
-    onSelect: (id) => setState(() {
-      _selected = id;
-      _buildMenu = false;
-      _drawing = false;
-      _preview = null;
-      _finance = false;
-      _tenants = false;
-      _districtUpgrades = false;
-      _collection = null;
-    }),
-  );
+  Widget _map(DistrictGame game) {
+    final ready = game.buildings
+        .where((b) => b.stage == ConstructionStage.parkingDone)
+        .firstOrNull;
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: DistrictMap(
+            camera: _mapCamera,
+            game: game,
+            elapsedMilliseconds: _model.elapsedMilliseconds,
+            drawing: _drawing && !_review && _model.error == null,
+            preview: _preview,
+            previewValid: _preview == null
+                ? null
+                : _collection == 'Decorations'
+                ? _decorationError(game, _preview!) == null
+                : DistrictSimulation.placementError(
+                        game,
+                        _preview!,
+                        type: _buildType,
+                        floors: _initialFloors,
+                      ) ==
+                      null,
+            decorationPreview: _collection == 'Decorations',
+            selected: _selected,
+            reset: _reset,
+            onFootprint: (site) => setState(
+              () => _preview = _collection == 'Decorations'
+                  ? Footprint(site.x, site.y, 1, 1)
+                  : site,
+            ),
+            onCancelFootprint: () => setState(() => _preview = null),
+            onSelect: (id) => setState(() {
+              _selected = id;
+              _buildMenu = false;
+              _drawing = false;
+              _preview = null;
+              _finance = false;
+              _tenants = false;
+              _districtUpgrades = false;
+              _collection = null;
+            }),
+          ),
+        ),
+        if (ready != null && !_drawing && !_buildMenu)
+          Positioned(
+            left: 12,
+            bottom: 12,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260),
+              child: GameButton(
+                label: 'Open ${ready.name}',
+                onPressed: _model.busy || _model.error != null
+                    ? null
+                    : () => setState(() {
+                        _closePlanning();
+                        _tenants = false;
+                        _districtUpgrades = false;
+                        _collection = null;
+                        _selected = ready.id;
+                      }),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   Widget _floorNavigation() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,7 +688,9 @@ class _DistrictScreenState extends State<DistrictScreen>
       borderRadius: BorderRadius.circular(18),
     ),
     child: SingleChildScrollView(
-      key: ValueKey('floor-$_selected-${_model.currentFloor}-$_upgrades'),
+      key: ValueKey(
+        'floor-$_selected-${_model.currentFloor}-$_upgrades-${_model.selectedBuilding?.stage == ConstructionStage.ready}',
+      ),
       padding: const EdgeInsets.all(16),
       child: _upgrades && _model.selectedBuilding != null
           ? BuildingUpgradePanel(
@@ -628,7 +702,12 @@ class _DistrictScreenState extends State<DistrictScreen>
     ),
   );
 
-  Widget _stat(String asset, String label, String value) => Container(
+  Widget _stat(
+    String asset,
+    String label,
+    String value, {
+    bool compact = false,
+  }) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
     decoration: BoxDecoration(
       color: GameColors.surface,
@@ -638,21 +717,72 @@ class _DistrictScreenState extends State<DistrictScreen>
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(asset, width: 25, height: 25, excludeFromSemantics: true),
-        const SizedBox(width: 7),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(fontSize: 11, color: GameColors.muted),
-            ),
-            Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-            ),
-          ],
+        SizedBox(
+          width: 25,
+          height: 25,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Image.asset(
+                asset,
+                width: 25,
+                height: 25,
+                excludeFromSemantics: true,
+              ),
+              if (label == 'Balance' &&
+                  _cashFeedback > 0 &&
+                  !MediaQuery.disableAnimationsOf(context))
+                Positioned(
+                  left: -4,
+                  top: -4,
+                  child: AssetAnimation(
+                    key: ValueKey('cash-$_cashFeedback'),
+                    path: ProductionAssets.effectsCoin,
+                    sequence: 'play',
+                    width: 32,
+                    height: 32,
+                    hideWhenComplete: true,
+                  ),
+                ),
+            ],
+          ),
         ),
+        const SizedBox(width: 7),
+        if (compact)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: GameColors.muted),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(fontSize: 11, color: GameColors.muted),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
       ],
     ),
   );
@@ -688,7 +818,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
         ),
       ),
-      ?action,
+      if (action != null) Flexible(child: action),
       if (_buildMenu ||
           _finance ||
           _tenants ||
@@ -1044,6 +1174,26 @@ class _DistrictScreenState extends State<DistrictScreen>
               site == null ? 0 : _buildType.quote(site.tiles, _initialFloors),
             ),
           ),
+          if (site != null) ...[
+            _line(
+              'Balance after purchase',
+              formatMoney(
+                game.balance - _buildType.quote(site.tiles, _initialFloors),
+              ),
+            ),
+            _line(
+              'Capacity with B1',
+              '${math.min(_buildType.unitsPerFloor(site.tiles) * _initialFloors, site.bays ~/ _buildType.baysPerUnit(site.tiles))} / ${_buildType.unitsPerFloor(site.tiles) * _initialFloors} ${_buildType.unitLabel}',
+            ),
+            Text(
+              _buildType.baseRevenueLabel,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const Text(
+              'Base income before demand, bonuses and tax. Parking limits occupancy.',
+              style: TextStyle(color: GameColors.muted, fontSize: 13),
+            ),
+          ],
           _line(
             'Completed daily upkeep',
             formatMoney(
@@ -1053,7 +1203,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           ),
           _line(
             'Parking per ${_buildType == BuildingType.office ? 'lease' : 'unit'}',
-            '${_buildType.baysPerUnit(site?.tiles ?? 0)} bays',
+            '${_buildType.baysPerUnit(site?.tiles ?? 0)} ${_buildType.baysPerUnit(site?.tiles ?? 0) == 1 ? 'bay' : 'bays'}',
           ),
           if (error != null)
             Padding(
@@ -1163,293 +1313,345 @@ class _DistrictScreenState extends State<DistrictScreen>
         (building.usedBays -
                 (-_model.currentFloor - 1) * building.footprint.bays)
             .clamp(0, building.footprint.bays);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _heading(
-          building.name,
-          action: TextButton.icon(
-            onPressed: () => setState(() => _upgrades = true),
-            icon: Image.asset(
-              ProductionAssets.iconsUpgrade,
-              width: 22,
-              height: 22,
-              excludeFromSemantics: true,
-            ),
-            label: const Text('Upgrade building'),
-          ),
-        ),
-        Text(
-          building.status,
-          style: const TextStyle(
-            color: GameColors.primary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (!ready) ...[
-          const SizedBox(height: 12),
-          _constructionProgress(building),
-          if (building.stage == ConstructionStage.parkingDone) ...[
-            const SizedBox(height: 12),
-            GameButton(
-              label: 'Open to Business',
-              onPressed: _model.busy || _model.error != null
-                  ? null
-                  : () => unawaited(_model.openBusiness(building.id)),
-            ),
-          ],
-        ],
-        const SizedBox(height: 10),
-        _line(
-          'Permanent footprint',
-          '${building.footprint.width} × ${building.footprint.length} tiles',
-        ),
-        _line(
-          'Floors / basements',
-          '${building.completedFloors} / ${building.completedBasements}',
-        ),
-        _line(
-          'Lifts / executive lifts',
-          '${building.standardLifts} / ${building.executiveLifts}',
-        ),
-        _line('Luxury', 'Tier ${building.luxury} / 3'),
-        AccelerationButton(model: _model, building: building),
-        _line('Happiness', '${building.happiness} / 100'),
-        _line(
-          'Synergy',
-          '+${DistrictSimulation.synergyPercent(game, building)}% new rent/sales',
-        ),
-        if (building.happiness < 100)
-          const Text(
-            'Needs better vertical access. Add lifts to improve new demand.',
-            style: TextStyle(color: GameColors.danger),
-          ),
-        if (building.upgrade case final upgrade?) ...[
-          const SizedBox(height: 8),
-          Text(
-            '${upgrade.kind.label} · ${upgrade.stage.label} · ${(_model.upgradeProgress(building) * 100).floor()}%',
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 6),
-          LinearProgressIndicator(
-            value: _model.upgradeProgress(building),
-            minHeight: 8,
-            semanticsLabel: 'Upgrade progress',
-            semanticsValue:
-                '${(_model.upgradeProgress(building) * 100).floor()}%',
-          ),
-        ],
-        if (!ready) ...[
-          const SizedBox(height: 10),
-          Text(switch (building.stage) {
-            ConstructionStage.reserved => 'Paid. Construction queued.',
-            ConstructionStage.paid => 'Paid. Construction starts tomorrow.',
-            ConstructionStage.shell =>
-              'Building ${building.type.label.toLowerCase()} · Days ${building.startedDay}–${building.startedDay + building.initialShellDays - 1}.',
-            ConstructionStage.shellDone =>
-              'Floors complete. Parking starts tomorrow.',
-            ConstructionStage.basement =>
-              'Building parking · Day ${building.startedDay}.',
-            ConstructionStage.parkingDone =>
-              'Construction complete. Ready to open.',
-            ConstructionStage.ready => '',
-          }),
-          const SizedBox(height: 14),
-          Text('Full refund: ${formatMoney(building.originalQuote)}'),
-          const SizedBox(height: 8),
-          GameButton(
-            label: 'Cancel building',
-            secondary: true,
-            onPressed: _model.busy || _model.error != null
-                ? null
-                : () => unawaited(_cancel(building.id)),
-          ),
-        ],
-        if (_model.currentFloor > 0) ...[
-          const Divider(),
-          Row(
-            children: [
-              Image.asset(ProductionAssets.iconsHome, width: 30, height: 30),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${_model.floorLabel} · ${building.type == BuildingType.office
-                      ? 'Whole-floor lease'
-                      : building.type == BuildingType.foodCourt
-                      ? 'Food court'
-                      : 'Rooms'}',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _line(
-            switch (building.type) {
-              BuildingType.foodCourt => 'Visiting parties',
-              BuildingType.hotel => 'Guests',
-              BuildingType.office => 'Leased floors',
-              BuildingType.apartment => 'Tenants',
-            },
-            building.type == BuildingType.foodCourt
-                ? '$floorVisitors / ${building.unitsPerFloor} parties'
-                : '$floorTenants / ${building.unitsPerFloor} ${building.type.unitLabel}',
-          ),
-          _line(
-            switch (building.type) {
-              BuildingType.foodCourt => 'Building visitors',
-              BuildingType.hotel => 'Building guests',
-              BuildingType.office => 'Building leases',
-              BuildingType.apartment => 'Building tenants',
-            },
-            '${building.type == BuildingType.foodCourt ? building.currentVisitors : building.occupied.length} / ${building.rooms} ${building.type.unitLabel}',
-          ),
-          _line(
-            'Building parking',
-            '${building.usedBays} / ${building.bays} bays used',
-          ),
-          if (building.type == BuildingType.apartment) ...[
-            _line('Pending weekly rent', formatMoney(building.pendingRent)),
-            _line(
-              'Weekly rent per room',
-              formatMoney(StarterCatalog.weeklyRent),
-            ),
-          ] else if (building.type == BuildingType.hotel)
-            _line('Daily base room rate', formatMoney(16000))
-          else if (building.type == BuildingType.office)
-            _line(
-              'Daily base floor lease',
-              formatMoney(18000 * building.footprint.tiles),
-            ),
-          if (ready && building.type == BuildingType.foodCourt) ...[
-            Image.asset(
-              building.type.roomArtwork,
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.contain,
-            ),
-            _line('Visits today', '${building.visitsToday} parties'),
-            _line('Sales awaiting midnight', formatMoney(building.salesToday)),
-            _line(
-              'Visitor parking awaiting midnight',
-              formatMoney(building.parkingToday),
-            ),
-            const Text(
-              'Each party reserves one bay. Bays turn over every six hours; daily sales and parking settle at 24:00.',
-            ),
-            if (floorVisitors > 0)
-              AssetAnimation(
-                path: building.type.actor,
-                sequence: 'walk',
-                width: 44,
-                height: 66,
-              ),
-          ] else if (ready)
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final columns = math.max(
-                  1,
-                  (constraints.maxWidth / 300).floor(),
-                );
-                final width =
-                    (constraints.maxWidth - (columns - 1) * 12) / columns;
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    for (var room = firstRoom; room < lastRoom; room++)
-                      SizedBox(width: width, child: _room(building, room)),
-                  ],
-                );
-              },
-            )
-          else
-            const Text(
-              'Open the building after construction to welcome tenants.',
-            ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: 150,
-            height: 100,
-            child: Stack(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shortLandscape =
+            constraints.maxWidth >= 700 &&
+            MediaQuery.sizeOf(context).height < 500;
+        final floorHeading = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Divider(),
+            Row(
               children: [
-                Image.asset(
-                  ProductionAssets.transportStairs,
-                  height: 90,
-                  width: 140,
-                  excludeFromSemantics: true,
-                ),
-                if (building.occupied.isNotEmpty ||
-                    building.currentVisitors > 0)
-                  Positioned(
-                    left: 56,
-                    bottom: 12,
-                    child: AssetAnimation(
-                      path: building.type.actor,
-                      sequence: _model.travelDirection == 0 ? 'walk' : 'stairs',
-                      width: 32,
-                      height: 48,
+                Image.asset(ProductionAssets.iconsHome, width: 30, height: 30),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${_model.floorLabel} · ${building.type == BuildingType.office
+                        ? 'Whole-floor lease'
+                        : building.type == BuildingType.foodCourt
+                        ? 'Food court'
+                        : 'Rooms'}',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                ),
               ],
             ),
-          ),
-          if (building.standardLifts > 0 || building.executiveLifts > 0)
-            Wrap(
-              spacing: 12,
+            const SizedBox(height: 10),
+            _line(
+              switch (building.type) {
+                BuildingType.foodCourt => 'Visiting parties',
+                BuildingType.hotel => 'Guests',
+                BuildingType.office => 'Leased floors',
+                BuildingType.apartment => 'Tenants',
+              },
+              building.type == BuildingType.foodCourt
+                  ? '$floorVisitors / ${building.unitsPerFloor} parties'
+                  : '$floorTenants / ${building.unitsPerFloor} ${building.type.unitLabel}',
+            ),
+          ],
+        );
+        final overview = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _heading(
+              building.name,
+              action: TextButton.icon(
+                onPressed: () => setState(() => _upgrades = true),
+                icon: Image.asset(
+                  ProductionAssets.iconsUpgrade,
+                  width: 22,
+                  height: 22,
+                  excludeFromSemantics: true,
+                ),
+                label: const Text('Upgrade building'),
+              ),
+            ),
+            Text(
+              building.status,
+              style: const TextStyle(
+                color: GameColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (!ready) ...[
+              const SizedBox(height: 12),
+              _constructionProgress(building),
+              if (building.stage == ConstructionStage.parkingDone) ...[
+                const SizedBox(height: 12),
+                GameButton(
+                  label: 'Open to Business',
+                  onPressed: _model.busy || _model.error != null
+                      ? null
+                      : () => unawaited(_model.openBusiness(building.id)),
+                ),
+              ],
+            ],
+            AccelerationButton(model: _model, building: building),
+            if (building.happiness < 100)
+              const Text(
+                'Needs better vertical access. Add lifts to improve new demand.',
+                style: TextStyle(color: GameColors.danger),
+              ),
+            if (building.upgrade case final upgrade?) ...[
+              const SizedBox(height: 8),
+              Text(
+                '${upgrade.kind.label} · ${upgrade.stage.label} · ${(_model.upgradeProgress(building) * 100).floor()}%',
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 6),
+              LinearProgressIndicator(
+                value: _model.upgradeProgress(building),
+                minHeight: 8,
+                semanticsLabel: 'Upgrade progress',
+                semanticsValue:
+                    '${(_model.upgradeProgress(building) * 100).floor()}%',
+              ),
+            ],
+            if (!ready) ...[
+              const SizedBox(height: 10),
+              Text(switch (building.stage) {
+                ConstructionStage.reserved => 'Paid. Construction queued.',
+                ConstructionStage.paid => 'Paid. Construction starts tomorrow.',
+                ConstructionStage.shell =>
+                  'Building ${building.type.label.toLowerCase()} · Days ${building.startedDay}–${building.startedDay + building.initialShellDays - 1}.',
+                ConstructionStage.shellDone =>
+                  'Floors complete. Parking starts tomorrow.',
+                ConstructionStage.basement =>
+                  'Building parking · Day ${building.startedDay}.',
+                ConstructionStage.parkingDone =>
+                  'Construction complete. Ready to open.',
+                ConstructionStage.ready => '',
+              }),
+              const SizedBox(height: 14),
+              Text('Full refund: ${formatMoney(building.originalQuote)}'),
+              const SizedBox(height: 8),
+              GameButton(
+                label: 'Cancel building',
+                secondary: true,
+                onPressed: _model.busy || _model.error != null
+                    ? null
+                    : () => unawaited(_cancel(building.id)),
+              ),
+            ],
+            if (shortLandscape && _model.currentFloor > 0) floorHeading,
+          ],
+        );
+        final floor = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_model.currentFloor > 0) ...[
+              if (!shortLandscape) floorHeading,
+              if (ready && building.type == BuildingType.foodCourt) ...[
+                Image.asset(
+                  building.type.roomArtwork,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.contain,
+                ),
+                _line('Visits today', '${building.visitsToday} parties'),
+                _line(
+                  'Sales awaiting midnight',
+                  formatMoney(building.salesToday),
+                ),
+                _line(
+                  'Visitor parking awaiting midnight',
+                  formatMoney(building.parkingToday),
+                ),
+                const Text(
+                  'Each party reserves one bay. Bays turn over every six hours; daily sales and parking settle at 24:00.',
+                ),
+                if (floorVisitors > 0)
+                  AssetAnimation(
+                    path: building.type.actor,
+                    sequence: 'walk',
+                    width: 44,
+                    height: 66,
+                  ),
+              ] else if (ready)
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final columns = math.max(
+                      1,
+                      (constraints.maxWidth / 300).floor(),
+                    );
+                    final width =
+                        (constraints.maxWidth - (columns - 1) * 12) / columns;
+                    return Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        for (var room = firstRoom; room < lastRoom; room++)
+                          SizedBox(width: width, child: _room(building, room)),
+                      ],
+                    );
+                  },
+                )
+              else
+                const Text(
+                  'Open the building after construction to welcome tenants.',
+                ),
+              _line(
+                switch (building.type) {
+                  BuildingType.foodCourt => 'Building visitors',
+                  BuildingType.hotel => 'Building guests',
+                  BuildingType.office => 'Building leases',
+                  BuildingType.apartment => 'Building tenants',
+                },
+                '${building.type == BuildingType.foodCourt ? building.currentVisitors : building.occupied.length} / ${building.rooms} ${building.type.unitLabel}',
+              ),
+              _line(
+                'Building parking',
+                '${building.usedBays} / ${building.bays} bays used',
+              ),
+              if (building.type == BuildingType.apartment) ...[
+                _line('Pending weekly rent', formatMoney(building.pendingRent)),
+                _line(
+                  'Weekly rent per room',
+                  formatMoney(StarterCatalog.weeklyRent),
+                ),
+              ] else if (building.type == BuildingType.hotel)
+                _line('Daily base room rate', formatMoney(16000))
+              else if (building.type == BuildingType.office)
+                _line(
+                  'Daily base floor lease',
+                  formatMoney(18000 * building.footprint.tiles),
+                ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: 150,
+                height: 100,
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      ProductionAssets.transportStairs,
+                      height: 90,
+                      width: 140,
+                      excludeFromSemantics: true,
+                    ),
+                    if (building.occupied.isNotEmpty ||
+                        building.currentVisitors > 0)
+                      Positioned(
+                        left: 56,
+                        bottom: 12,
+                        child: AssetAnimation(
+                          path: building.type.actor,
+                          sequence: _model.travelDirection == 0
+                              ? 'walk'
+                              : 'stairs',
+                          width: 32,
+                          height: 48,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              if (building.standardLifts > 0 || building.executiveLifts > 0)
+                Wrap(
+                  spacing: 12,
+                  children: [
+                    if (building.standardLifts > 0)
+                      _lift(
+                        ProductionAssets.transportStandardLift,
+                        '${building.standardLifts} standard ${building.standardLifts == 1 ? 'lift' : 'lifts'}',
+                      ),
+                    if (building.executiveLifts > 0)
+                      _lift(
+                        ProductionAssets.transportExecutiveLift,
+                        '1 executive lift',
+                      ),
+                  ],
+                ),
+              Text(
+                building.parkingComplete
+                    ? 'Go down for parking.'
+                    : 'Parking not ready.',
+              ),
+            ] else ...[
+              const Divider(),
+              Text(
+                '${_model.floorLabel} · Parking only',
+                style: const TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Image.asset(
+                usedBays == 0
+                    ? ProductionAssets.transportParkingEmpty
+                    : ProductionAssets.transportParkingOccupied,
+                height: 220,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                excludeFromSemantics: true,
+              ),
+              _line('Parking capacity', '${building.footprint.bays} bays'),
+              _line(
+                building.type == BuildingType.foodCourt
+                    ? 'Visitor bays used'
+                    : building.type == BuildingType.hotel
+                    ? 'Guest bays used'
+                    : 'Tenant bays used',
+                '$usedBays',
+              ),
+              _line('Available bays', '${building.footprint.bays - usedBays}'),
+              const Text(
+                'Parking limits concurrent tenants or visitor parties.',
+                style: TextStyle(fontSize: 13, color: GameColors.muted),
+              ),
+            ],
+            const Divider(),
+            ExpansionTile(
+              key: PageStorageKey('building-details-${building.id}'),
+              tilePadding: EdgeInsets.zero,
+              title: const Text('Building details'),
+              subtitle: Text(
+                '${building.footprint.width} × ${building.footprint.length} tiles · Tier ${building.luxury} · Happiness ${building.happiness}%',
+              ),
               children: [
-                if (building.standardLifts > 0)
-                  _lift(
-                    ProductionAssets.transportStandardLift,
-                    '${building.standardLifts} standard ${building.standardLifts == 1 ? 'lift' : 'lifts'}',
-                  ),
-                if (building.executiveLifts > 0)
-                  _lift(
-                    ProductionAssets.transportExecutiveLift,
-                    '1 executive lift',
-                  ),
+                const SizedBox(height: 10),
+                _line(
+                  'Permanent footprint',
+                  '${building.footprint.width} × ${building.footprint.length} tiles',
+                ),
+                _line(
+                  'Floors / basements',
+                  '${building.completedFloors} / ${building.completedBasements}',
+                ),
+                _line(
+                  'Lifts / executive lifts',
+                  '${building.standardLifts} / ${building.executiveLifts}',
+                ),
+                _line('Luxury', 'Tier ${building.luxury} / 3'),
+                _line('Happiness', '${building.happiness} / 100'),
+                _line(
+                  'Synergy',
+                  '+${DistrictSimulation.synergyPercent(game, building)}% new rent/sales',
+                ),
               ],
             ),
-          Text(
-            building.parkingComplete
-                ? 'Go down for parking.'
-                : 'Parking not ready.',
-          ),
-        ] else ...[
-          const Divider(),
-          Text(
-            '${_model.floorLabel} · Parking only',
-            style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 12),
-          Image.asset(
-            usedBays == 0
-                ? ProductionAssets.transportParkingEmpty
-                : ProductionAssets.transportParkingOccupied,
-            height: 220,
-            width: double.infinity,
-            fit: BoxFit.contain,
-            excludeFromSemantics: true,
-          ),
-          _line('Parking capacity', '${building.footprint.bays} bays'),
-          _line(
-            building.type == BuildingType.foodCourt
-                ? 'Visitor bays used'
-                : building.type == BuildingType.hotel
-                ? 'Guest bays used'
-                : 'Tenant bays used',
-            '$usedBays',
-          ),
-          _line('Available bays', '${building.footprint.bays - usedBays}'),
-          const Text(
-            'Parking limits concurrent tenants or visitor parties.',
-            style: TextStyle(fontSize: 13, color: GameColors.muted),
-          ),
-        ],
-      ],
+          ],
+        );
+        if (shortLandscape) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(width: 320, child: overview),
+              const SizedBox(width: 16),
+              Expanded(child: floor),
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [overview, floor],
+        );
+      },
     );
   }
 
@@ -1530,8 +1732,9 @@ class _DistrictScreenState extends State<DistrictScreen>
           child: Row(
             children: [
               SizedBox(
-                width: 102,
-                height: 76,
+                key: ValueKey('room-artwork-${building.id}-$room'),
+                width: 140,
+                height: 104,
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
