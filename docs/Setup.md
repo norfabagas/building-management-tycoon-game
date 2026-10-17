@@ -1,5 +1,9 @@
 # Project setup
 
+## Custom tenant release design — 2026-10-17
+
+No new dependency, asset export or migration is required for the custom release page. Run tenant_management_test.dart with the full suite and normal lib/main.dart Web build. Keep existing browser data and close/reopen old game tabs to activate the offline update. See [TenantManagement.md](TenantManagement.md).
+
 ## Delete saved profiles — 2026-10-17
 
 No package, asset regeneration or configuration change is required. The first profile-list load imports validated metadata into the existing local database; retain browser/app storage. Run delete_profile_test.dart with the full regression suite and normal production Web build. Do not delete real player profiles during QA. See [DeleteProfiles.md](DeleteProfiles.md) for persistence and compatibility limits. Formatting, analysis, all 192 Flutter tests, six worker tests, assets and the 201-resource release Web build pass. Android debug compilation remains blocked by the absent SDK. Publication and hashes are recorded in [Deployment.md](Deployment.md).

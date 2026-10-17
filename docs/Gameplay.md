@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Custom tenant release design — 2026-10-17
+
+Inside a tenant interior, Manage now opens the designed release review page. Inspect the current unit, empty-unit preview and parking/rent effects; Keep tenant or Back cancels, while Vacate room / Check out guest / End floor lease commits and returns to the updated interior. No default pop-up is used. See [TenantManagement.md](TenantManagement.md).
+
 ## Delete saved profiles — 2026-10-17
 
 From Choose a district, select Delete on the saved profile and confirm Delete permanently. Cancel keeps the district. Successful deletion removes that district's progress and makes its slot available for New; the other four slots stay intact. Close older tabs before activating the update. See [DeleteProfiles.md](DeleteProfiles.md).

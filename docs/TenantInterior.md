@@ -1,5 +1,7 @@
 # Full-screen tenant interiors
 
+The 2026-10-17 follow-up replaces the default Manage confirmation with the custom [tenant management review](TenantManagement.md). The full-screen interior and underlying vacancy/finance rules are unchanged; earlier references to the default confirmation dialog describe the preceding release.
+
 The 2026-10-17 user request replaces the immediate room-management dialog with an interior that occupies the full application viewport. Tap/click a room or whole-floor lease, or a saved tenant in the district directory. Food courts expose their dining floor from the floor artwork and the directory's dining-activity entry. Vacant rooms can also be inspected.
 
 ## Navigation and state

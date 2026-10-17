@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Custom tenant release design — 2026-10-17
+
+A native Flutter review route reuses the existing district view model, local repository transaction and registered room/actor assets. No modal dialog, new dependency or schema change is needed. Scroll the body independently of responsive pinned actions. See [TenantManagement.md](TenantManagement.md).
+
 ## Delete saved profiles — 2026-10-17
 
 The local Sembast database now owns a version-1 five-slot profile catalog, imported once from validated SharedPreferences metadata. Delete the catalog entry and full game snapshot in one database transaction; preferences remain a repairable compatibility mirror. SQLite/IndexedDB, local-only saves and game schema 8/catalog 2 remain unchanged. See [DeleteProfiles.md](DeleteProfiles.md).

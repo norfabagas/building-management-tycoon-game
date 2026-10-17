@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Custom tenant release design — 2026-10-17
+
+Reviewing or canceling a release is free and non-mutating. The explicit release action uses the existing vacancy rule, freeing reserved bays and retaining already accrued apartment rent. Keep all existing admissions, clock, income, limits and save rules. This changes presentation, not economy. See [TenantManagement.md](TenantManagement.md).
+
 ## Delete saved profiles — 2026-10-17
 
 Deleting a saved profile requires an explicit district/slot confirmation and is permanent. Cancel makes no change. Successful deletion clears only that district, freeing its slot; a replacement starts with the normal empty-game rules. Old sessions cannot save into a deleted/replaced profile under the current client. No prices, limits, occupancy or clock rules change. See [DeleteProfiles.md](DeleteProfiles.md).

@@ -23,6 +23,7 @@ import 'acceleration_button.dart';
 import 'vertical_transport.dart';
 import 'map_camera_view_model.dart';
 import 'tenant_activity_screen.dart';
+import 'tenant_management_screen.dart';
 
 class DistrictScreen extends StatefulWidget {
   const DistrictScreen({
@@ -1847,72 +1848,10 @@ class _DistrictScreenState extends State<DistrictScreen>
         ),
       );
 
-  Future<void> _vacate(int id, int room) async {
-    final building = _model.game!.buildings.firstWhere((b) => b.id == id);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          '${building.type == BuildingType.office ? 'Lease' : 'Room'} ${room + 1} · ${building.type.role}',
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset(
-                building.type.roomArtwork,
-                height: 130,
-                width: 240,
-                fit: BoxFit.contain,
-                excludeFromSemantics: true,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Parking: ${building.type.baysPerUnit(building.footprint.tiles)} reserved ${building.type == BuildingType.office ? 'bays' : 'bay'}',
-              ),
-              Text('Happiness: ${building.happiness} / 100'),
-              if (building.type == BuildingType.apartment)
-                Text(
-                  'Weekly room rent: ${formatMoney(StarterCatalog.weeklyRent)}',
-                ),
-              if (building.type == BuildingType.hotel)
-                Text('Daily base rate: ${formatMoney(16000)}'),
-              if (building.type == BuildingType.office)
-                Text(
-                  'Daily base lease: ${formatMoney(18000 * building.footprint.tiles)}',
-                ),
-              const SizedBox(height: 12),
-              Text(
-                building.type == BuildingType.hotel
-                    ? 'Check out this guest? Guest demand refreshes next Morning.'
-                    : building.type == BuildingType.office
-                    ? 'End this whole-floor lease? All reserved bays are released. New leases begin at a later Morning.'
-                    : 'Remove this tenant? Uncollected rent is kept. A new tenant can move in tomorrow.',
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Keep tenant'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(
-              building.type == BuildingType.hotel
-                  ? 'Check out guest'
-                  : building.type == BuildingType.office
-                  ? 'End floor lease'
-                  : 'Vacate room',
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
-      await _model.save((state) => DistrictSimulation.vacate(state, id, room));
-    }
-  }
+  Future<void> _vacate(int id, int room) => Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (_) =>
+          TenantManagementScreen(model: _model, buildingId: id, unit: room),
+    ),
+  );
 }

@@ -1,5 +1,9 @@
 # Design Document
 
+## Custom tenant release design — 2026-10-17
+
+Replace the default tenant-release AlertDialog with the designed full-screen review in [TenantManagement.md](TenantManagement.md). Use cream/evergreen outlined artwork cards, Current unit and After release previews, parking/rent/admission impacts and pinned tactile Keep tenant/red release controls. Show role-specific room/guest/whole-floor headings and inline busy/error/vacant states. This supersedes the earlier default confirmation-dialog wording for this action.
+
 ## Delete saved profiles — 2026-10-17
 
 Add a labelled red Delete control beneath Load on occupied profile cards. Confirm the full district name and slot with a permanent-progress warning, Cancel and Delete permanently. Keep the dialog open with retryable errors, disable duplicate actions/back during commit and show the freed New slot after success. Preserve responsive scrolling and the approved BM artwork. See [DeleteProfiles.md](DeleteProfiles.md).

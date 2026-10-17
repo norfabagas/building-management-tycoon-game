@@ -1,5 +1,9 @@
 # Project Overview
 
+## Custom tenant release design — 2026-10-17
+
+Tenant vacancy/release management now uses a designed full-screen review instead of the default pop-up. Show current/empty room art, the parking/rent effects and pinned Keep/release actions for apartments, hotels and whole-floor office leases. See [TenantManagement.md](TenantManagement.md).
+
 ## Delete saved profiles — 2026-10-17
 
 Occupied save slots now offer confirmed permanent deletion. Remove the selected district and all its progress together, preserve the other four slots and allow a clean new district in the freed slot. See [DeleteProfiles.md](DeleteProfiles.md).

@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Custom tenant release design — 2026-10-17
+
+Manage pushes TenantManagementScreen on the existing interior Navigator stack. Read current unit state by stable IDs and commit only through DistrictViewModel.save plus DistrictSimulation.vacate. Failed writes stay in the review with inline retry/refresh; successful writes return to the refreshed interior. No new persistence fields or domain mechanics. See [TenantManagement.md](TenantManagement.md).
+
 ## Delete saved profiles — 2026-10-17
 
 Use a transactional profiles/catalog record and profile_lifecycle ownership/deletion watermarks alongside districts. Validate legacy metadata once on import. Deletion checks the reviewed profile identity, removes its snapshot, clears its slot and advances its watermark atomically. Current game updates validate catalog/owner identity before catch-up/actions. Serialize local operations and use database transactions across manager instances. See [DeleteProfiles.md](DeleteProfiles.md).

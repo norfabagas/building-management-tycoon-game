@@ -1,5 +1,9 @@
 # Building Management Tycoon
 
+## Custom tenant release design — 2026-10-17
+
+Vacant/release tenant management now has a full-screen game-styled review instead of a default pop-up, with current/empty artwork, saved parking/rent impacts, pinned actions and inline retry. See [TenantManagement.md](docs/TenantManagement.md) for the design and behavior.
+
 ## Delete saved profiles — 2026-10-17
 
 Saved profiles now have a confirmed Delete flow, freeing only the selected slot and all its game progress. A local transactional profile catalog/lifecycle prevents stale current-client autosaves and clean-slot inheritance. See [DeleteProfiles.md](docs/DeleteProfiles.md) for behavior, migration and validation.
