@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Full-screen tenant activity — 2026-10-17
+
+Tap a room, office lease or directory tenant to see its full-screen interior, time-of-day routine and saved status. Inspect vacant rooms too; tap food-court art/dining entries for real floor party counts. Manage retains existing confirmation actions; Back restores the floor and subsequent Exit restores the directory/map camera. Activity is cosmetic and never produces additional income. See [TenantInterior.md](TenantInterior.md).
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 The exterior now exposes actual completed above-ground storeys, including existing saves and 1–10 initial floors. Completing an upward upgrade raises the roof and expands the clickable upper facade without moving land, roads or the bottom anchor. Outdoor people/cars have rotating shaded XYZ bodies; front-side walkers are no longer clipped by their own facade. See [VolumeAndHeight.md](VolumeAndHeight.md).

@@ -1,5 +1,9 @@
 # Project Overview
 
+## Full-screen tenant activity — 2026-10-17
+
+Tapping a tenant now opens the entire application viewport to its interior and daily activity, for all four building types. Inspect actual occupancy, parking and finances and retain the existing confirmed management actions. See [TenantInterior.md](TenantInterior.md).
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 The user requests 3D outdoor figures and visible upward expansion. Implement volumetric people/cars with correct front/back occlusion and floor-count-driven textured exteriors. Preserve the approved city identity, offline gameplay and existing economy. See [VolumeAndHeight.md](VolumeAndHeight.md).

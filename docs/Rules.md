@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Full-screen tenant activity — 2026-10-17
+
+Tenant inspection is free and does not mutate the game. Time and business simulation continue in the full-screen interior. Daily routines are illustrative; saved occupancy, parking and catalogue income remain authoritative. Vacating still requires the existing confirmation and transaction, preserving accrued rent. Food courts expose dining floors rather than individual room leases. See [TenantInterior.md](TenantInterior.md).
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 A completed above-ground floor adds one visible storey. During a pending or canceled floor order the completed building retains its height. Basement, lift and luxury upgrades do not add above-ground storeys. These are presentation rules for existing saved floor counts; costs, capacity, construction durations and limits do not change. Outdoor models remain cosmetic and only appear at open businesses. See [VolumeAndHeight.md](VolumeAndHeight.md).

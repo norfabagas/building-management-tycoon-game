@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Full-screen tenant activity — 2026-10-17
+
+Resolve a full-screen interior by stable building/unit IDs from every DistrictViewModel snapshot. Derive its floor and live status without a second simulation or persisted navigation state. Reuse existing room removal transactions; refresh vacancy/error/retry in place. Schema 8/catalog 2 and economy are unchanged. See [TenantInterior.md](TenantInterior.md).
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 Exterior height derives from completedFloors, not footprint alone or the upgrade order. Initial shell completion exposes its completed storeys; a floor upgrade raises the roof only when domain completion increments the saved floor count. Cancel/pending upgrades, basements, lifts and luxury do not add height. Bounds, picking, occlusion and rendering use the same floor-aware projection. Snapshot schema 8/catalog 2 and economy remain unchanged. See [VolumeAndHeight.md](VolumeAndHeight.md).

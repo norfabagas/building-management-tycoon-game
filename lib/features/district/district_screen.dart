@@ -22,6 +22,7 @@ import 'district_tools_panel.dart';
 import 'acceleration_button.dart';
 import 'vertical_transport.dart';
 import 'map_camera_view_model.dart';
+import 'tenant_activity_screen.dart';
 
 class DistrictScreen extends StatefulWidget {
   const DistrictScreen({
@@ -951,7 +952,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       const SizedBox(height: 8),
       Text(
         _tenants
-            ? 'Choose a tenant to view their floor. Vacancies need a free parking bay before the next Morning admission.'
+            ? 'Choose a tenant to see inside their unit. Vacancies need a free parking bay before the next Morning admission.'
             : 'Choose a building to review levels, parking and lifts.',
       ),
       const SizedBox(height: 12),
@@ -978,8 +979,16 @@ class _DistrictScreenState extends State<DistrictScreen>
               _openDirectoryBuilding(building.id, upgrades: _districtUpgrades),
         ),
         if (_tenants && building.type == BuildingType.foodCourt)
-          Text(
-            '${building.currentVisitors} parties visiting · ${building.visitsToday} visits today',
+          ListTile(
+            title: Text(
+              '${building.currentVisitors} parties visiting · ${building.visitsToday} visits today',
+            ),
+            subtitle: const Text('View dining activity'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              _openDirectoryBuilding(building.id);
+              _openTenant(building.id, 0);
+            },
           ),
         if (_tenants &&
             building.occupied.isEmpty &&
@@ -1002,10 +1011,13 @@ class _DistrictScreenState extends State<DistrictScreen>
                 'Floor ${room ~/ building.unitsPerFloor + 1} · ${building.type.baysPerUnit(building.footprint.tiles)} reserved parking bays',
               ),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => _openDirectoryBuilding(
-                building.id,
-                floor: room ~/ building.unitsPerFloor + 1,
-              ),
+              onTap: () {
+                _openDirectoryBuilding(
+                  building.id,
+                  floor: room ~/ building.unitsPerFloor + 1,
+                );
+                _openTenant(building.id, room);
+              },
             ),
       ],
     ],
@@ -1458,11 +1470,25 @@ class _DistrictScreenState extends State<DistrictScreen>
             if (_model.currentFloor > 0) ...[
               if (!shortLandscape) floorHeading,
               if (ready && building.type == BuildingType.foodCourt) ...[
-                Image.asset(
-                  building.type.roomArtwork,
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.contain,
+                InkWell(
+                  onTap: () => _openTenant(building.id, firstRoom),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        building.type.roomArtwork,
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          'Tap to see dining activity',
+                          style: TextStyle(color: GameColors.primary),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 _line('Visits today', '${building.visitsToday} parties'),
                 _line(
@@ -1735,9 +1761,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: occupied && !_model.busy && _model.error == null
-            ? () => _vacate(building.id, room)
-            : null,
+        onTap: () => _openTenant(building.id, room),
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Row(
@@ -1788,7 +1812,7 @@ class _DistrictScreenState extends State<DistrictScreen>
                     ),
                     if (occupied)
                       const Text(
-                        'Tap to manage tenant',
+                        'Tap to see inside',
                         style: TextStyle(
                           fontSize: 11,
                           color: GameColors.primary,
@@ -1810,6 +1834,18 @@ class _DistrictScreenState extends State<DistrictScreen>
       setState(() => _selected = null);
     }
   }
+
+  Future<void> _openTenant(int buildingId, int unit) =>
+      Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => TenantActivityScreen(
+            model: _model,
+            buildingId: buildingId,
+            unit: unit,
+            onManage: () => _vacate(buildingId, unit),
+          ),
+        ),
+      );
 
   Future<void> _vacate(int id, int room) async {
     final building = _model.game!.buildings.firstWhere((b) => b.id == id);

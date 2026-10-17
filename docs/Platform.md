@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Full-screen tenant activity — 2026-10-17
+
+An opaque Flutter Navigator route listens to the existing district view model; a read-only tenant presentation model derives the selected unit from each current snapshot. Reuse bundled cutaway/animation assets with responsive scrolling and reduced motion. No dependency, network service or schema change. See [TenantInterior.md](TenantInterior.md).
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 Use small local XYZ meshes, CPU-projected into the existing Flutter isometric canvas: articulated limbs, shaded faces and world-heading rotation. No 3D engine, plugin, network model service or new dependency is required. Cap animation at 30 visual updates/second and 12 visible businesses (36 models); cache routes and building-occlusion masks. The camera remains the existing isometric pan/zoom camera, without orbit controls. See [VolumeAndHeight.md](VolumeAndHeight.md).

@@ -1,5 +1,9 @@
 # Design Document
 
+## Full-screen tenant activity — 2026-10-17
+
+Room/lease cards and tenant-directory rows now open a full-screen illustrated interior instead of immediately showing a management dialog. Show live time, current routine and all four daily activity windows, plus actual unit/building status. Food floor artwork opens dining activity. Back retains the floor; Manage opens the existing confirmation. See [TenantInterior.md](TenantInterior.md) for responsive, artwork and ambient-animation limits.
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 The user requests volumetric outdoor characters and exteriors that grow when above-ground floors finish. Replace side-view map billboards with articulated XYZ people and cars, depth-shaded and rotated with their world heading. Preserve the isometric map, role colors and approved facade artwork. Build every square/rectangular exterior from one ground-storey strip plus repeated upper-storey strips, with one roof at the completed floor height. Actors passing in front remain whole; only nearer buildings occlude them. This supersedes the fixed square-sprite/height contract below. See [VolumeAndHeight.md](VolumeAndHeight.md).

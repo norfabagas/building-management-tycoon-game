@@ -1,5 +1,9 @@
 # Building Management Tycoon
 
+## Full-screen tenant activity — 2026-10-17
+
+Tenant/room taps now open a full-screen interior with live saved status and role-specific ambient routines. All four types, vacant units, food-floor party allocation, management confirmation and return navigation are covered. See [TenantInterior.md](docs/TenantInterior.md) for decisions and validation.
+
 ## Volumetric characters and visible upward upgrades — 2026-10-17
 
 Outdoor people and cars now use rotating, shaded XYZ geometry. Per-actor depth masks preserve front-side bodies and hide traffic behind nearer facades. Exteriors assemble approved ground/upper-storey texture bays on every footprint, with height tied to completed above-ground floors. Pending/canceled jobs and basement/lift upgrades keep their height. No schema/economy change or large art/dependency is added. See [VolumeAndHeight.md](docs/VolumeAndHeight.md).

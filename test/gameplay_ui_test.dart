@@ -520,7 +520,9 @@ void main() {
       expect(find.text('Room 1'), findsOneWidget);
       await tester.ensureVisible(find.text('Room 1'));
       await tester.tap(find.text('Room 1'));
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Manage'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Vacate room'));
       await tester.pump(const Duration(seconds: 1));
       final saved = await tester.runAsync(

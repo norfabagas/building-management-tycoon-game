@@ -1,5 +1,9 @@
 # Project setup
 
+## Full-screen tenant activity — 2026-10-17
+
+No additional packages, regenerated assets or migration is needed for full-screen tenant interiors. Run the normal Flutter suite, including tenant_activity_test.dart, and the standard lib/main.dart Web packaging command. Keep local site data when activating offline updates. Final checks and limitations are recorded in [TenantInterior.md](TenantInterior.md).
+
 ## Volumetric city figures and storey geometry — 2026-10-17
 
 No dependency, SDK, network service or asset regeneration step is added. Outdoor XYZ meshes use Flutter canvas; indoor sprite sheets remain unchanged. Existing schema-8 saves display their actual completed storeys without migration. All 169 Flutter tests, six worker tests, formatting, analysis, asset validation and the 201-resource Web build pass. Android debug compilation remains blocked by No Android SDK found. Use the normal `dart run tool/build_web.dart` entry point; ignored graphics fixtures must never be published. See [VolumeAndHeight.md](VolumeAndHeight.md).
