@@ -1,5 +1,10 @@
 # Repository game assets
 
+## Volumetric figures and visible floors — 2026-10-17
+
+Outdoor XYZ figures replace the side-view walk/car billboards on the map; indoor actor sheets and all 158 packaged assets remain unchanged. Reuse the four approved exterior PNGs as per-storey facade textures. Ground strips retain entrances; upper strips repeat without stretching a whole four-storey image. No bitmap regeneration, asset-byte change or BM master edit is required. Earlier sprite-only outdoor and fixed square-exterior contracts are historical. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## Outdoor activity integration — 2026-10-17
 
 The map reuses all four catalog actor animation sheets (walk frames 4–11, 8 fps, 4×4 grid, 256×384 source frames, foot pivot 0.5/0.9479167) and `transport.car` (256×144, pivot 0.5/1). Decode outdoor actor sheets at half resolution for small map sprites; source files, manifest and hashes remain unchanged. Cars follow isometric lanes while bodies stay upright. Catalog validation passed before introducing these references. Main highway paint uses existing road/curb palette; building rings retain approved road-mask artwork. See [DistrictRoads.md](DistrictRoads.md).

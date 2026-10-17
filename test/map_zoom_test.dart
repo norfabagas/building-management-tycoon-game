@@ -93,7 +93,7 @@ void main() {
           expect(exterior.width, land.width);
           expect(
             exterior.height,
-            land.height + projection.buildingHeight(site),
+            closeTo(land.height + projection.buildingHeight(site), .0001),
           );
           expect(exterior.bottomCenter, land.bottomCenter);
           final roof = projection.buildingCorners(site, roof: true);

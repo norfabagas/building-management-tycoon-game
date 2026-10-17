@@ -1,5 +1,10 @@
 # Game Rules & Mechanics
 
+## Volumetric figures and visible floors — 2026-10-17
+
+A completed above-ground floor adds one visible storey. During a pending or canceled floor order the completed building retains its height. Basement, lift and luxury upgrades do not add above-ground storeys. These are presentation rules for existing saved floor counts; costs, capacity, construction durations and limits do not change. Outdoor models remain cosmetic and only appear at open businesses. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## Main road and district life — 2026-10-17
 
 The user selected **Harus menempel jaringan jalan**. A new building's free one-tile ring must overlap or share an edge with the main highway or an already connected street. Diagonal-only contact and isolated streets do not count. No automatic connector is added for new construction. Building footprints and decorations cannot occupy highway/public-street tiles. The highway is a permanent two-tile strip extending along the x axis; new districts start at rows −3 and −2. It has no purchase price or maintenance. Existing costs, capacity, demand, synergy, opening and clock rules stay unchanged.

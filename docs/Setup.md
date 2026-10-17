@@ -1,5 +1,10 @@
 # Project setup
 
+## Volumetric city figures and storey geometry — 2026-10-17
+
+No dependency, SDK, network service or asset regeneration step is added. Outdoor XYZ meshes use Flutter canvas; indoor sprite sheets remain unchanged. Existing schema-8 saves display their actual completed storeys without migration. All 169 Flutter tests, six worker tests, formatting, analysis, asset validation and the 201-resource Web build pass. Android debug compilation remains blocked by No Android SDK found. Use the normal `dart run tool/build_web.dart` entry point; ignored graphics fixtures must never be published. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## Connected district release — 2026-10-17
 
 Current saves use schema 8/catalog 2. Schemas 1–7 gain safe local road access during transactional import; preserve browser/app storage and close older tabs before reopening. No dependency or asset installation change is required. Run `./tool/flutter.ps1 test --no-pub` for road, animation and existing gameplay regressions. Use `dart run tool/build_web.dart` for the normal offline production entry point; ignored review fixtures remain local only. See [DistrictRoads.md](DistrictRoads.md) for behavior and final verification. The final 152-test suite, analyzer, formatting, asset validation and 201-resource Web build pass; Android debug compilation reports No Android SDK found. Close/reopen existing offline tabs after publication without clearing site data.

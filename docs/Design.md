@@ -1,5 +1,10 @@
 # Design Document
 
+## Volumetric figures and visible floors — 2026-10-17
+
+The user requests volumetric outdoor characters and exteriors that grow when above-ground floors finish. Replace side-view map billboards with articulated XYZ people and cars, depth-shaded and rotated with their world heading. Preserve the isometric map, role colors and approved facade artwork. Build every square/rectangular exterior from one ground-storey strip plus repeated upper-storey strips, with one roof at the completed floor height. Actors passing in front remain whole; only nearer buildings occlude them. This supersedes the fixed square-sprite/height contract below. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## District streets and ambient activity — 2026-10-17
 
 A broad two-lane highway with a dashed centre line provides a visible starting edge for expansion. Existing approved road tiles connect building rings and public access streets to it. **Main road** focuses the camera on the highway; pinch and zoom retain their existing projection. Planning explains adjacency and shows Road access in the cost panel. Invalid/disconnected previews remain red and cannot be confirmed.

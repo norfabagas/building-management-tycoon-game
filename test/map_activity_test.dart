@@ -114,34 +114,24 @@ void main() {
     },
   );
 
-  testWidgets(
-    'all four outdoor sprite families match the renderer frame contract',
-    (tester) async {
-      final manifest = jsonDecode(
-        (await tester.runAsync(
-          () => rootBundle.loadString(ProductionAssets.manifest),
-        ))!,
+  testWidgets('existing indoor sprite families retain their frame contract', (
+    tester,
+  ) async {
+    final manifest = jsonDecode(
+      (await tester.runAsync(
+        () => rootBundle.loadString(ProductionAssets.manifest),
+      ))!,
+    );
+    for (final type in BuildingType.values) {
+      final asset = (manifest['assets'] as List).cast<Map>().singleWhere(
+        (a) => a['path'] == type.actor,
       );
-      for (final type in BuildingType.values) {
-        final asset = (manifest['assets'] as List).cast<Map>().singleWhere(
-          (a) => a['path'] == type.actor,
-        );
-        expect(asset['frameSize'], [256, 384]);
-        expect(asset['columns'], 4);
-        expect(asset['rows'], 4);
-        expect(asset['animations']['walk']['frames'], [
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-        ]);
-        expect(asset['animations']['walk']['fps'], 8);
-        expect(asset['pivot'], [.5, 364 / 384]);
-      }
-    },
-  );
+      expect(asset['frameSize'], [256, 384]);
+      expect(asset['columns'], 4);
+      expect(asset['rows'], 4);
+      expect(asset['animations']['walk']['frames'], [4, 5, 6, 7, 8, 9, 10, 11]);
+      expect(asset['animations']['walk']['fps'], 8);
+      expect(asset['pivot'], [.5, 364 / 384]);
+    }
+  });
 }

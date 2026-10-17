@@ -1,5 +1,10 @@
 # Project Overview
 
+## Volumetric figures and visible floors — 2026-10-17
+
+The user requests 3D outdoor figures and visible upward expansion. Implement volumetric people/cars with correct front/back occlusion and floor-count-driven textured exteriors. Preserve the approved city identity, offline gameplay and existing economy. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## District access and life — 2026-10-17
 
 Requested: animated pedestrians/cars around finished, open businesses and construction connected to a main road. The user selected edge-adjacent connected streets. Implement the main highway, placement validation, legacy access migration and cosmetic activity as specified in [DistrictRoads.md](DistrictRoads.md), without altering the approved economy.

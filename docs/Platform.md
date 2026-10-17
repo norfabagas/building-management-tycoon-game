@@ -1,5 +1,10 @@
 # Platform & Tech Stack
 
+## Volumetric figures and visible floors — 2026-10-17
+
+Use small local XYZ meshes, CPU-projected into the existing Flutter isometric canvas: articulated limbs, shaded faces and world-heading rotation. No 3D engine, plugin, network model service or new dependency is required. Cap animation at 30 visual updates/second and 12 visible businesses (36 models); cache routes and building-occlusion masks. The camera remains the existing isometric pan/zoom camera, without orbit controls. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## Road save update — 2026-10-17
 
 Current snapshots use schema 8/catalog 2 for a compact, entirely local highway/public-street network. Android/Web, five slots, offline progression and MVVM remain unchanged. Ambient map activity uses Flutter canvas/ticker and bundled assets, without external services. Close older tabs before reopening this release; older clients cannot load schema 8. See [DistrictRoads.md](DistrictRoads.md).

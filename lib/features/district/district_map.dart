@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -15,6 +14,7 @@ import 'daylight.dart';
 import 'building_presentation.dart';
 
 part 'map_activity.dart';
+part 'city_figure.dart';
 
 class DistrictMap extends StatefulWidget {
   const DistrictMap({
@@ -53,6 +53,7 @@ class _DistrictMapState extends State<DistrictMap>
   final _activityClock = ValueNotifier<double>(0);
   late final Ticker _activityTicker;
   double _carriedSeconds = 0;
+  double _lastActivitySeconds = -1;
   late final _ownedCamera = MapCameraViewModel();
   MapCameraViewModel get _camera => widget.camera ?? _ownedCamera;
   LandCell? _start;
@@ -70,7 +71,11 @@ class _DistrictMapState extends State<DistrictMap>
   void initState() {
     super.initState();
     _activityTicker = createTicker((elapsed) {
-      _activityClock.value = _carriedSeconds + elapsed.inMicroseconds / 1000000;
+      final seconds = _carriedSeconds + elapsed.inMicroseconds / 1000000;
+      if (seconds - _lastActivitySeconds >= 1 / 30) {
+        _lastActivitySeconds = seconds;
+        _activityClock.value = seconds;
+      }
     });
     _load();
   }
@@ -106,8 +111,6 @@ class _DistrictMapState extends State<DistrictMap>
   static Future<Map<String, ui.Image>> _loadImages() async {
     final paths = [
       ProductionAssets.tilesLand,
-      ProductionAssets.transportCar,
-      for (final type in BuildingType.values) type.actor,
       ProductionAssets.buildingsApartment,
       ProductionAssets.buildingsHotel,
       ProductionAssets.buildingsOffice,
@@ -123,7 +126,6 @@ class _DistrictMapState extends State<DistrictMap>
         final bytes = await rootBundle.load(path);
         final codec = await ui.instantiateImageCodec(
           bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-          targetWidth: path.contains('animation.png') ? 512 : null,
         );
         final frame = await codec.getNextFrame();
         codec.dispose();
@@ -260,9 +262,10 @@ class _DistrictMapState extends State<DistrictMap>
                         final facadeHit =
                             building.shellComplete &&
                             projection
-                                .buildingRect(
+                                .buildingSilhouette(
                                   building.footprint,
                                   type: building.type,
+                                  floors: building.completedFloors,
                                 )
                                 .contains(details.localPosition);
                         if (facadeHit || building.footprint.contains(cell)) {
@@ -296,6 +299,24 @@ class _DistrictMapState extends State<DistrictMap>
                           ),
                         ),
                         IgnorePointer(
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              painter: _DistrictPainter(
+                                widget.game,
+                                projection,
+                                _images,
+                                widget.preview,
+                                widget.selected,
+                                widget.elapsedMilliseconds,
+                                widget.previewValid,
+                                widget.decorationPreview,
+                                structuresOnly: true,
+                                hideLabels: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                        IgnorePointer(
                           child: ExcludeSemantics(
                             child: RepaintBoundary(
                               child: CustomPaint(
@@ -323,6 +344,7 @@ class _DistrictMapState extends State<DistrictMap>
                                 widget.previewValid,
                                 widget.decorationPreview,
                                 structuresOnly: true,
+                                labelsOnly: true,
                               ),
                             ),
                           ),
@@ -493,18 +515,21 @@ class MapProjection {
     return Path()..addPolygon(points, true);
   }
 
+  // One architectural storey keeps its world height on every plot.
+  double storeyHeight({BuildingType type = BuildingType.apartment}) =>
+      tile * (type == BuildingType.foodCourt ? .46 : .34);
+
   double buildingHeight(
     Footprint site, {
     BuildingType type = BuildingType.apartment,
-  }) =>
-      math.min(site.width, site.length) *
-      tile *
-      (type == BuildingType.foodCourt ? .38 : .7);
+    int floors = 1,
+  }) => storeyHeight(type: type) * math.max(1, floors);
 
   List<Offset> buildingCorners(
     Footprint site, {
     bool roof = false,
     BuildingType type = BuildingType.apartment,
+    int floors = 1,
   }) =>
       [
             point(site.x, site.y),
@@ -513,31 +538,37 @@ class MapProjection {
             point(site.x, site.y + site.length),
           ]
           .map(
-            (p) => p - Offset(0, roof ? buildingHeight(site, type: type) : 0),
+            (p) =>
+                p -
+                Offset(
+                  0,
+                  roof ? buildingHeight(site, type: type, floors: floors) : 0,
+                ),
           )
           .toList();
 
-  /// Square references retain their sprite; rectangular geometry follows land.
+  Path buildingSilhouette(
+    Footprint site, {
+    BuildingType type = BuildingType.apartment,
+    int floors = 1,
+  }) {
+    final base = buildingCorners(site);
+    final roof = buildingCorners(site, roof: true, type: type, floors: floors);
+    return Path()..addPolygon([
+      roof[0],
+      roof[1],
+      base[1],
+      base[2],
+      base[3],
+      roof[3],
+    ], true);
+  }
+
   Rect buildingRect(
     Footprint site, {
     BuildingType type = BuildingType.apartment,
-  }) {
-    final bounds = footprint(site).getBounds();
-    if (site.width != site.length) {
-      return Rect.fromLTRB(
-        bounds.left,
-        bounds.top - buildingHeight(site, type: type),
-        bounds.right,
-        bounds.bottom,
-      );
-    }
-    return Rect.fromLTWH(
-      bounds.left,
-      bounds.bottom - bounds.width,
-      bounds.width,
-      bounds.width,
-    );
-  }
+    int floors = 1,
+  }) => buildingSilhouette(site, type: type, floors: floors).getBounds();
 }
 
 List<ApartmentBuilding> _depthSorted(DistrictGame game) =>
@@ -567,8 +598,10 @@ class _DistrictPainter extends CustomPainter {
     this.decorationPreview, {
     this.terrainOnly = false,
     this.structuresOnly = false,
+    this.labelsOnly = false,
+    this.hideLabels = false,
   });
-  final bool terrainOnly, structuresOnly;
+  final bool terrainOnly, structuresOnly, labelsOnly, hideLabels;
   final DistrictGame game;
   final MapProjection projection;
   final Map<String, ui.Image> images;
@@ -627,7 +660,7 @@ class _DistrictPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (!structuresOnly) {
+    if (!structuresOnly && !labelsOnly) {
       final corners = [
         Offset.zero,
         Offset(size.width, 0),
@@ -706,60 +739,63 @@ class _DistrictPainter extends CustomPainter {
     final buildings = _depthSorted(game);
     for (final building in buildings) {
       final site = building.footprint;
-      final path = projection.footprint(site);
-      canvas.drawPath(path, Paint()..color = const Color(0xFFE6D5B5));
-      if (building.id == selected) {
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 4
-            ..color = GameColors.primary,
-        );
-      }
-      if (building.shellComplete &&
-          images.containsKey(building.type.exterior)) {
-        _building(canvas, building);
-      } else {
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 3
-            ..color = GameColors.ink,
-        );
-        final image =
-            images[building.stage == ConstructionStage.shell
-                ? ProductionAssets.buildingsConstructionFrame
-                : ProductionAssets.buildingsConstructionFenced];
-        if (image != null) {
-          final center = projection.point(
-            site.x + site.width / 2,
-            site.y + site.length / 2,
-          );
-          final width = math.min(
-            (site.width + site.length) * projection.tile / 2,
-            180.0 * projection.zoom,
-          );
-          final height = width * image.height / image.width;
-          canvas.drawImageRect(
-            image,
-            Rect.fromLTWH(
-              0,
-              0,
-              image.width.toDouble(),
-              image.height.toDouble(),
-            ),
-            Rect.fromLTWH(
-              center.dx - width / 2,
-              center.dy - height / 2,
-              width,
-              height,
-            ),
-            Paint()..filterQuality = FilterQuality.low,
+      if (!labelsOnly) {
+        final path = projection.footprint(site);
+        canvas.drawPath(path, Paint()..color = const Color(0xFFE6D5B5));
+        if (building.id == selected) {
+          canvas.drawPath(
+            path,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 4
+              ..color = GameColors.primary,
           );
         }
+        if (building.shellComplete &&
+            images.containsKey(building.type.exterior)) {
+          _building(canvas, building);
+        } else {
+          canvas.drawPath(
+            path,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3
+              ..color = GameColors.ink,
+          );
+          final image =
+              images[building.stage == ConstructionStage.shell
+                  ? ProductionAssets.buildingsConstructionFrame
+                  : ProductionAssets.buildingsConstructionFenced];
+          if (image != null) {
+            final center = projection.point(
+              site.x + site.width / 2,
+              site.y + site.length / 2,
+            );
+            final width = math.min(
+              (site.width + site.length) * projection.tile / 2,
+              180.0 * projection.zoom,
+            );
+            final height = width * image.height / image.width;
+            canvas.drawImageRect(
+              image,
+              Rect.fromLTWH(
+                0,
+                0,
+                image.width.toDouble(),
+                image.height.toDouble(),
+              ),
+              Rect.fromLTWH(
+                center.dx - width / 2,
+                center.dy - height / 2,
+                width,
+                height,
+              ),
+              Paint()..filterQuality = FilterQuality.low,
+            );
+          }
+        }
       }
+      if (hideLabels) continue;
       final working =
           building.stage != ConstructionStage.ready || building.upgrade != null;
       final progress = building.upgrade != null
@@ -832,6 +868,7 @@ class _DistrictPainter extends CustomPainter {
         }
       }
     }
+    if (labelsOnly) return;
     for (final decoration in game.decorations) {
       final image = images[decoration.kind.artwork];
       if (image == null) continue;
@@ -881,12 +918,13 @@ class _DistrictPainter extends CustomPainter {
   void _building(Canvas canvas, ApartmentBuilding building) {
     final site = building.footprint;
     final image = images[building.type.exterior]!;
-    if (site.width != site.length) {
+    {
       final base = projection.buildingCorners(site);
       final roof = projection.buildingCorners(
         site,
         roof: true,
         type: building.type,
+        floors: building.completedFloors,
       );
       final paint = Paint()
         ..filterQuality = FilterQuality.medium
@@ -911,53 +949,103 @@ class _DistrictPainter extends CustomPainter {
 
       void wall(int start, int end, int tiles, List<Offset> uv) {
         final bays = (tiles / 2).ceil();
-        for (var i = 0; i < bays; i++) {
-          final a = i / bays, b = (i + 1) / bays;
-          quad([
-            Offset.lerp(roof[start], roof[end], a)!,
-            Offset.lerp(roof[start], roof[end], b)!,
-            Offset.lerp(base[start], base[end], b)!,
-            Offset.lerp(base[start], base[end], a)!,
-          ], uv);
+        final floors = math.max(1, building.completedFloors);
+        final sourceFloors = building.type == BuildingType.foodCourt
+            ? 1
+            : building.type == BuildingType.office
+            ? 5
+            : 4;
+        final step = projection.storeyHeight(type: building.type);
+        for (var floor = 0; floor < floors; floor++) {
+          // Keep the entrance at ground level; repeat an upper-storey bay,
+          // rather than stretching a whole four-storey image taller.
+          final from = floor == 0
+              ? 1 - 1 / sourceFloors
+              : sourceFloors == 1
+              ? 0.0
+              : 1 / sourceFloors;
+          final to = from + 1 / sourceFloors;
+          final texture = [
+            Offset.lerp(uv[0], uv[3], from)!,
+            Offset.lerp(uv[1], uv[2], from)!,
+            Offset.lerp(uv[1], uv[2], to)!,
+            Offset.lerp(uv[0], uv[3], to)!,
+          ];
+          for (var i = 0; i < bays; i++) {
+            final a = i / bays, b = (i + 1) / bays;
+            final left = Offset.lerp(base[start], base[end], a)!;
+            final right = Offset.lerp(base[start], base[end], b)!;
+            quad([
+              left - Offset(0, (floor + 1) * step),
+              right - Offset(0, (floor + 1) * step),
+              right - Offset(0, floor * step),
+              left - Offset(0, floor * step),
+            ], texture);
+          }
+          canvas.drawLine(
+            base[start] - Offset(0, (floor + 1) * step),
+            base[end] - Offset(0, (floor + 1) * step),
+            Paint()
+              ..color = const Color(0xFFE6D5B5)
+              ..strokeWidth = 1.5 * projection.zoom,
+          );
         }
       }
 
-      wall(
-        3,
-        2,
-        site.width,
-        building.type == BuildingType.foodCourt
-            ? const [
-                Offset(85, 150),
-                Offset(330, 225),
-                Offset(330, 365),
-                Offset(85, 300),
-              ]
-            : const [
-                Offset(105, 105),
-                Offset(306, 150),
-                Offset(306, 455),
-                Offset(105, 365),
-              ],
-      );
-      wall(
-        2,
-        1,
-        site.length,
-        building.type == BuildingType.foodCourt
-            ? const [
-                Offset(330, 225),
-                Offset(440, 170),
-                Offset(440, 300),
-                Offset(330, 365),
-              ]
-            : const [
-                Offset(306, 150),
-                Offset(424, 103),
-                Offset(424, 407),
-                Offset(306, 455),
-              ],
-      );
+      final leftUv = switch (building.type) {
+        BuildingType.apartment => const [
+          Offset(105, 105),
+          Offset(306, 150),
+          Offset(306, 455),
+          Offset(105, 365),
+        ],
+        BuildingType.hotel => const [
+          Offset(95, 105),
+          Offset(285, 175),
+          Offset(285, 455),
+          Offset(95, 365),
+        ],
+        BuildingType.office => const [
+          Offset(100, 95),
+          Offset(315, 166),
+          Offset(315, 448),
+          Offset(100, 365),
+        ],
+        BuildingType.foodCourt => const [
+          Offset(85, 183),
+          Offset(312, 268),
+          Offset(312, 367),
+          Offset(85, 287),
+        ],
+      };
+      final rightUv = switch (building.type) {
+        BuildingType.apartment => const [
+          Offset(306, 150),
+          Offset(424, 103),
+          Offset(424, 407),
+          Offset(306, 455),
+        ],
+        BuildingType.hotel => const [
+          Offset(285, 175),
+          Offset(415, 105),
+          Offset(415, 365),
+          Offset(285, 455),
+        ],
+        BuildingType.office => const [
+          Offset(315, 166),
+          Offset(424, 110),
+          Offset(424, 375),
+          Offset(315, 448),
+        ],
+        BuildingType.foodCourt => const [
+          Offset(312, 268),
+          Offset(435, 211),
+          Offset(435, 310),
+          Offset(312, 367),
+        ],
+      };
+      wall(3, 2, site.width, leftUv);
+      wall(2, 1, site.length, rightUv);
       final roofPath = Path()..addPolygon(roof, true);
       canvas.drawPath(
         roofPath,
@@ -983,7 +1071,14 @@ class _DistrictPainter extends CustomPainter {
         final dy = i == 2 || i == 3 ? unit : 0;
         bottom[i] =
             projection.point(x + dx, y + dy) -
-            Offset(0, projection.buildingHeight(site, type: building.type));
+            Offset(
+              0,
+              projection.buildingHeight(
+                site,
+                type: building.type,
+                floors: building.completedFloors,
+              ),
+            );
       }
       final top = bottom
           .map((p) => p - Offset(0, projection.tile * .22))
@@ -1003,18 +1098,13 @@ class _DistrictPainter extends CustomPainter {
       face([top[3], top[2], bottom[2], bottom[3]], const Color(0xFFD8C796));
       face([top[2], top[1], bottom[1], bottom[2]], const Color(0xFFB7AB84));
       face(top, const Color(0xFFFFFCF1));
-      return;
     }
-    canvas.drawImageRect(
-      image,
-      Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-      projection.buildingRect(site),
-      Paint()..filterQuality = FilterQuality.medium,
-    );
   }
 
   @override
   bool shouldRepaint(_DistrictPainter oldDelegate) =>
+      oldDelegate.labelsOnly != labelsOnly ||
+      oldDelegate.hideLabels != hideLabels ||
       oldDelegate.terrainOnly != terrainOnly ||
       oldDelegate.structuresOnly != structuresOnly ||
       oldDelegate.game != game ||

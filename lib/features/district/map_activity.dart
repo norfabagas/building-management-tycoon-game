@@ -31,23 +31,39 @@ class _MapActivityPainter extends CustomPainter {
   final MapProjection projection;
   final Map<String, ui.Image> images;
   final ValueNotifier<double> clock;
-  Size? _sceneSize;
+  int? _sceneKey;
   List<ApartmentBuilding> _open = [];
   final _routes = <int, List<MapActivityRoute>>{};
+  List<ApartmentBuilding> _occluders = [];
+  final _silhouettes = <int, Path>{};
 
   void _prepare(Size size) {
+    _routes.clear();
+    _silhouettes.clear();
     final viewport = Offset.zero & size;
     final visible = _depthSorted(game)
         .where(
           (b) => projection
-              .buildingRect(b.footprint, type: b.type)
+              .buildingRect(
+                b.footprint,
+                type: b.type,
+                floors: b.completedFloors,
+              )
               .inflate(projection.tile)
               .overlaps(viewport),
         )
         .toList();
+    _occluders = visible;
+    for (final b in visible) {
+      _silhouettes[b.id] = projection.buildingSilhouette(
+        b.footprint,
+        type: b.type,
+        floors: b.completedFloors,
+      );
+    }
     _open = visible
         .where((b) => b.stage == ConstructionStage.ready)
-        .take(24)
+        .take(12)
         .toList();
     for (final building in _open) {
       _routes[building.id] = [
@@ -55,12 +71,33 @@ class _MapActivityPainter extends CustomPainter {
         MapActivityRoute(building.footprint, vehicle: true),
       ];
     }
-    _sceneSize = size;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (_sceneSize != size) _prepare(size);
+    final key = Object.hash(
+      size,
+      projection.pan,
+      projection.zoom,
+      Object.hashAll(
+        game.buildings.map(
+          (b) => Object.hash(
+            b.id,
+            b.type,
+            b.stage,
+            b.completedFloors,
+            b.footprint.x,
+            b.footprint.y,
+            b.footprint.width,
+            b.footprint.length,
+          ),
+        ),
+      ),
+    );
+    if (_sceneKey != key) {
+      _sceneKey = key;
+      _prepare(size);
+    }
     canvas.save();
     canvas.clipRect(Offset.zero & size);
     final actors =
@@ -68,6 +105,7 @@ class _MapActivityPainter extends CustomPainter {
           ({
             Offset point,
             Offset direction,
+            Offset world,
             ApartmentBuilding building,
             int actor,
           })
@@ -85,7 +123,8 @@ class _MapActivityPainter extends CustomPainter {
         final vector = tangent.vector * reverse.toDouble();
         actors.add((
           point: projection.point(tangent.position.dx, tangent.position.dy),
-          direction: Offset(vector.dx - vector.dy, (vector.dx + vector.dy) / 2),
+          direction: vector,
+          world: tangent.position,
           building: building,
           actor: actor,
         ));
@@ -94,69 +133,55 @@ class _MapActivityPainter extends CustomPainter {
     actors.sort((a, b) => a.point.dy.compareTo(b.point.dy));
     for (final actor in actors) {
       final car = actor.actor == 2;
-      final image =
-          images[car
-              ? ProductionAssets.transportCar
-              : actor.building.type.actor];
-      if (image == null) continue;
       final zoom = projection.zoom;
+      canvas.save();
+      // A front-side pedestrian must stay in front of the facade. Clip only
+      // buildings lying between its world position and the isometric camera.
+      final behind = _occluders
+          .where(
+            (b) =>
+                actor.world.dx < b.footprint.x + b.footprint.width &&
+                actor.world.dy < b.footprint.y + b.footprint.length,
+          )
+          .toList();
+      final heading = math.atan2(actor.direction.dy, actor.direction.dx);
+      final mesh = car
+          ? CityFigure.car(heading)
+          : CityFigure.walker(
+              actor.building.type,
+              heading,
+              clock.value * 6 + actor.actor * math.pi,
+            );
+      final scale = projection.tile * (car ? 1 : .72);
+      final shadow = Rect.fromCenter(
+        center: actor.point,
+        width: (car ? 29 : 11) * zoom,
+        height: (car ? 10 : 5) * zoom,
+      );
+      final bounds = mesh
+          .bounds(scale)
+          .shift(actor.point)
+          .expandToInclude(shadow)
+          .inflate(2);
+      // Clear occluded pixels on a small transparent actor layer. This avoids
+      // backend-dependent differences from a compound inverse clip path.
+      canvas.saveLayer(bounds, Paint());
       canvas.save();
       canvas.translate(actor.point.dx, actor.point.dy);
       canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset(0, -zoom),
-          width: (car ? 25 : 8) * zoom,
-          height: (car ? 7 : 3) * zoom,
-        ),
+        shadow.shift(-actor.point),
         Paint()..color = const Color(0x330E3540),
       );
-      if (car) {
-        // Keep the body upright while its wheelbase follows the isometric lane.
-        final direction = actor.direction / actor.direction.distance;
-        final sign = direction.dx < 0 ? -1.0 : 1.0;
-        canvas.transform(
-          Float64List.fromList([
-            direction.dx.abs(),
-            direction.dy * sign,
-            0,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            1,
-          ]),
-        );
-        canvas.scale(sign, 1);
-        canvas.drawImageRect(
-          image,
-          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-          Rect.fromLTWH(-21 * zoom, -23.625 * zoom, 42 * zoom, 23.625 * zoom),
-          Paint()..filterQuality = FilterQuality.low,
-        );
-      } else {
-        // manifest: 4 columns, 256×384 frames, walk 4–11 at 8 fps;
-        // pivot y=364/384 keeps feet on the pavement at every decode size.
-        final frame =
-            4 +
-            ((clock.value * 8).floor() + actor.actor * 3 + actor.building.id) %
-                8;
-        final width = image.width / 4, height = image.height / 4;
-        canvas.scale(actor.direction.dx < 0 ? -1 : 1, 1);
-        canvas.drawImageRect(
-          image,
-          Rect.fromLTWH(frame % 4 * width, frame ~/ 4 * height, width, height),
-          Rect.fromLTWH(-10 * zoom, -28.4375 * zoom, 20 * zoom, 30 * zoom),
-          Paint()..filterQuality = FilterQuality.low,
-        );
+      mesh.paint(canvas, scale);
+      canvas.restore();
+      final erase = Paint()..blendMode = BlendMode.dstOut;
+      for (final b in behind) {
+        final silhouette = _silhouettes[b.id]!;
+        if (silhouette.getBounds().overlaps(bounds)) {
+          canvas.drawPath(silhouette, erase);
+        }
       }
+      canvas.restore();
       canvas.restore();
     }
     canvas.restore();

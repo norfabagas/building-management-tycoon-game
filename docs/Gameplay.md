@@ -1,5 +1,10 @@
 # Game gameplay
 
+## Volumetric figures and visible floors — 2026-10-17
+
+The exterior now exposes actual completed above-ground storeys, including existing saves and 1–10 initial floors. Completing an upward upgrade raises the roof and expands the clickable upper facade without moving land, roads or the bottom anchor. Outdoor people/cars have rotating shaded XYZ bodies; front-side walkers are no longer clipped by their own facade. See [VolumeAndHeight.md](VolumeAndHeight.md).
+
+
 ## Connected streets and activity — 2026-10-17
 
 Build beside the highway or extend an existing connected ring. The Road access review line and red/green preview use the domain placement rule; disconnected construction is rejected before payment. Main road brings the highway back into view. Existing saves receive free access around occupied plots; bridge cancellation retains streets needed by neighbours and still refunds the full building quote. Open businesses display walkers and vehicles, with no activity at unfinished or ready-to-open sites. Full details and validation are recorded in [DistrictRoads.md](DistrictRoads.md).
