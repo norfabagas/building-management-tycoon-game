@@ -1,5 +1,19 @@
 # Netlify Web deployment
 
+## Custom tenant release review — 2026-10-17
+
+Source [`ccf70c4`](https://github.com/norfabagas/building-management-tycoon-game/commit/ccf70c4577bd31bb9318fbb62ffac040c1f2032d) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad325b3ff8916d1c9049c41`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad325b3ff8916d1c9049c41) is ready/current, published **2026-10-17 at 14:37:27 WIB**. The existing manual production upload uses the explicit normal-entry Web build, with the source hash in its deploy message.
+
+Manage now opens a designed full-screen tenant release review, replacing the default AlertDialog. Current/empty artwork, an occupied pill, actual parking/rent effects and pinned tactile Keep/release actions follow the approved cream/evergreen game kit. Confirmation commits the existing vacancy transaction and returns to the refreshed interior; failures stay inline with retry/refresh. See [TenantManagement.md](TenantManagement.md). No new economy, dependency, runtime asset, save schema or profile lifecycle change is introduced.
+
+- Formatting of **66 Dart files**, Flutter analysis, all **203 Flutter tests** (11 new release-review regressions), six offline-worker tests and the **158-asset / 124-frame** validator pass. The normal `lib/main.dart` Web build passes its Wasm dry run and packages **201 offline resources**. Android debug compilation reports **No Android SDK found**; no Android/device run or remote-CI certification is claimed.
+- Tests cover apartment/hotel/whole-floor office review, cancellation/commit at 390×844, 844×390 and 1440×900, absence of default dialogs, matching current/vacant art, pinned actions, preserved balance/rent, freed parking, pending/back protection, failed-save retry and live vacancy refresh. Existing directory and room-release integrations also pass.
+- Browser review of the normal production bundle on the retained localhost QA profile checks the page at 1000×800, 390×844 and 844×390, loaded previews, independently scrolling portrait summary, fixed actions and Keep tenant returning to the occupied interior with its one reserved bay and 8/12 building bays unchanged. Browser errors are empty. No real tenant was released; destructive paths use isolated automated tests. Proof stays ignored in `.tools/tenant-management-desktop.png` and `.tools/tenant-management-portrait.png`; review tab/server are closed and the viewport override reset.
+- Primary HTTP responses are 200 and SHA-256 matches the local release: `main.dart.js` **de96f1196b7978f24ecaee9ce4aa78d44773a23ca39a83e2d19afc314883b395**, `offline_worker.js` **0edaafdf9dd3d666ba94d9fb20c6325073cd7b4657a1bb21e508809966b7af15**, `offline-assets.json` **d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea**.
+
+Keep browser/app storage. Allow the offline pack to install, close all old game tabs and reopen; older cached clients can need a second close/reopen. Documentation-only commits after the source hash do not change the deployed bundle.
+
+
 ## Delete saved profiles — 2026-10-17
 
 Source [`22e6633`](https://github.com/norfabagas/building-management-tycoon-game/commit/22e6633ccd3e9260d5d43196b7109bd52c348d52) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad322635f8b26171e20723c`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad322635f8b26171e20723c) is ready/current, published **2026-10-17 at 14:23:19 WIB**. The existing linked site's manual production upload uses the explicit normal-entry Web build and records the source hash.

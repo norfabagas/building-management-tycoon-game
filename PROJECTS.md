@@ -4,6 +4,8 @@
 
 Vacant/release tenant management now has a full-screen game-styled review instead of a default pop-up, with current/empty artwork, saved parking/rent impacts, pinned actions and inline retry. See [TenantManagement.md](docs/TenantManagement.md) for the design and behavior.
 
+Source `ccf70c4` is pushed and published as ready/current deploy `6ad325b3ff8916d1c9049c41` at 14:37 WIB. All 203 Flutter tests, six worker tests, formatter/analyzer/assets and the 201-resource Web build pass. Primary hashes match. Browser review verifies desktop/portrait/landscape layout and Keep tenant preserving the occupied QA unit. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Delete saved profiles — 2026-10-17
 
 Saved profiles now have a confirmed Delete flow, freeing only the selected slot and all its game progress. A local transactional profile catalog/lifecycle prevents stale current-client autosaves and clean-slot inheritance. See [DeleteProfiles.md](docs/DeleteProfiles.md) for behavior, migration and validation.
