@@ -1,5 +1,12 @@
 # Building Management Tycoon
 
+## Connected district roads and ambient traffic — 2026-10-17
+
+A permanent main highway and connected-ring placement now govern expansion. Old districts receive safe, free access around saved plots/decorations. Cancellation refunds fully while retaining streets needed by neighbours. Open businesses display matching walkers and cars on rounded footprint routes; separate scene layers prevent traffic appearing over facades. Reduced motion/hidden maps pause activity. No economy or runtime-art bytes changed; schema 8 persists compact public roads. See [DistrictRoads.md](docs/DistrictRoads.md).
+
+Source `536b967` is pushed and published as ready/current Netlify deploy `6ad2d6e98259b8bde2676b0a` at 09:01 WIB. All 152 Flutter tests, six offline-worker tests, format/analyzer/assets and the 201-resource Web build pass. Primary bundle/worker/manifest hashes match; the normal production bundle preserves and connects the old two-business QA profile. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
+
 ## Follow-up self-test — 2026-10-17
 
 Reproduced and fixed an equal-price acceleration race: an old shell dialog could accelerate the new B1 job after midnight. The domain now validates the reviewed building/job/start-day identity and price after catch-up; UI captures that identity before opening a scrollable dialog. Six new regressions cover shell/B1, repeated upgrades, rollback/retry and three viewport sizes. Six Node tests cover offline-worker cache, navigation, update isolation and failure behavior; Actions runs them too. See GameplayValidation.md and Deployment.md for current results, publication and limits.

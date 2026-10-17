@@ -31,4 +31,8 @@ Terrain, activity and foreground structures have separate repaint boundaries. Dr
 - Browser review used a disposable, in-memory four-type district in desktop, portrait and landscape layouts. Walkers/cars move between observed frames; facades occlude traffic, the daylight tint remains continuous, the highway is visible and Main road focuses it. No browser console errors were observed. The review fixture is ignored and must not be published.
 - Android debug build was attempted and blocked with **No Android SDK found**. No Android device test was performed.
 
-The production Web build and publication receipt are recorded below when verified.
+## Production receipt
+
+Source **536b967bd4bf5e4cb6da478b9bab7126c745d7b9** is committed and pushed to GitHub main. The normal `lib/main.dart` release build passes with **201 local offline resources**. Netlify deploy **6ad2d6e98259b8bde2676b0a** is ready/current, published **2026-10-17 09:01:18 WIB**, at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). Primary JavaScript, worker and offline manifest each return HTTP 200 and match the local release hashes. See [Deployment.md](Deployment.md) for hashes.
+
+The normal production bundle also loaded the existing local Tycoon QA profile after closing/reopening its old offline-worker tab. Its two previously open apartments, room progress and six gems survive; a free access street joins the formerly separate buildings to the highway. Ordinary chronological offline income is applied once. Traffic is visible around the opened buildings and no console errors were observed. The public domain opens successfully with five slots; no public-domain profile was created for this review. This browser evidence supplements the transactional migration tests, not a claim of Android/device or live Figma verification. GitHub combined status returned no reported checks, so remote CI success is not certified.

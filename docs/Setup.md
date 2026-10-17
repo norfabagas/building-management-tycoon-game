@@ -2,7 +2,7 @@
 
 ## Connected district release — 2026-10-17
 
-Current saves use schema 8/catalog 2. Schemas 1–7 gain safe local road access during transactional import; preserve browser/app storage and close older tabs before reopening. No dependency or asset installation change is required. Run `./tool/flutter.ps1 test --no-pub` for road, animation and existing gameplay regressions. Use `dart run tool/build_web.dart` for the normal offline production entry point; ignored review fixtures remain local only. See [DistrictRoads.md](DistrictRoads.md) for behavior and final verification.
+Current saves use schema 8/catalog 2. Schemas 1–7 gain safe local road access during transactional import; preserve browser/app storage and close older tabs before reopening. No dependency or asset installation change is required. Run `./tool/flutter.ps1 test --no-pub` for road, animation and existing gameplay regressions. Use `dart run tool/build_web.dart` for the normal offline production entry point; ignored review fixtures remain local only. See [DistrictRoads.md](DistrictRoads.md) for behavior and final verification. The final 152-test suite, analyzer, formatting, asset validation and 201-resource Web build pass; Android debug compilation reports No Android SDK found. Close/reopen existing offline tabs after publication without clearing site data.
 
 
 ## Self-test additions — 2026-10-17

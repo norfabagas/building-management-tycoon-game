@@ -1,5 +1,14 @@
 # Netlify Web deployment
 
+## Connected district roads and traffic — 2026-10-17
+
+- Source: `536b967bd4bf5e4cb6da478b9bab7126c745d7b9`, pushed to `main`.
+- Production: [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id), ready/current deploy `6ad2d6e98259b8bde2676b0a`, published 09:01:18 WIB (02:01:18 UTC).
+- Explicit normal-entry Web build passes with 201 offline resources. All 152 Flutter tests, six offline-worker tests, analyzer, format and asset checks pass. Android debug build is blocked by the missing SDK. Remote CI is not certified: the GitHub combined-status response had no reported checks.
+- HTTP 200 and SHA-256 equality verified on the primary domain for `main.dart.js` (`48a544cee9bf2f755d6c3d03299fcae649c5650f6b8314be8c6f3b9751eafcfd`), `offline_worker.js` (`955530180d717fc77570ca84d063250388ed33f86a7ec1726307a46803e931bd`) and `offline-assets.json` (`d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea`).
+- Browser review checks the four-type activity fixture across desktop/portrait/landscape, actual artwork occlusion, Main road navigation, and the normal production bundle migrating the existing local two-business QA save. The public domain starts successfully with five slots. Existing profiles retain their data; close all older tabs and reopen to activate the updated offline pack. No physical disconnected-device, Android or live-Figma certification is implied. See [DistrictRoads.md](DistrictRoads.md) for the rules, migration and cosmetic traffic limits.
+
+
 ## Acceleration self-test release — 2026-10-17
 
 Source [`09b94c2`](https://github.com/norfabagas/building-management-tycoon-game/commit/09b94c2a1e2a3e1c6978197e7842f2ea8adabbdf) is pushed to GitHub main and live on the [primary site](https://bmt.niceblue.biz.id). Netlify confirms deploy [`6ad2c2de88dc491506049c15`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad2c2de88dc491506049c15) ready/current, published at **07:35 WIB on 2026-10-17**. Manual production upload used the existing linked site and the successful `lib/main.dart` release build; Git continuous deployment remains unconnected.
