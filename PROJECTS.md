@@ -4,6 +4,8 @@
 
 Reproduced and fixed an equal-price acceleration race: an old shell dialog could accelerate the new B1 job after midnight. The domain now validates the reviewed building/job/start-day identity and price after catch-up; UI captures that identity before opening a scrollable dialog. Six new regressions cover shell/B1, repeated upgrades, rollback/retry and three viewport sizes. Six Node tests cover offline-worker cache, navigation, update isolation and failure behavior; Actions runs them too. See GameplayValidation.md and Deployment.md for current results, publication and limits.
 
+All 138 Flutter tests, six Node checks, analysis, formatting, assets (158 / 124 frames) and the 201-resource Web build pass. Source `09b94c2` is published as ready/current Netlify deploy `6ad2c2de88dc491506049c15` at 07:35 WIB. Primary bundle/worker/manifest match the tested build. Live QA confirms a stale shell review cannot spend the six gems on B1 and Retry restores normal play. Android SDK/device and live Figma/native atomization remain verification limits.
+
 ## Gameplay quality audit — 2026-10-16
 
 The [audit](docs/GameplayValidation.md) fixes investment clarity, B1-limited capacity review, selected-floor hierarchy, short-landscape usability, portrait opening discovery and layout-stable cash feedback. It retains the approved art, offline five-slot saves, 24-second days and catalog values. A transient synergy cache removes repeated geometry work during chronological offline advancement: the 20-business/30-real-day local benchmark improves from about 90 seconds to 1.5 seconds with identical final cash/gems/closing count. No new schema, economy adjustment or runtime artwork is introduced.

@@ -1,4 +1,4 @@
-# Gameplay validation — 2026-10-16
+# Gameplay validation
 
 ## Follow-up self-test — 2026-10-17
 
@@ -9,6 +9,8 @@ Six regression cases cover the equal-price shell/B1 transition, a later upgrade 
 Six network-free Node tests exercise the actual offline-worker source with mocked CacheStorage/fetch: scoped resource precaching, cached startup/media with query parameters during network failure, offline navigation, old-pack cleanup retaining unrelated caches, failed installation retaining the active pack, and bypass of foreign requests/writes. Missing media errors rather than returning HTML. These are worker logic tests, not a physical disconnected-browser certification. GitHub Actions includes the same command. Final checks/publication are recorded in Deployment.md; limitations below remain applicable.
 
 Current checks pass: format 53 Dart files, Flutter analysis, all 138 Flutter tests, six Node tests, validation of 158 runtime resources / 124 frames, and the production Web build with 201 resources. Android debug compilation was attempted again and reports No Android SDK found. Runtime artwork, fonts, BM master, economy and save schema are unchanged. Later sections record the preceding audit's measurements and evidence.
+
+Browser verification on the updated localhost QA save held a one-gem shell review across midnight into B1, confirmed it and observed the intended job-change error with six gems preserved. Retry resumed time, construction completed, and the business opened and admitted a tenant. Browser error logs were empty. Source `09b94c2` is deployed as ready/current `6ad2c2de88dc491506049c15`; primary JavaScript/worker/manifest match the tested files. Deployment.md records hashes, origin isolation and activation instructions.
 
 ## Review standard
 

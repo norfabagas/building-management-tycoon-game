@@ -1,5 +1,18 @@
 # Netlify Web deployment
 
+## Acceleration self-test release — 2026-10-17
+
+Source [`09b94c2`](https://github.com/norfabagas/building-management-tycoon-game/commit/09b94c2a1e2a3e1c6978197e7842f2ea8adabbdf) is pushed to GitHub main and live on the [primary site](https://bmt.niceblue.biz.id). Netlify confirms deploy [`6ad2c2de88dc491506049c15`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad2c2de88dc491506049c15) ready/current, published at **07:35 WIB on 2026-10-17**. Manual production upload used the existing linked site and the successful `lib/main.dart` release build; Git continuous deployment remains unconnected.
+
+The fix binds gem acceleration confirmation to the reviewed building, work kind/stage, start day and price, preventing a stale shell dialog from purchasing B1 acceleration at an equal price. The dialog content scrolls in short viewports. Existing economy, game cadence, save schema and runtime artwork remain unchanged. See GameplayValidation.md for the failing pre-fix reproduction.
+
+- Format (53 Dart files), Flutter analysis, **138 Flutter tests**, **six Node offline-worker tests**, and validation of **158 assets / 124 frames** pass. The Web build contains **201 resources**, all present locally. Android debug compilation was attempted and remains SDK-blocked. Worker tests mock CacheStorage/fetch; a physical disconnected-browser run and Android hardware verification remain outside this evidence.
+- Primary `main.dart.js`, `offline_worker.js` and `offline-assets.json` return **HTTP 200** and match the tested local bundle. SHA-256 respectively: `cba7d3856f97bf9d47904176218ce8793617180c1d6ddd6df58ec7fc95e84e6f`, `8166e61d0d238ca0a2c74cb98a35c9cdb511166c3a298693b934248f3324da3e`, `d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea`.
+- Live browser testing used the retained localhost QA district, not production saves. A one-gem Apartment 2 shell review remained open across the transition to B1; confirmation showed “The job changed. Review acceleration again.” and retained all **six gems**. Retry resumed catch-up, construction completed, explicit opening succeeded and the new business admitted a tenant. Browser error logs are empty. Evidence stays ignored in `.tools/self-test-2026-10-17-stale-review.png`.
+- The isolated [deploy origin](https://6ad2c2de88dc491506049c15--building-management-tycoon-game.netlify.app) starts with all five empty slots and no browser errors; no profile was created there. Review tabs/server are closed. GitHub returned no commit statuses; local checks do not assert a remote CI pass. Native Figma atomization/live-file verification remains unavailable under the previously recorded Starter MCP limit.
+
+Retain browser site data. Allow the primary URL to install the new offline pack, close all game tabs and reopen to activate it; an older cached client may need a second close/reopen. Documentation-only commits after the source hash do not change the deployed bundle.
+
 ## Gameplay quality audit — 2026-10-16
 
 Source [`1cf74ae`](https://github.com/norfabagas/building-management-tycoon-game/commit/1cf74ae83244792d0f15013e206941684a727b5c) is pushed to GitHub main and published on the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad24326f0a099547884454c`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad24326f0a099547884454c) is ready/current, published 2026-10-16 at 22:30 WIB. Upload used the existing linked site with `deploy --prod --dir build/web --no-build`; its message records the source hash. Git continuous deployment remains unconnected.
