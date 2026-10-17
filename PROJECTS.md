@@ -1,5 +1,12 @@
 # Building Management Tycoon
 
+## Volumetric characters and visible upward upgrades — 2026-10-17
+
+Outdoor people and cars now use rotating, shaded XYZ geometry. Per-actor depth masks preserve front-side bodies and hide traffic behind nearer facades. Exteriors assemble approved ground/upper-storey texture bays on every footprint, with height tied to completed above-ground floors. Pending/canceled jobs and basement/lift upgrades keep their height. No schema/economy change or large art/dependency is added. See [VolumeAndHeight.md](docs/VolumeAndHeight.md).
+
+Source `430a65d` is pushed and published as ready/current deploy `6ad2ef4d222e81a20dff8c6b` at 10:45 WIB. All 169 Flutter tests, six worker tests, formatter/analyzer/assets and the 201-resource normal-entry Web build pass. Primary hashes match. Actual QA UI purchase/completion raises Apartment 1 from one to two storeys; Floor 2 has Room 5–8 and six gems are retained. Android SDK/device and remote CI remain verification limits.
+
+
 ## Connected district roads and ambient traffic — 2026-10-17
 
 A permanent main highway and connected-ring placement now govern expansion. Old districts receive safe, free access around saved plots/decorations. Cancellation refunds fully while retaining streets needed by neighbours. Open businesses display matching walkers and cars on rounded footprint routes; separate scene layers prevent traffic appearing over facades. Reduced motion/hidden maps pause activity. No economy or runtime-art bytes changed; schema 8 persists compact public roads. See [DistrictRoads.md](docs/DistrictRoads.md).

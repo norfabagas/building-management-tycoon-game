@@ -1,5 +1,14 @@
 # Netlify Web deployment
 
+## Volumetric figures and floor-driven exteriors — 2026-10-17
+
+Source `430a65d2dfacf41caceacc7bcf3bcde6194566e8` is pushed to main and published as ready/current Netlify deploy `6ad2ef4d222e81a20dff8c6b` at **10:45:21 WIB** on [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). The normal `lib/main.dart` build includes 201 offline resources; review entry points remain ignored.
+
+All **169 Flutter tests**, six worker tests, formatting, analyzer and asset checks pass. Coverage includes volumetric rotation, completed-floor growth on all types/plot axes, unchanged basement/lift height, save round trips, upper-facade picking and pixel regressions for occlusion/cache invalidation. Browser review verifies 1/4/10-storey geometry and the normal QA game's actual Add floor transaction through completion, two-storey exterior, Floor 2 rooms and preserved six gems. Browser errors are empty. Android debug compilation remains blocked by the missing SDK; remote CI is not certified because GitHub returned no reported statuses.
+
+Primary resources return HTTP 200 and match SHA-256: main.dart.js `b366f4964b5faa2aba5d480d454809f2b1eb8d2607aea98f3cc6379313b2dcb0`; offline_worker.js `7e8f6b3898fadd2bf67b092e1e67984bf63ab13c54ee2a71e124883f5a3ecdda`; offline-assets.json `d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea`. Close/reopen old tabs to activate the offline pack without clearing save data. See [VolumeAndHeight.md](VolumeAndHeight.md) for model/render decisions and limits.
+
+
 ## Connected district roads and traffic — 2026-10-17
 
 - Source: `536b967bd4bf5e4cb6da478b9bab7126c745d7b9`, pushed to `main`.

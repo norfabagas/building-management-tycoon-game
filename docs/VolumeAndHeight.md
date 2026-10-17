@@ -21,4 +21,11 @@ The saved completed count is authoritative: an unfinished/canceled floor order d
 - The normal `lib/main.dart` release Web build succeeds with 201 local offline resources. The temporary graphics fixture verifies 1, 4 and 10 storeys on the same plots and cameras. Figures remain volumetric as they turn; nearer facades hide them and front-side figures stay whole. Fixture/screenshot files remain ignored and are not deployed.
 - Android debug compilation was attempted and reports **No Android SDK found**. No Android hardware/performance or disconnected physical-device run is certified. Models use local software-projected geometry, a fixed isometric camera and a cosmetic population cap; there is no imported GLB rig, orbit view or collision AI.
 
-Publication and normal-game UI verification are recorded below after completion.
+## Publication and normal-game verification
+
+Source **430a65d2dfacf41caceacc7bcf3bcde6194566e8** is committed and pushed to GitHub main. Netlify deploy **6ad2ef4d222e81a20dff8c6b** is ready/current, published **2026-10-17 10:45:21 WIB** (03:45:21 UTC), at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). The primary JS bundle, offline worker and resource manifest each return HTTP 200 and match the tested local build. GitHub combined status has no reported checks, so remote CI is not certified.
+
+The normal production bundle loaded the retained local Tycoon QA save after closing/reopening the old offline pack. Through the actual UI, reviewed and confirmed Apartment 1's $12,000 Add floor order. The building stays one storey while work is in progress and becomes two at completion. Its permanent 2×3 footprint and road stay fixed; Apartment 2 remains one storey. Floor 2 opens with Room 5–8 and the original six gems remain. No public-domain profile was created or modified. Final 125% view shows full-height XYZ figures in front of facades and correct occlusion behind them; browser console errors are empty. Evidence stays ignored in .tools/volume-qa-before.png, volume-qa-after.png and volume-qa-final.png. The 1/4/10-storey review is an ignored graphics fixture, never a published entry point.
+
+Retain site data. Allow the URL to fetch the new offline pack, close all old game tabs and reopen to activate it. Documentation-only commits after the source commit do not change the deployed artifact.
+
