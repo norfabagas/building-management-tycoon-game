@@ -1,5 +1,9 @@
 # Building Management Tycoon
 
+## Small-device reachability — 2026-10-17
+
+Small-device construction reviews now have a full-area scrollable body and pinned costs/actions. Shared game-styled dialogs keep actions above the keyboard; compact navigation, responsive profile cards and short-landscape layouts recover map/content space. See [MobileReachability.md](docs/MobileReachability.md) for decisions and validation.
+
 ## Custom tenant release design — 2026-10-17
 
 Vacant/release tenant management now has a full-screen game-styled review instead of a default pop-up, with current/empty artwork, saved parking/rent impacts, pinned actions and inline retry. See [TenantManagement.md](docs/TenantManagement.md) for the design and behavior.

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../shared/widgets/game_review_dialog.dart';
+
 import '../../app/game_assets.dart';
 import '../../app/game_theme.dart';
 import '../../domain/local_profile.dart';
@@ -180,38 +182,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
       borderRadius: BorderRadius.circular(12),
       border: Border.all(color: GameColors.border, width: 2),
     ),
-    child: Row(
-      children: [
-        Text(
-          slot.toString().padLeft(2, '0'),
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                profile?.areaName ?? 'Empty slot',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final details = Row(
+          children: [
+            Text(
+              slot.toString().padLeft(2, '0'),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    profile?.areaName ?? 'Empty slot',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    profile == null
+                        ? 'Start a new district'
+                        : 'Saved on this device',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: GameColors.muted,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                profile == null
-                    ? 'Start a new district'
-                    : 'Saved on this device',
-                style: const TextStyle(fontSize: 15, color: GameColors.muted),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Column(
+            ),
+          ],
+        );
+        final actions = Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             GameButton(
@@ -232,8 +240,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 label: const Text('Delete'),
               ),
           ],
-        ),
-      ],
+        );
+        return constraints.maxWidth < 280
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [details, const SizedBox(height: 12), actions],
+              )
+            : Row(
+                children: [
+                  Expanded(child: details),
+                  const SizedBox(width: 12),
+                  actions,
+                ],
+              );
+      },
     ),
   );
 }
@@ -271,33 +291,31 @@ class _DeleteDistrictDialogState extends State<_DeleteDistrictDialog> {
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_deleting,
-    child: AlertDialog(
-      title: const Text('Delete saved district?'),
-      content: SingleChildScrollView(
-        child: SizedBox(
-          width: 420,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.profile.areaName,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Slot ${widget.profile.slot.toString().padLeft(2, '0')} · Saved on this device',
-              ),
+    child: GameReviewDialog(
+      title: 'Delete saved district?',
+      content: SizedBox(
+        width: 420,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.profile.areaName,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Slot ${widget.profile.slot.toString().padLeft(2, '0')} · Saved on this device',
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'All buildings, money, tenants and progress in this district will be permanently deleted. This cannot be undone.',
+            ),
+            if (_error != null) ...[
               const SizedBox(height: 16),
-              const Text(
-                'All buildings, money, tenants and progress in this district will be permanently deleted. This cannot be undone.',
-              ),
-              if (_error != null) ...[
-                const SizedBox(height: 16),
-                Text(_error!, style: const TextStyle(color: GameColors.danger)),
-              ],
+              Text(_error!, style: const TextStyle(color: GameColors.danger)),
             ],
-          ),
+          ],
         ),
       ),
       actions: [
@@ -371,9 +389,8 @@ class _CreateDistrictDialogState extends State<_CreateDistrictDialog> {
   @override
   Widget build(BuildContext context) => PopScope(
     canPop: !_saving,
-    child: AlertDialog(
-      backgroundColor: GameColors.surface,
-      title: const Text('New district'),
+    child: GameReviewDialog(
+      title: 'New district',
       content: SizedBox(
         width: 420,
         child: Form(

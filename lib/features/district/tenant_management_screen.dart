@@ -104,7 +104,9 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                               onPressed: blocked ? null : _release,
                             )
                           : null;
-                      if (constraints.maxWidth < 560) {
+                      if (constraints.maxWidth < 560 &&
+                          !(constraints.maxWidth >= 480 &&
+                              MediaQuery.sizeOf(context).height < 450)) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -119,21 +121,23 @@ class _TenantManagementScreenState extends State<TenantManagementScreen> {
                       }
                       return Row(
                         children: [
-                          Expanded(
-                            child: Text(
-                              available
-                                  ? '${building!.name} · ${view.title}'
-                                  : 'Unit unavailable',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: GameColors.muted),
+                          if (constraints.maxWidth >= 760) ...[
+                            Expanded(
+                              child: Text(
+                                available
+                                    ? '${building!.name} · ${view.title}'
+                                    : 'Unit unavailable',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: GameColors.muted),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 20),
-                          keep,
+                            const SizedBox(width: 20),
+                          ],
+                          Expanded(child: keep),
                           if (release != null) ...[
                             const SizedBox(width: 12),
-                            release,
+                            Expanded(child: release),
                           ],
                         ],
                       );

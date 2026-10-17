@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Small-device reachability — 2026-10-17
+
+Use Review cost to open a full-area final construction review. Read the scrollable cost/capacity details while the total, remaining balance and confirmation/cancellation remain below. Redraw restores the map preview; cancel returns without a charge. The bottom district toolbar scrolls horizontally on narrow phones; the activities menu stays visible. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 Inside a tenant interior, Manage now opens the designed release review page. Inspect the current unit, empty-unit preview and parking/rent effects; Keep tenant or Back cancels, while Vacate room / Check out guest / End floor lease commits and returns to the updated interior. No default pop-up is used. See [TenantManagement.md](TenantManagement.md).

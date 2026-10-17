@@ -19,6 +19,8 @@ final localProfile = LocalProfile(
 
 void main() {
   for (final size in [
+    const Size(320, 568),
+    const Size(568, 320),
     const Size(390, 844),
     const Size(844, 390),
     const Size(1440, 900),
@@ -363,7 +365,14 @@ void main() {
       expect(find.byKey(const ValueKey('district-map')), findsOneWidget);
       expect(find.text('125%'), findsOneWidget);
       // Select the other building through the native district list.
-      if (size.width < 700) {
+      if (size.width < 700 && size.height < 450) {
+        // The distant building is outside the shallow map: use its directory.
+        await tester.ensureVisible(find.text('Tenants'));
+        await tester.tap(find.text('Tenants'));
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.text('Apartment 2'));
+        await tester.tap(find.text('Apartment 2'));
+      } else if (size.width < 700) {
         // On portrait the list is intentionally collapsed; use the map.
         final nextMap = tester.getRect(
           find.byKey(const ValueKey('district-map')),

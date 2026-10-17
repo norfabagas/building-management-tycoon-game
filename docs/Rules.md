@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Small-device reachability — 2026-10-17
+
+Mobile reachability changes only presentation: reviewing, scrolling, redraw and Cancel construction reserve no money. Confirm construction still revalidates placement, road access and the current balance through the existing domain transaction. Prices, capacities, construction timing, phases and five save slots are unchanged. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 Reviewing or canceling a release is free and non-mutating. The explicit release action uses the existing vacancy rule, freeing reserved bays and retaining already accrued apartment rent. Keep all existing admissions, clock, income, limits and save rules. This changes presentation, not economy. See [TenantManagement.md](TenantManagement.md).

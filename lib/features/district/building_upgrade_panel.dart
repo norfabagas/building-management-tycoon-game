@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../shared/widgets/game_review_dialog.dart';
+
 import '../../app/game_theme.dart';
 import '../../app/production_assets.dart';
 import '../../domain/district_game.dart';
@@ -192,35 +194,33 @@ class BuildingUpgradePanel extends StatelessWidget {
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(kind.label),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(benefit),
-              const SizedBox(height: 12),
-              Text('Price: ${formatMoney(kind.cost(building))}'),
-              Text(
-                'Added upkeep: ${formatMoney(kind.addedMaintenance(building))} / day',
-              ),
-              Text(
-                'Construction: ${kind.duration(building)} game ${kind.duration(building) == 1 ? 'day' : 'days'}',
-              ),
-              const SizedBox(height: 12),
+      builder: (context) => GameReviewDialog(
+        title: kind.label,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(benefit),
+            const SizedBox(height: 12),
+            Text('Price: ${formatMoney(kind.cost(building))}'),
+            Text(
+              'Added upkeep: ${formatMoney(kind.addedMaintenance(building))} / day',
+            ),
+            Text(
+              'Construction: ${kind.duration(building)} game ${kind.duration(building) == 1 ? 'day' : 'days'}',
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Charged immediately. Cancel before completion for a full refund.',
+            ),
+            if (kind == BuildingUpgrade.floor)
+              const Text('New tenants still need a free parking bay.'),
+            if (kind == BuildingUpgrade.standardLift ||
+                kind == BuildingUpgrade.executiveLift)
               const Text(
-                'Charged immediately. Cancel before completion for a full refund.',
+                'Lift price uses the original one-floor + B1 quote. Each lift reduces the vertical-access demand penalty by 10 points.',
               ),
-              if (kind == BuildingUpgrade.floor)
-                const Text('New tenants still need a free parking bay.'),
-              if (kind == BuildingUpgrade.standardLift ||
-                  kind == BuildingUpgrade.executiveLift)
-                const Text(
-                  'Lift price uses the original one-floor + B1 quote. Each lift reduces the vertical-access demand penalty by 10 points.',
-                ),
-            ],
-          ),
+          ],
         ),
         actions: [
           TextButton(

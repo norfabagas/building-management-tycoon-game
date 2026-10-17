@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Small-device reachability — 2026-10-17
+
+Planning details scroll independently from their action footer. Final review keeps the selected footprint/floor quote and current balance visible; redraw restores the saved preview and camera, while cancellation clears the unsaved plan. Upgrade/acceleration/profile dialogs share a bounded, keyboard-aware review shell; existing view-model/repository busy/error/commit guards remain authoritative. No schema or asset changes. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 Manage pushes TenantManagementScreen on the existing interior Navigator stack. Read current unit state by stable IDs and commit only through DistrictViewModel.save plus DistrictSimulation.vacate. Failed writes stay in the review with inline retry/refresh; successful writes return to the refreshed interior. No new persistence fields or domain mechanics. See [TenantManagement.md](TenantManagement.md).

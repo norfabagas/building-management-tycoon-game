@@ -87,6 +87,8 @@ class _FailReleaseRepository extends GameRepository {
 
 void main() {
   for (final size in [
+    const Size(320, 568),
+    const Size(568, 320),
     const Size(390, 844),
     const Size(844, 390),
     const Size(1440, 900),

@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Small-device reachability — 2026-10-17
+
+Responsive layout covers 320×568 and 360×640 phones, 568×320 and 640×360 landscape, keyboard insets and enlarged text. Use safe areas and the existing hosted-Web footer clearance. Android physical-device testing remains dependent on the local SDK. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 A native Flutter review route reuses the existing district view model, local repository transaction and registered room/actor assets. No modal dialog, new dependency or schema change is needed. Scroll the body independently of responsive pinned actions. See [TenantManagement.md](TenantManagement.md).

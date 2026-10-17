@@ -1,5 +1,9 @@
 # Project setup
 
+## Small-device reachability — 2026-10-17
+
+No package, asset regeneration, storage migration or deployment configuration change is required. Run mobile_reachability_test.dart plus the expanded existing UI regressions and full suite; build the normal lib/main.dart production Web entry. Keyboard insets/text scale are simulated in widget tests; browser viewport checks do not certify a real phone keyboard. Preserve saved browser data when activating the offline update. Formatting (68 Dart files), analyzer, all 244 Flutter tests, six worker tests, assets and the normal 201-resource release Web build pass. Android compilation remains blocked by the absent SDK. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 No new dependency, asset export or migration is required for the custom release page. Run tenant_management_test.dart with the full suite and normal lib/main.dart Web build. Keep existing browser data and close/reopen old game tabs to activate the offline update. See [TenantManagement.md](TenantManagement.md). Formatting, analysis, all 203 Flutter tests, six worker tests, assets and the 201-resource normal-entry release Web build pass. Android debug compilation remains blocked by the missing SDK. Publication and primary-file hashes are recorded in [Deployment.md](Deployment.md).

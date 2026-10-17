@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/widgets/game_review_dialog.dart';
+
 import '../../domain/district_game.dart';
 import '../../shared/widgets/game_button.dart';
 import 'district_view_model.dart';
@@ -45,12 +47,10 @@ class AccelerationButton extends StatelessWidget {
                             : 'B1 parking');
                     final confirmed = await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Accelerate active job'),
-                        content: SingleChildScrollView(
-                          child: Text(
-                            '$job in ${building.name}\nPrice: $cost gems\n\nThis job completes next Morning. Remaining jobs still run separately. New buildings still require Open to Business.',
-                          ),
+                      builder: (context) => GameReviewDialog(
+                        title: 'Accelerate active job',
+                        content: Text(
+                          '$job in ${building.name}\nPrice: $cost gems\n\nThis job completes next Morning. Remaining jobs still run separately. New buildings still require Open to Business.',
                         ),
                         actions: [
                           TextButton(

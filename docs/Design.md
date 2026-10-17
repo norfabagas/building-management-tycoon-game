@@ -1,5 +1,9 @@
 # Design Document
 
+## Small-device reachability — 2026-10-17
+
+On small screens, give final building review the full content area and pin total cost, remaining balance, Confirm construction, Cancel construction and Redraw footprint. Use independently scrolling details, 48px minimum actions, compact HUD/floor controls (current floor/live balance replace the HUD in short landscape), a visibly scrollable one-row district toolbar and a fixed activities menu. Short landscape puts planning beside the map; narrow/shallow maps stack zoom buttons on the right to keep the centre drawable. Popup titles/details scroll above fixed actions and adapt above keyboard insets. Keep the custom tenant release page. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 Replace the default tenant-release AlertDialog with the designed full-screen review in [TenantManagement.md](TenantManagement.md). Use cream/evergreen outlined artwork cards, Current unit and After release previews, parking/rent/admission impacts and pinned tactile Keep tenant/red release controls. Show role-specific room/guest/whole-floor headings and inline busy/error/vacant states. This supersedes the earlier default confirmation-dialog wording for this action.

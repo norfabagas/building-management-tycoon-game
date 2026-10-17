@@ -432,7 +432,10 @@ class _DistrictMapState extends State<DistrictMap>
                     borderRadius: BorderRadius.circular(12),
                     side: const BorderSide(color: GameColors.ink, width: 2),
                   ),
-                  child: Row(
+                  child: Flex(
+                    direction: size.width < 400 && size.height < 260
+                        ? Axis.vertical
+                        : Axis.horizontal,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(

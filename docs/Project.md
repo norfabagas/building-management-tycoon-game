@@ -1,5 +1,9 @@
 # Project Overview
 
+## Small-device reachability — 2026-10-17
+
+Small phones must retain usable map, building reviews and bottom actions. Final construction cost reviews use the full content area, independently scrolling details and pinned total/balance/confirm/cancel/redraw. See [MobileReachability.md](MobileReachability.md).
+
 ## Custom tenant release design — 2026-10-17
 
 Tenant vacancy/release management now uses a designed full-screen review instead of the default pop-up. Show current/empty room art, the parking/rent effects and pinned Keep/release actions for apartments, hotels and whole-floor office leases. See [TenantManagement.md](TenantManagement.md).
