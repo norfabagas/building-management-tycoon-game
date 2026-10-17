@@ -1,5 +1,19 @@
 # Netlify Web deployment
 
+## Small-device reachability — 2026-10-17
+
+Source [`2ca091d`](https://github.com/norfabagas/building-management-tycoon-game/commit/2ca091d5e9f15267eae9e633637ba01f16cbb8c1) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad337668d368ce959049c1e`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad337668d368ce959049c1e) is ready/current, published **2026-10-17 at 15:52:59 WIB**. The existing linked site's manual production upload uses the explicit normal-entry Web build and records the source hash.
+
+Construction reviews now use a full-area independently scrolling body with pinned cost/balance/confirmation/cancel/redraw. Small-phone HUD/profile cards and landscape building controls recover content space; keyboard-aware game-styled dialogs retain reachable actions. Short maps stack zoom controls to preserve central land selection. See [MobileReachability.md](MobileReachability.md).
+
+- Formatting of **68 Dart files**, Flutter analysis, all **244 Flutter tests**, six worker tests and the **158-asset / 124-frame** validator pass. Final normal-entry release Web build passes its Wasm dry run and packages **201 offline resources**. Android debug compilation reports **No Android SDK found**; physical Android/device and real soft-keyboard execution remain unverified.
+- Eleven dedicated reachability cases cover 320×568, 360×640, 568×320 and 640×360 construction reviews at normal/140% text, plus simulated keyboard insets of 260px/290px/120px. Hit-testable actions remain within the visible area with at least 48px height. Expanded integration regressions cover small-phone purchases/refunds, upgrades, floor navigation, opening, decorations, deletion/reuse, acceleration and custom tenant management.
+- Final-build browser QA at 320×568 and 568×320 verifies large balance/clock separation, connected-footprint drawing, pinned review totals/actions while scrolling, landscape action row, floor/live-balance navigation, scrolling Add floor popup and safe cancellation. Both existing QA apartments/floor counts and six gems remain; no purchase, profile deletion or tenant release is committed. Console errors are empty. Ignored proof: `.tools/mobile-building-review-320.png`, `.tools/mobile-building-review-568.png`, `.tools/mobile-upgrade-review-568.png`. Review tabs/server are closed and viewport reset.
+- Primary HTTP responses are **200** and SHA-256 matches the local release: `main.dart.js` **a61dcf6ad86a0e814a07822c17817e1277a1414cabb5ee4712ffa55a2a136c43**, `offline_worker.js` **2fcc23a37f38732327884e7600bf408abab72a417751608d9e03e12c21a366fe**, `offline-assets.json` **d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea**. GitHub returned no commit statuses; remote CI is not certified.
+
+Keep browser/app storage. Allow the offline pack to install, close all old game tabs and reopen; previously cached clients can need a second close/reopen. Documentation-only commits after the source hash do not change the deployed bundle.
+
+
 ## Custom tenant release review — 2026-10-17
 
 Source [`ccf70c4`](https://github.com/norfabagas/building-management-tycoon-game/commit/ccf70c4577bd31bb9318fbb62ffac040c1f2032d) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad325b3ff8916d1c9049c41`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad325b3ff8916d1c9049c41) is ready/current, published **2026-10-17 at 14:37:27 WIB**. The existing manual production upload uses the explicit normal-entry Web build, with the source hash in its deploy message.
