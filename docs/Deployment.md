@@ -1,5 +1,19 @@
 # Netlify Web deployment
 
+## Delete saved profiles — 2026-10-17
+
+Source [`22e6633`](https://github.com/norfabagas/building-management-tycoon-game/commit/22e6633ccd3e9260d5d43196b7109bd52c348d52) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad322635f8b26171e20723c`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad322635f8b26171e20723c) is ready/current, published **2026-10-17 at 14:23:19 WIB**. The existing linked site's manual production upload uses the explicit normal-entry Web build and records the source hash.
+
+Occupied slots now offer Delete with a named, permanent-deletion confirmation. The authoritative local profile catalog and full district record are changed in the same transaction; stale current-client sessions/reviews are rejected and reused slots start empty. Validated legacy metadata imports once without changing game progress. SharedPreferences becomes a repairable compatibility mirror. See [DeleteProfiles.md](DeleteProfiles.md) for identity, rollback, clock-reversal and old-client limitations.
+
+- Formatting of **64 Dart files**, Flutter analysis, all **192 Flutter tests** (ten deletion regressions), six worker tests and the **158-asset / 124-frame** validator pass. Final normal-entry Web build passes its Wasm dry run and packages **201 offline resources**. Android debug compilation reports **No Android SDK found**; Android/device execution is unverified.
+- Automated isolated-memory tests confirm destructive removal/reuse, preservation of the other four profiles, stale-session/confirmation rejection, concurrent managers, mirror failures, corrupt/unsupported legacy state, disabled pending actions/back and retry after failure. Responsive UI cases cover 390×844, 844×390 and 1440×900.
+- Browser review uses the retained localhost QA profile: named Slot 01 confirmation, portrait layout, Cancel, successful reload of both open apartments/six gems and return to the refreshed profile list. No real profile was deleted. Browser errors are empty. Proof is ignored at `.tools/delete-profile-confirmation.png`; review tabs/server are closed and viewport override reset.
+- Primary HTTP responses are 200 and SHA-256 matches the local release for `main.dart.js` **b648f9ba47674d22cc3c08e006a2030ea6112cae10488f2c2c7f5b8cf1a54b34**, `offline_worker.js` **327a45c00bc359c98a3ca66574fc510bb233caeceac8771f60e654288ac957c1** and `offline-assets.json` **d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea**. GitHub returned no commit statuses; this does not certify remote CI.
+
+Keep browser/app storage. Allow the new offline pack to install, close all old game tabs and reopen; older cached clients can need a second close/reopen. Clients predating deletion lifecycle checks should not continue writing. Documentation-only commits after the source hash do not change the deployed bundle.
+
+
 ## Full-screen tenant interiors — 2026-10-17
 
 Source [`74c7df9`](https://github.com/norfabagas/building-management-tycoon-game/commit/74c7df9437eee3dd534cc664d82940c7e4ec9f9f) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad3196f794639eb74f70734`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad3196f794639eb74f70734) is ready/current, published **2026-10-17 at 13:45:08 WIB**. The manual production upload uses the explicit `lib/main.dart` build, with its source hash recorded in the deploy message. Review fixtures are excluded.

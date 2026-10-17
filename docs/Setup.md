@@ -2,7 +2,7 @@
 
 ## Delete saved profiles — 2026-10-17
 
-No package, asset regeneration or configuration change is required. The first profile-list load imports validated metadata into the existing local database; retain browser/app storage. Run delete_profile_test.dart with the full regression suite and normal production Web build. Do not delete real player profiles during QA. See [DeleteProfiles.md](DeleteProfiles.md) for persistence and compatibility limits.
+No package, asset regeneration or configuration change is required. The first profile-list load imports validated metadata into the existing local database; retain browser/app storage. Run delete_profile_test.dart with the full regression suite and normal production Web build. Do not delete real player profiles during QA. See [DeleteProfiles.md](DeleteProfiles.md) for persistence and compatibility limits. Formatting, analysis, all 192 Flutter tests, six worker tests, assets and the 201-resource release Web build pass. Android debug compilation remains blocked by the absent SDK. Publication and hashes are recorded in [Deployment.md](Deployment.md).
 
 ## Full-screen tenant activity — 2026-10-17
 

@@ -4,6 +4,8 @@
 
 Saved profiles now have a confirmed Delete flow, freeing only the selected slot and all its game progress. A local transactional profile catalog/lifecycle prevents stale current-client autosaves and clean-slot inheritance. See [DeleteProfiles.md](docs/DeleteProfiles.md) for behavior, migration and validation.
 
+Source `22e6633` is pushed and published as ready/current deploy `6ad322635f8b26171e20723c` at 14:23 WIB. All 192 Flutter tests, six worker tests, formatter/analyzer/assets and the 201-resource Web build pass. Primary release hashes match. Browser Cancel/reload preserves the retained two-apartment/six-gem QA profile. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 Tenant/room taps now open a full-screen interior with live saved status and role-specific ambient routines. All four types, vacant units, food-floor party allocation, management confirmation and return navigation are covered. See [TenantInterior.md](docs/TenantInterior.md) for decisions and validation.
