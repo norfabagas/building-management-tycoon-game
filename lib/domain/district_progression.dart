@@ -81,7 +81,8 @@ abstract final class DistrictProgression {
     LandCell cell, {
     DistrictDecoration? ignore,
   }) {
-    if (state.roads.contains(cell) ||
+    if (state.roadNetwork.contains(cell) ||
+        state.roads.contains(cell) ||
         state.buildings.any((b) => b.footprint.contains(cell))) {
       return 'Choose free land outside buildings and roads.';
     }

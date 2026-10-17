@@ -80,9 +80,9 @@ void main() {
           );
           final projection = MapProjection(map.size, Offset.zero);
           final drag = await tester.startGesture(
-            map.topLeft + projection.point(2.5, 2.5),
+            map.topLeft + projection.point(0.5, 0.5),
           );
-          await drag.moveTo(map.topLeft + projection.point(3.5, 3.5));
+          await drag.moveTo(map.topLeft + projection.point(1.5, 1.5));
           await drag.up();
           await tester.pumpAndSettle();
           expect(find.text('2 × 2 tiles'), findsOneWidget);

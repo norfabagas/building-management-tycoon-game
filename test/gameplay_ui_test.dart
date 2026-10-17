@@ -37,7 +37,7 @@ void main() {
         buildings: [
           ApartmentBuilding(
             id: 1,
-            footprint: const Footprint(3, 3, 2, 2),
+            footprint: const Footprint(0, 0, 2, 2),
             stage: ConstructionStage.ready,
             occupied: {0},
           ),
@@ -48,6 +48,10 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
           theme: buildGameTheme(),
           home: DistrictScreen(
             profile: localProfile,
@@ -58,7 +62,7 @@ void main() {
       await tester.pumpAndSettle();
       final map = tester.getRect(find.byKey(const ValueKey('district-map')));
       await tester.tapAt(
-        map.topLeft + MapProjection(map.size, Offset.zero).point(4, 4),
+        map.topLeft + MapProjection(map.size, Offset.zero).point(1, 1),
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Upgrade building'));
@@ -136,7 +140,7 @@ void main() {
           buildings: [
             ApartmentBuilding(
               id: 1,
-              footprint: const Footprint(3, 3, 2, 2),
+              footprint: const Footprint(0, 0, 2, 2),
               stage: ConstructionStage.ready,
               aboveGroundFloors: 10,
               undergroundFloors: 3,
@@ -151,6 +155,10 @@ void main() {
         );
         await tester.pumpWidget(
           MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: child!,
+            ),
             theme: buildGameTheme(),
             home: DistrictScreen(
               profile: localProfile,
@@ -161,7 +169,7 @@ void main() {
         await tester.pumpAndSettle();
         final map = tester.getRect(find.byKey(const ValueKey('district-map')));
         await tester.tapAt(
-          map.topLeft + MapProjection(map.size, Offset.zero).point(4, 4),
+          map.topLeft + MapProjection(map.size, Offset.zero).point(1, 1),
         );
         await tester.pumpAndSettle();
         await tester.tap(find.text('Go up'));
@@ -219,7 +227,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final database = (await tester.runAsync(openNewInMemoryDatabase))!;
       final repository = GameRepository(open: () async => database);
-      const site = Footprint(3, 3, 2, 2);
+      const site = Footprint(0, 0, 2, 2);
       final state = DistrictGame(
         watermark: DateTime.now().millisecondsSinceEpoch,
         nextBuildingId: 2,
@@ -236,6 +244,10 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
           theme: buildGameTheme(),
           home: DistrictScreen(profile: localProfile, repository: repository),
         ),
@@ -290,7 +302,7 @@ void main() {
         buildings: [
           ApartmentBuilding(
             id: 1,
-            footprint: const Footprint(3, 3, 2, 2),
+            footprint: const Footprint(0, 0, 2, 2),
             stage: ConstructionStage.ready,
             occupied: {0},
           ),
@@ -302,6 +314,10 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
           theme: buildGameTheme(),
           home: DistrictScreen(
             profile: localProfile,
@@ -314,7 +330,7 @@ void main() {
       await tester.pumpAndSettle();
       final map = tester.getRect(find.byKey(const ValueKey('district-map')));
       final projection = MapProjection(map.size, Offset.zero, zoom: 1.25);
-      await tester.tapAt(map.topLeft + projection.point(4, 4));
+      await tester.tapAt(map.topLeft + projection.point(1, 1));
       await tester.pump(const Duration(milliseconds: 300));
       expect(find.byKey(const ValueKey('district-map')), findsNothing);
       expect(find.byKey(const ValueKey('building-floor-view')), findsOneWidget);
@@ -388,6 +404,10 @@ void main() {
         final repository = testGameRepository();
         await tester.pumpWidget(
           MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: child!,
+            ),
             theme: buildGameTheme(),
             home: DistrictScreen(profile: localProfile, repository: repository),
           ),
@@ -405,9 +425,9 @@ void main() {
         final map = tester.getRect(find.byKey(const ValueKey('district-map')));
         final projection = MapProjection(map.size, Offset.zero, zoom: 1.25);
         final gesture = await tester.startGesture(
-          map.topLeft + projection.point(3.5, 3.5),
+          map.topLeft + projection.point(0.5, 0.5),
         );
-        await gesture.moveTo(map.topLeft + projection.point(4.5, 4.5));
+        await gesture.moveTo(map.topLeft + projection.point(1.5, 1.5));
         await gesture.up();
         await tester.pumpAndSettle();
         expect(find.text('2 × 2 tiles'), findsOneWidget);
@@ -481,6 +501,10 @@ void main() {
       );
       await tester.pumpWidget(
         MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
           theme: buildGameTheme(),
           home: DistrictScreen(
             profile: localProfile,

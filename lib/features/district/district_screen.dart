@@ -564,68 +564,71 @@ class _DistrictScreenState extends State<DistrictScreen>
     final ready = game.buildings
         .where((b) => b.stage == ConstructionStage.parkingDone)
         .firstOrNull;
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: DistrictMap(
-            camera: _mapCamera,
-            game: game,
-            elapsedMilliseconds: _model.elapsedMilliseconds,
-            drawing: _drawing && !_review && _model.error == null,
-            preview: _preview,
-            previewValid: _preview == null
-                ? null
-                : _collection == 'Decorations'
-                ? _decorationError(game, _preview!) == null
-                : DistrictSimulation.placementError(
-                        game,
-                        _preview!,
-                        type: _buildType,
-                        floors: _initialFloors,
-                      ) ==
-                      null,
-            decorationPreview: _collection == 'Decorations',
-            selected: _selected,
-            reset: _reset,
-            onFootprint: (site) => setState(
-              () => _preview = _collection == 'Decorations'
-                  ? Footprint(site.x, site.y, 1, 1)
-                  : site,
+    return TickerMode(
+      enabled: _selected == null && !(_buildMenu && !_drawing),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: DistrictMap(
+              camera: _mapCamera,
+              game: game,
+              elapsedMilliseconds: _model.elapsedMilliseconds,
+              drawing: _drawing && !_review && _model.error == null,
+              preview: _preview,
+              previewValid: _preview == null
+                  ? null
+                  : _collection == 'Decorations'
+                  ? _decorationError(game, _preview!) == null
+                  : DistrictSimulation.placementError(
+                          game,
+                          _preview!,
+                          type: _buildType,
+                          floors: _initialFloors,
+                        ) ==
+                        null,
+              decorationPreview: _collection == 'Decorations',
+              selected: _selected,
+              reset: _reset,
+              onFootprint: (site) => setState(
+                () => _preview = _collection == 'Decorations'
+                    ? Footprint(site.x, site.y, 1, 1)
+                    : site,
+              ),
+              onCancelFootprint: () => setState(() => _preview = null),
+              onSelect: (id) => setState(() {
+                _selected = id;
+                _buildMenu = false;
+                _drawing = false;
+                _preview = null;
+                _finance = false;
+                _tenants = false;
+                _districtUpgrades = false;
+                _collection = null;
+              }),
             ),
-            onCancelFootprint: () => setState(() => _preview = null),
-            onSelect: (id) => setState(() {
-              _selected = id;
-              _buildMenu = false;
-              _drawing = false;
-              _preview = null;
-              _finance = false;
-              _tenants = false;
-              _districtUpgrades = false;
-              _collection = null;
-            }),
           ),
-        ),
-        if (ready != null && !_drawing && !_buildMenu)
-          Positioned(
-            left: 12,
-            bottom: 12,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 260),
-              child: GameButton(
-                label: 'Open ${ready.name}',
-                onPressed: _model.busy || _model.error != null
-                    ? null
-                    : () => setState(() {
-                        _closePlanning();
-                        _tenants = false;
-                        _districtUpgrades = false;
-                        _collection = null;
-                        _selected = ready.id;
-                      }),
+          if (ready != null && !_drawing && !_buildMenu)
+            Positioned(
+              left: 12,
+              bottom: 12,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 260),
+                child: GameButton(
+                  label: 'Open ${ready.name}',
+                  onPressed: _model.busy || _model.error != null
+                      ? null
+                      : () => setState(() {
+                          _closePlanning();
+                          _tenants = false;
+                          _districtUpgrades = false;
+                          _collection = null;
+                          _selected = ready.id;
+                        }),
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1056,7 +1059,7 @@ class _DistrictScreenState extends State<DistrictScreen>
       ),
       const SizedBox(height: 10),
       const Text(
-        'Tap Build to choose a type, draw land and select floors. Open completed buildings to welcome tenants and visitors.',
+        'Tap Build, choose a type and draw beside the main road or a connected street. Open completed buildings to welcome tenants and visitors.',
       ),
       const SizedBox(height: 12),
       const Text(
@@ -1120,7 +1123,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           Text(
             _review
                 ? 'The footprint cannot be changed later. Add floors through upgrades.'
-                : 'Drag to select land. Green: available. Red: blocked or too expensive.',
+                : 'Draw beside the main road or a connected street. Green: available. Red: blocked or too expensive.',
           ),
           const SizedBox(height: 12),
           _line(
@@ -1167,6 +1170,14 @@ class _DistrictScreenState extends State<DistrictScreen>
           ),
           _line('B1 · 1 game day', formatMoney(site?.basementCost ?? 0)),
           _line('Surrounding road', 'Included · 1 tile wide'),
+          _line(
+            'Road access',
+            site == null
+                ? 'Required'
+                : game.roadNetwork.serves(site, game.buildings)
+                ? 'Connected to main road'
+                : 'Not connected',
+          ),
           const Divider(),
           _line(
             'Total cost',

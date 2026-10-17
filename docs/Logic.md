@@ -1,5 +1,12 @@
 # Game Logic & Architecture
 
+## Road network and animation — 2026-10-17
+
+Schema **8**, catalog 2 persists `roadNetwork.mainRow` and inclusive axis-aligned public street segments. Schemas 1–7 derive a safe highway/access network on import; their existing financial and clock catch-up order remains intact. Sparse routing uses obstacle boundary coordinates instead of allocating every tile between distant plots. Connectivity floods public segments and building rings from the highway; isolated public segments never seed access. Placement validates road reservations, occupied plots/decorations and connected-ring access before debiting money. Cancellation preserves a bridge ring if removing it would disconnect an existing building. Repository transactions continue to cover migration, actions and rollback. Old clients reject schema 8. Earlier schema-7 statements describe the previous release.
+
+Map traffic uses a separate presentation ticker and repaint boundary, never simulation time or saved counters. TickerMode and reduced-motion settings suspend its clock; changing days does not reset movement. Terrain, picking, traffic and highway share MapProjection. See [DistrictRoads.md](DistrictRoads.md).
+
+
 ## Current override — 2026-10-16
 
 Self-test correction (2026-10-17): acceleration confirmation validates a transient reviewed-job token (building ID, construction stage or upgrade kind, and start day) together with the gem quote, after repository catch-up. Equal-price replacement jobs require a fresh review. Capture the token before awaiting the dialog; never rederive it at confirmation. A rejection rolls back the transaction, including catch-up, so Retry advances the preserved record once. The token is not persisted and schema 7 remains unchanged. See GameplayValidation.md for the failing reproduction and regression cases.

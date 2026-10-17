@@ -1,5 +1,10 @@
 # Project setup
 
+## Connected district release — 2026-10-17
+
+Current saves use schema 8/catalog 2. Schemas 1–7 gain safe local road access during transactional import; preserve browser/app storage and close older tabs before reopening. No dependency or asset installation change is required. Run `./tool/flutter.ps1 test --no-pub` for road, animation and existing gameplay regressions. Use `dart run tool/build_web.dart` for the normal offline production entry point; ignored review fixtures remain local only. See [DistrictRoads.md](DistrictRoads.md) for behavior and final verification.
+
+
 ## Self-test additions — 2026-10-17
 
 Run `node --test tool/offline_worker_test.mjs` alongside the Dart suite; Node 24 is already configured in GitHub Actions. It uses built-in modules and mocked CacheStorage/fetch with the actual worker source, needs no network/package installation, and checks cached reloads plus update/failure isolation. It does not verify browser persistence quotas or device disconnection. `test/acceleration_review_test.dart` adds controlled-clock job-change, gem preservation and repository/UI regressions. Keep using `dart run tool/build_web.dart` for production packaging and retain browser site data when activating an update. Android/device and live-Figma limits remain recorded in GameplayValidation.md.

@@ -1,5 +1,10 @@
 # Repository game assets
 
+## Outdoor activity integration — 2026-10-17
+
+The map reuses all four catalog actor animation sheets (walk frames 4–11, 8 fps, 4×4 grid, 256×384 source frames, foot pivot 0.5/0.9479167) and `transport.car` (256×144, pivot 0.5/1). Decode outdoor actor sheets at half resolution for small map sprites; source files, manifest and hashes remain unchanged. Cars follow isometric lanes while bodies stay upright. Catalog validation passed before introducing these references. Main highway paint uses existing road/curb palette; building rings retain approved road-mask artwork. See [DistrictRoads.md](DistrictRoads.md).
+
+
 ## Catalog 2 runtime integration — 2026-10-16
 
 All four exterior/interior/vacancy families are now used by playable types, including whole-office leases and F&B facilities. Long buildings retain footprint geometry on either axis; Food Court walls have a lower height. The approved five actors play the matching idle/walk/stair sequences; maintenance appears during construction. Lift shafts/carriages translate independently and door frames play on arrival. Dust, cash-closing coin and arrival effects are one-shot and omitted under reduced motion. Luxury cards show the appropriate next-tier preview; the map labels actual completed tiers. All ten local audio clips are reachable through gesture-enabled music/ambience and construction/closing/lift/UI feedback. Audio uses `AssetSource` only; runtime files, catalog hashes, source art and BM master bytes are unchanged. See Gameplay.md for behavior and FigmaAssessment.md for evidence/limits.

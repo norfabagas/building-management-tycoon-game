@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../app/game_theme.dart';
 import '../../app/production_assets.dart';
@@ -11,6 +13,8 @@ import '../../domain/district_game.dart';
 import 'map_camera_view_model.dart';
 import 'daylight.dart';
 import 'building_presentation.dart';
+
+part 'map_activity.dart';
 
 class DistrictMap extends StatefulWidget {
   const DistrictMap({
@@ -44,7 +48,11 @@ class DistrictMap extends StatefulWidget {
   State<DistrictMap> createState() => _DistrictMapState();
 }
 
-class _DistrictMapState extends State<DistrictMap> {
+class _DistrictMapState extends State<DistrictMap>
+    with SingleTickerProviderStateMixin {
+  final _activityClock = ValueNotifier<double>(0);
+  late final Ticker _activityTicker;
+  double _carriedSeconds = 0;
   late final _ownedCamera = MapCameraViewModel();
   MapCameraViewModel get _camera => widget.camera ?? _ownedCamera;
   LandCell? _start;
@@ -61,7 +69,28 @@ class _DistrictMapState extends State<DistrictMap> {
   @override
   void initState() {
     super.initState();
+    _activityTicker = createTicker((elapsed) {
+      _activityClock.value = _carriedSeconds + elapsed.inMicroseconds / 1000000;
+    });
     _load();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncActivity();
+  }
+
+  void _syncActivity() {
+    final active =
+        TickerMode.valuesOf(context).enabled &&
+        !MediaQuery.disableAnimationsOf(context) &&
+        widget.game.buildings.any((b) => b.stage == ConstructionStage.ready);
+    if (active && !_activityTicker.isActive) _activityTicker.start();
+    if (!active && _activityTicker.isActive) {
+      _carriedSeconds = _activityClock.value;
+      _activityTicker.stop();
+    }
   }
 
   Future<void> _load() async {
@@ -77,6 +106,8 @@ class _DistrictMapState extends State<DistrictMap> {
   static Future<Map<String, ui.Image>> _loadImages() async {
     final paths = [
       ProductionAssets.tilesLand,
+      ProductionAssets.transportCar,
+      for (final type in BuildingType.values) type.actor,
       ProductionAssets.buildingsApartment,
       ProductionAssets.buildingsHotel,
       ProductionAssets.buildingsOffice,
@@ -92,6 +123,7 @@ class _DistrictMapState extends State<DistrictMap> {
         final bytes = await rootBundle.load(path);
         final codec = await ui.instantiateImageCodec(
           bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+          targetWidth: path.contains('animation.png') ? 512 : null,
         );
         final frame = await codec.getNextFrame();
         codec.dispose();
@@ -105,10 +137,13 @@ class _DistrictMapState extends State<DistrictMap> {
   void didUpdateWidget(DistrictMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.reset != widget.reset) _camera.center();
+    _syncActivity();
   }
 
   @override
   void dispose() {
+    _activityTicker.dispose();
+    _activityClock.dispose();
     if (widget.camera == null) _ownedCamera.dispose();
     super.dispose();
   }
@@ -244,16 +279,51 @@ class _DistrictMapState extends State<DistrictMap> {
                       children: [
                         ColoredBox(
                           color: GameColors.surface,
-                          child: CustomPaint(
-                            painter: _DistrictPainter(
-                              widget.game,
-                              projection,
-                              _images,
-                              widget.preview,
-                              widget.selected,
-                              widget.elapsedMilliseconds,
-                              widget.previewValid,
-                              widget.decorationPreview,
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              painter: _DistrictPainter(
+                                widget.game,
+                                projection,
+                                _images,
+                                widget.preview,
+                                widget.selected,
+                                widget.elapsedMilliseconds,
+                                widget.previewValid,
+                                widget.decorationPreview,
+                                terrainOnly: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                        IgnorePointer(
+                          child: ExcludeSemantics(
+                            child: RepaintBoundary(
+                              child: CustomPaint(
+                                key: const ValueKey('map-activity'),
+                                painter: _MapActivityPainter(
+                                  widget.game,
+                                  projection,
+                                  _images,
+                                  _activityClock,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        IgnorePointer(
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              painter: _DistrictPainter(
+                                widget.game,
+                                projection,
+                                _images,
+                                widget.preview,
+                                widget.selected,
+                                widget.elapsedMilliseconds,
+                                widget.previewValid,
+                                widget.decorationPreview,
+                                structuresOnly: true,
+                              ),
                             ),
                           ),
                         ),
@@ -278,13 +348,16 @@ class _DistrictMapState extends State<DistrictMap> {
                                 horizontal: 10,
                                 vertical: 6,
                               ),
-                              child: Text(
-                                widget.drawing
-                                    ? 'Drag to select land · Pinch to zoom'
-                                    : 'Drag to pan · Pinch to zoom · Tap a building',
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: GameColors.ink,
+                              child: SizedBox(
+                                width: math.min(310, size.width - 104),
+                                child: Text(
+                                  widget.drawing
+                                      ? 'Road access required · Pinch to zoom'
+                                      : 'Drag to pan · Pinch to zoom · Tap a building',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: GameColors.ink,
+                                  ),
                                 ),
                               ),
                             ),
@@ -292,6 +365,30 @@ class _DistrictMapState extends State<DistrictMap> {
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 12,
+              top: 12,
+              child: Material(
+                color: GameColors.surface,
+                borderRadius: BorderRadius.circular(8),
+                child: IconButton(
+                  key: const ValueKey('map-main-road'),
+                  tooltip: 'Main road',
+                  onPressed: () {
+                    final road = projection.point(
+                      0,
+                      widget.game.roadNetwork.mainRow + 1,
+                    );
+                    _camera.panBy(size.center(Offset.zero) - road);
+                  },
+                  icon: const Icon(Icons.add_road),
+                  constraints: const BoxConstraints.tightFor(
+                    width: 48,
+                    height: 48,
                   ),
                 ),
               ),
@@ -368,9 +465,14 @@ class MapProjection {
   final Size size;
   final Offset pan;
   final double zoom;
-  double get tile => (size.width < 500 ? 54 : 80) * zoom;
+  double get _baseTile => size.width < 500 ? 54 : 80;
+  double get tile => _baseTile * zoom;
+  // Keep the starting street/plot below the hint in short viewports. This
+  // offset scales with zoom, preserving the camera's focal-point transform.
   Offset get origin =>
-      Offset(size.width / 2, size.height / 2 - tile * 1.5) + pan;
+      size.center(Offset.zero) +
+      Offset(0, -math.min(_baseTile * 1.5, size.height / 2 - 64) * zoom) +
+      pan;
   Offset point(num x, num y) =>
       origin + Offset((x - y) * tile / 2, (x + y) * tile / 4);
   LandCell cellAt(Offset screen) {
@@ -462,8 +564,11 @@ class _DistrictPainter extends CustomPainter {
     this.selected,
     this.elapsedMilliseconds,
     this.previewValid,
-    this.decorationPreview,
-  );
+    this.decorationPreview, {
+    this.terrainOnly = false,
+    this.structuresOnly = false,
+  });
+  final bool terrainOnly, structuresOnly;
   final DistrictGame game;
   final MapProjection projection;
   final Map<String, ui.Image> images;
@@ -473,78 +578,131 @@ class _DistrictPainter extends CustomPainter {
   final bool? previewValid;
   final bool decorationPreview;
 
+  void _mainRoad(
+    Canvas canvas,
+    int left,
+    int right,
+    bool Function(LandCell) road,
+  ) {
+    final y = game.roadNetwork.mainRow;
+    final bounds = Footprint(left - 2, y, right - left + 5, 2);
+    canvas.drawPath(
+      projection.footprint(bounds),
+      Paint()..color = const Color(0xFFE6D5B5),
+    );
+    final asphalt = Path()
+      ..addPolygon([
+        projection.point(left - 2, y + .15),
+        projection.point(right + 3, y + .15),
+        projection.point(right + 3, y + 1.85),
+        projection.point(left - 2, y + 1.85),
+      ], true);
+    canvas.drawPath(asphalt, Paint()..color = const Color(0xFF626F70));
+    final line = Paint()
+      ..color = const Color(0xFFFFF3D4)
+      ..strokeWidth = 2 * projection.zoom;
+    for (var x = left - 2; x < right + 3; x++) {
+      // Open the curb where a neighbourhood street meets the highway.
+      for (final edge in [y - 1, y + 2]) {
+        if (!road(LandCell(x, edge))) continue;
+        final from = edge < y ? y - .25 : y + 1.7;
+        final to = edge < y ? y + .3 : y + 2.25;
+        canvas.drawPath(
+          Path()..addPolygon([
+            projection.point(x + .18, from),
+            projection.point(x + .82, from),
+            projection.point(x + .82, to),
+            projection.point(x + .18, to),
+          ], true),
+          Paint()..color = const Color(0xFF626F70),
+        );
+      }
+      canvas.drawLine(
+        projection.point(x + .15, y + 1),
+        projection.point(x + .7, y + 1),
+        line,
+      );
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    final corners = [
-      Offset.zero,
-      Offset(size.width, 0),
-      Offset(0, size.height),
-      Offset(size.width, size.height),
-    ].map(projection.cellAt).toList();
-    final minX = corners.map((c) => c.x).reduce(math.min) - 2;
-    final maxX = corners.map((c) => c.x).reduce(math.max) + 2;
-    final minY = corners.map((c) => c.y).reduce(math.min) - 2;
-    final maxY = corners.map((c) => c.y).reduce(math.max) + 2;
-    final roads = game.roads;
-    final scale = projection.tile / 256;
-    for (var diagonal = minX + minY; diagonal <= maxX + maxY; diagonal++) {
-      for (var x = minX; x <= maxX; x++) {
-        final y = diagonal - x;
-        if (y < minY || y > maxY) continue;
-        final cell = LandCell(x, y);
-        final top = projection.point(x, y);
-        if (top.dx < -projection.tile ||
-            top.dx > size.width + projection.tile ||
-            top.dy < -projection.tile ||
-            top.dy > size.height + projection.tile) {
-          continue;
-        }
-        var path = ProductionAssets.tilesLand;
-        if (roads.contains(cell)) {
-          var mask = 0;
-          if (roads.contains(LandCell(x, y - 1))) mask |= 1;
-          if (roads.contains(LandCell(x + 1, y))) mask |= 2;
-          if (roads.contains(LandCell(x, y + 1))) mask |= 4;
-          if (roads.contains(LandCell(x - 1, y))) mask |= 8;
-          path =
-              'assets/game/tiles/road-${mask.toRadixString(2).padLeft(4, '0')}.png';
-        }
-        final image = images[path];
-        if (image != null) {
-          canvas.drawImageRect(
-            image,
-            Rect.fromLTWH(
-              0,
-              0,
-              image.width.toDouble(),
-              image.height.toDouble(),
-            ),
-            Rect.fromLTWH(
-              top.dx - 130 * scale,
-              top.dy - 4 * scale,
-              260 * scale,
-              148 * scale,
-            ),
-            Paint()..filterQuality = FilterQuality.low,
-          );
-        } else {
-          final tile = projection.footprint(Footprint(x, y, 1, 1));
-          canvas.drawPath(
-            tile,
-            Paint()
-              ..color = roads.contains(cell)
-                  ? const Color(0xFF626F70)
-                  : GameColors.land,
-          );
-          canvas.drawPath(
-            tile,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..color = const Color(0xFF97B675),
-          );
+    if (!structuresOnly) {
+      final corners = [
+        Offset.zero,
+        Offset(size.width, 0),
+        Offset(0, size.height),
+        Offset(size.width, size.height),
+      ].map(projection.cellAt).toList();
+      final minX = corners.map((c) => c.x).reduce(math.min) - 2;
+      final maxX = corners.map((c) => c.x).reduce(math.max) + 2;
+      final minY = corners.map((c) => c.y).reduce(math.min) - 2;
+      final maxY = corners.map((c) => c.y).reduce(math.max) + 2;
+      final localRoads = game.roads;
+      bool road(LandCell cell) =>
+          localRoads.contains(cell) || game.roadNetwork.contains(cell);
+      final scale = projection.tile / 256;
+      for (var diagonal = minX + minY; diagonal <= maxX + maxY; diagonal++) {
+        for (var x = minX; x <= maxX; x++) {
+          final y = diagonal - x;
+          if (y < minY || y > maxY) continue;
+          final cell = LandCell(x, y);
+          final top = projection.point(x, y);
+          if (top.dx < -projection.tile ||
+              top.dx > size.width + projection.tile ||
+              top.dy < -projection.tile ||
+              top.dy > size.height + projection.tile) {
+            continue;
+          }
+          var path = ProductionAssets.tilesLand;
+          if (road(cell) && !game.roadNetwork.isMain(cell)) {
+            var mask = 0;
+            if (road(LandCell(x, y - 1))) mask |= 1;
+            if (road(LandCell(x + 1, y))) mask |= 2;
+            if (road(LandCell(x, y + 1))) mask |= 4;
+            if (road(LandCell(x - 1, y))) mask |= 8;
+            path =
+                'assets/game/tiles/road-${mask.toRadixString(2).padLeft(4, '0')}.png';
+          }
+          final image = images[path];
+          if (image != null) {
+            canvas.drawImageRect(
+              image,
+              Rect.fromLTWH(
+                0,
+                0,
+                image.width.toDouble(),
+                image.height.toDouble(),
+              ),
+              Rect.fromLTWH(
+                top.dx - 130 * scale,
+                top.dy - 4 * scale,
+                260 * scale,
+                148 * scale,
+              ),
+              Paint()..filterQuality = FilterQuality.low,
+            );
+          } else {
+            final tile = projection.footprint(Footprint(x, y, 1, 1));
+            canvas.drawPath(
+              tile,
+              Paint()
+                ..color = road(cell)
+                    ? const Color(0xFF626F70)
+                    : GameColors.land,
+            );
+            canvas.drawPath(
+              tile,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..color = const Color(0xFF97B675),
+            );
+          }
         }
       }
+      _mainRoad(canvas, minX, maxX, road);
     }
+    if (terrainOnly) return;
     final buildings = _depthSorted(game);
     for (final building in buildings) {
       final site = building.footprint;
@@ -857,6 +1015,8 @@ class _DistrictPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_DistrictPainter oldDelegate) =>
+      oldDelegate.terrainOnly != terrainOnly ||
+      oldDelegate.structuresOnly != structuresOnly ||
       oldDelegate.game != game ||
       oldDelegate.images != images ||
       oldDelegate.projection.size != projection.size ||

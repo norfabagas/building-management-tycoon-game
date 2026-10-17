@@ -40,6 +40,10 @@ void main() {
         );
         await tester.pumpWidget(
           MaterialApp(
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: true),
+              child: child!,
+            ),
             theme: buildGameTheme(),
             home: DistrictScreen(
               profile: LocalProfile(

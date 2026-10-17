@@ -98,9 +98,9 @@ void main() {
       final map = tester.getRect(find.byKey(const ValueKey('district-map')));
       final projection = MapProjection(map.size, Offset.zero);
       final drag = await tester.startGesture(
-        map.topLeft + projection.point(2.5, 2.5),
+        map.topLeft + projection.point(0.5, 0.5),
       );
-      await drag.moveTo(map.topLeft + projection.point(3.5, 3.5));
+      await drag.moveTo(map.topLeft + projection.point(1.5, 1.5));
       await drag.up();
       await tester.pumpAndSettle();
       await click(tester, 'Review cost');
@@ -113,6 +113,40 @@ void main() {
       ))!;
       expect(DistrictGame.fromJson(saved).balance, 4000000);
       expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+      await tester.runAsync(db.close);
+    },
+  );
+  testWidgets(
+    'disconnected footprint explains access and cannot reach purchase review',
+    (tester) async {
+      viewport(tester, const Size(1440, 900));
+      final db = (await tester.runAsync(openNewInMemoryDatabase))!;
+      await tester.pumpWidget(gameApp(GameRepository(open: () async => db)));
+      await tester.pumpAndSettle();
+      await click(tester, 'Build');
+      await click(tester, 'Choose apartment');
+      final map = tester.getRect(find.byKey(const ValueKey('district-map')));
+      final projection = MapProjection(map.size, Offset.zero);
+      final drag = await tester.startGesture(
+        map.topLeft + projection.point(.5, 4.5),
+      );
+      await drag.moveTo(map.topLeft + projection.point(1.5, 5.5));
+      await drag.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Not connected'), findsOneWidget);
+      expect(
+        find.textContaining('Connect the surrounding road'),
+        findsOneWidget,
+      );
+      final review = find.widgetWithText(FilledButton, 'Review cost');
+      expect(tester.widget<FilledButton>(review).onPressed, isNull);
+      expect(find.text('Confirm construction'), findsNothing);
+      final saved = (await tester.runAsync(
+        () => GameRepository.store.record('1').get(db),
+      ))!;
+      expect(DistrictGame.fromJson(saved).balance, 4000000);
+      expect(DistrictGame.fromJson(saved).buildings, isEmpty);
       await tester.pumpWidget(const SizedBox());
       await tester.runAsync(db.close);
     },

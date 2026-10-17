@@ -1,5 +1,10 @@
 # Platform & Tech Stack
 
+## Road save update — 2026-10-17
+
+Current snapshots use schema 8/catalog 2 for a compact, entirely local highway/public-street network. Android/Web, five slots, offline progression and MVVM remain unchanged. Ambient map activity uses Flutter canvas/ticker and bundled assets, without external services. Close older tabs before reopening this release; older clients cannot load schema 8. See [DistrictRoads.md](DistrictRoads.md).
+
+
 ## Catalog 2 runtime — 2026-10-16
 
 Flutter MVVM and local Sembast transactions remain the application architecture. Schema 7/catalog 2 adds four-type behavior and progression without a backend. `audioplayers` 6.8.1 adds Android/Web local WAV playback; only bundled asset sources are used, initially muted and gated by an explicit sound gesture. A per-profile preference is stored in the same local snapshot; no network audio service or new Android network permission is introduced. The dependency lockfile is committed. Android compilation/device verification remains limited by this workstation's absent Android SDK; publication targets the existing offline Web build.

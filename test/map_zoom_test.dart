@@ -16,6 +16,10 @@ Widget mapApp(
   Footprint? preview,
   bool decorationPreview = false,
 }) => MaterialApp(
+  builder: (context, child) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(disableAnimations: true),
+    child: child!,
+  ),
   theme: buildGameTheme(),
   home: Scaffold(
     body: Center(
@@ -38,6 +42,37 @@ Widget mapApp(
 );
 
 void main() {
+  test('compact map framing preserves world position under a moving pinch', () {
+    for (final size in [
+      const Size(390, 180),
+      const Size(844, 150),
+      const Size(800, 600),
+    ]) {
+      final camera = MapCameraViewModel();
+      final centre = size.center(Offset.zero);
+      for (final zoom in [2.0, .5, 1.25]) {
+        final before = MapProjection(
+          size,
+          camera.pan,
+          zoom: camera.zoom,
+        ).point(.7, 1.4);
+        final moved = before + const Offset(12, -7);
+        camera.transform(
+          zoom: zoom,
+          fromFocal: before - centre,
+          toFocal: moved - centre,
+        );
+        final after = MapProjection(
+          size,
+          camera.pan,
+          zoom: camera.zoom,
+        ).point(.7, 1.4);
+        expect((after - moved).distance, lessThan(.000001));
+      }
+      camera.dispose();
+    }
+  });
+
   test(
     'rectangular exteriors follow both land axes with a stable vertical height',
     () {

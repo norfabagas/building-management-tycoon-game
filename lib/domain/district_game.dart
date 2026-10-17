@@ -6,6 +6,7 @@ import 'building_catalog.dart';
 export 'game_rules.dart' show BuildingType;
 export 'building_catalog.dart';
 part 'district_progression.dart';
+part 'district_roads.dart';
 
 /// User-approved apartment catalog; amounts are integer cents.
 abstract final class StarterCatalog {
@@ -456,9 +457,15 @@ class DistrictGame {
     List<DistrictDecoration>? decorations,
     List<ApartmentBuilding>? buildings,
     this.statement,
+    DistrictRoadNetwork? roadNetwork,
   }) : buildings = buildings ?? [],
        achievements = achievements ?? {},
-       decorations = decorations ?? [];
+       decorations = decorations ?? [] {
+    this.roadNetwork =
+        roadNetwork ??
+        DistrictRoadNetwork.forExisting(this.buildings, this.decorations);
+  }
+  late final DistrictRoadNetwork roadNetwork;
   int watermark,
       phaseMilliseconds,
       balance,
@@ -500,7 +507,8 @@ class DistrictGame {
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': hourlyClock ? (catalogVersion == 2 ? 7 : 6) : 5,
+    'version': hourlyClock ? (catalogVersion == 2 ? 8 : 6) : 5,
+    'roadNetwork': roadNetwork.toJson(),
     'catalog': catalogVersion,
     'gems': gems,
     'soundEnabled': soundEnabled,
@@ -527,11 +535,17 @@ class DistrictGame {
             json['version'] != 4 &&
             json['version'] != 5 &&
             json['version'] != 6 &&
-            json['version'] != 7) ||
-        json['catalog'] != (json['version'] == 7 ? 2 : 1)) {
+            json['version'] != 7 &&
+            json['version'] != 8) ||
+        json['catalog'] != ((json['version'] as int) >= 7 ? 2 : 1)) {
       throw const FormatException('Unsupported game save');
     }
     final state = DistrictGame(
+      roadNetwork: json['version'] == 8
+          ? DistrictRoadNetwork.fromJson(
+              Map<String, dynamic>.from(json['roadNetwork'] as Map),
+            )
+          : null,
       watermark: json['watermark'] as int,
       balance: json['balance'] as int,
       day: json['day'] as int,
@@ -589,6 +603,7 @@ class DistrictGame {
                       StarterCatalog.legacyPhaseMilliseconds) ||
         state.remainder >= state.phaseMilliseconds ||
         state.lastClosing != state.day - (state.phaseIndex == 4 ? 0 : 1) ||
+        state.buildings.any((b) => state.roadNetwork.blocks(b.footprint)) ||
         state.earned < 0 ||
         state.gems < 0 ||
         state.decorations.map((d) => d.cell).toSet().length !=
@@ -808,7 +823,7 @@ abstract final class DistrictSimulation {
     )) {
       return 'Move decorations clear of the building and its surrounding road.';
     }
-    if (site.cells.any(roads.contains)) {
+    if (state.roadNetwork.blocks(site) || site.cells.any(roads.contains)) {
       return 'The footprint overlaps a road. Leave roads outside your building.';
     }
     for (final building in state.buildings) {
@@ -816,6 +831,9 @@ abstract final class DistrictSimulation {
           site.roadRing.any(building.footprint.contains)) {
         return 'The building or its surrounding road overlaps an occupied plot.';
       }
+    }
+    if (!state.roadNetwork.serves(site, state.buildings)) {
+      return 'Connect the surrounding road to the main road or an existing connected street.';
     }
     return null;
   }
@@ -850,7 +868,19 @@ abstract final class DistrictSimulation {
     state.balance += building.originalQuote;
     state.gems += building.rushGems;
     state.refundsSinceClosing += building.originalQuote;
+    final served = state.buildings
+        .where(
+          (b) =>
+              b != building &&
+              state.roadNetwork.serves(b.footprint, state.buildings),
+        )
+        .toList();
     state.buildings.remove(building);
+    if (served.any(
+      (b) => !state.roadNetwork.serves(b.footprint, state.buildings),
+    )) {
+      state.roadNetwork.streets.addAll(RoadSegment.ring(building.footprint));
+    }
   }
 
   static void vacate(DistrictGame state, int id, int room) {

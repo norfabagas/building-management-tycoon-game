@@ -1,5 +1,12 @@
 # Design Document
 
+## District streets and ambient activity — 2026-10-17
+
+A broad two-lane highway with a dashed centre line provides a visible starting edge for expansion. Existing approved road tiles connect building rings and public access streets to it. **Main road** focuses the camera on the highway; pinch and zoom retain their existing projection. Planning explains adjacency and shows Road access in the cost panel. Invalid/disconnected previews remain red and cannot be confirmed.
+
+Open buildings gain two small walkers from their matching resident/guest/office/customer family and a blue car. Paths follow rounded sidewalk/lane loops around the actual footprint, including long rectangles. Faces occlude actors passing behind them; movement is continuously interpolated and tinted by the existing daylight gradient. Respect reduced motion and stop hidden-map activity. Reuse catalog artwork; no new generated art or changes to the BM master. See [DistrictRoads.md](DistrictRoads.md).
+
+
 ## Current override — 2026-10-16
 
 The follow-up [gameplay audit](GameplayValidation.md) prioritizes the selected-floor artwork over generic metadata, retains building-wide information in Building details, uses a compact short-landscape HUD with overview beside floor content when width permits, and keeps coin feedback inside the Balance icon without layout shifts. Build cards explain actual base revenue and B1 cost; cost review exposes remaining cash and B1-supported versus total units. A completed-building map shortcut leads to explicit opening review, including in portrait. These are information hierarchy and feedback changes within the approved artwork and economy.

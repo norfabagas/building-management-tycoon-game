@@ -1,5 +1,10 @@
 # Game gameplay
 
+## Connected streets and activity — 2026-10-17
+
+Build beside the highway or extend an existing connected ring. The Road access review line and red/green preview use the domain placement rule; disconnected construction is rejected before payment. Main road brings the highway back into view. Existing saves receive free access around occupied plots; bridge cancellation retains streets needed by neighbours and still refunds the full building quote. Open businesses display walkers and vehicles, with no activity at unfinished or ready-to-open sites. Full details and validation are recorded in [DistrictRoads.md](DistrictRoads.md).
+
+
 ## Acceleration review safety — 2026-10-17
 
 An acceleration review applies to the displayed work only. If time advances and another job replaces it, confirmation displays “The job changed. Review acceleration again.” without spending gems, even when both jobs have the same price. Use Retry to synchronize and review the current job. The dialog scrolls in short viewports. Existing costs, next-Morning completion, manual business opening and refunds remain as defined in the approved catalog.

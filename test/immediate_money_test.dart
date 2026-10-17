@@ -194,7 +194,7 @@ void main() {
             ? 3000000
             : 4000000;
         expect(migrated.balance, expected);
-        expect(migrated.toJson()['version'], 7);
+        expect(migrated.toJson()['version'], 8);
         expect(
           (await repository.update(profile, 0)).toJson(),
           migrated.toJson(),

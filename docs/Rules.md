@@ -1,5 +1,12 @@
 # Game Rules & Mechanics
 
+## Main road and district life — 2026-10-17
+
+The user selected **Harus menempel jaringan jalan**. A new building's free one-tile ring must overlap or share an edge with the main highway or an already connected street. Diagonal-only contact and isolated streets do not count. No automatic connector is added for new construction. Building footprints and decorations cannot occupy highway/public-street tiles. The highway is a permanent two-tile strip extending along the x axis; new districts start at rows −3 and −2. It has no purchase price or maintenance. Existing costs, capacity, demand, synergy, opening and clock rules stay unchanged.
+
+Preserve all existing buildings and progress: older districts receive free access streets routed around their plots and decorations. Cancellation still refunds the full unfinished purchase. Keep the canceled ring as public street only when another connected building needs it; otherwise remove its unshared road as before. Public streets remain land reservations. Walkers and vehicles are cosmetic and appear only around manually opened businesses, including businesses undergoing upgrades. They do not represent tenant counts or add income. See [DistrictRoads.md](DistrictRoads.md).
+
+
 ## Current override — 2026-10-16
 
 The user subsequently approved the complete [four-type catalog](FigmaCatalogProposal.md) with “Setujui katalog usulan”. Catalog 2 supersedes the starter-only deferrals below: Apartment, Hotel, Office tower and Food court are available immediately; initial floors can be 1–10. Apply that document's exact prices, demand, parking allocation, luxury, needs, synergy, achievements, decorations and acceleration. The 24-hour clock, five profiles, local-only saves, taxes, manual opening, immediate purchase/refund and structural limits remain unchanged. Earlier “pending catalog” statements below are historical. Touchscreen navigation includes two-finger pinch zoom/pan, anchored at the moving focal point, with no accidental placement or selection.
