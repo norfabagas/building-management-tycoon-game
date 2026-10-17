@@ -2,7 +2,7 @@
 
 ## Full-screen tenant activity — 2026-10-17
 
-No additional packages, regenerated assets or migration is needed for full-screen tenant interiors. Run the normal Flutter suite, including tenant_activity_test.dart, and the standard lib/main.dart Web packaging command. Keep local site data when activating offline updates. Final checks and limitations are recorded in [TenantInterior.md](TenantInterior.md).
+No additional packages, regenerated assets or migration is needed for full-screen tenant interiors. Run the normal Flutter suite, including tenant_activity_test.dart, and the standard lib/main.dart Web packaging command. Keep local site data when activating offline updates. Final checks and limitations are recorded in [TenantInterior.md](TenantInterior.md). All 182 Flutter tests, six worker tests, formatting, analysis, assets and the final 201-resource release Web build pass. Android debug compilation remains blocked by the missing SDK. Publication uses the existing linked Netlify site and `--no-build` after the explicit production build; see [Deployment.md](Deployment.md).
 
 ## Volumetric city figures and storey geometry — 2026-10-17
 

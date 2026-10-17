@@ -1,5 +1,19 @@
 # Netlify Web deployment
 
+## Full-screen tenant interiors — 2026-10-17
+
+Source [`74c7df9`](https://github.com/norfabagas/building-management-tycoon-game/commit/74c7df9437eee3dd534cc664d82940c7e4ec9f9f) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad3196f794639eb74f70734`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad3196f794639eb74f70734) is ready/current, published **2026-10-17 at 13:45:08 WIB**. The manual production upload uses the explicit `lib/main.dart` build, with its source hash recorded in the deploy message. Review fixtures are excluded.
+
+Tenant directory rows, room/whole-floor lease cards and food-floor activity now open the full application viewport. The read-only interior shows role-specific ambient routines plus live saved occupancy, parking, happiness and financial information; Manage preserves the existing confirmation/transaction. Back restores the originating floor. See [TenantInterior.md](TenantInterior.md) for architecture, cosmetic-motion boundaries and all-type behavior.
+
+- Formatting of **63 Dart files**, Flutter analysis, all **182 Flutter tests**, six offline-worker tests and the **158-asset / 124-frame** validator pass. Final normal-entry Web build (including Wasm dry run) passes with **201 offline resources**. Android debug compilation was attempted but is blocked by **No Android SDK found**; no Android/device run is claimed.
+- Tests cover all four types at 390×844, 844×390 and 1440×900, live phase/vacancy refresh, preserved money/rent, Back, management confirmation and full cutaway visibility on short landscape. Browser review covers the in-memory four-type fixture and the normal-entry retained QA save, including unchanged occupancy/six gems, clock updates and Manage → Keep tenant. Final 1000×800/844×390 review confirms larger proportional actors and the complete room on short landscape. Browser error logs are empty. Proof remains ignored in `.tools/tenant-interior-final.png`; all review tabs/servers are closed and the viewport override is reset.
+- Primary HTTP responses for the three release files are 200 and their SHA-256 values match the local package: `main.dart.js` **d4bcfec2600fb1eeb804b28fa673abe8b03963409e636e12a696ec8338a907c9**; `offline_worker.js` **0bdf1c81b184a155eb8a9bc91d61296e5171fdd77e4d17a2a55933b2d64af93a**; `offline-assets.json` **d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea**.
+- GitHub returned no commit status entries; local validation is not a remote CI certification. Saves remain local, schema 8/catalog 2 is unchanged, and no economy/asset bytes/dependencies were changed.
+
+Allow the primary URL to install the new offline pack, close all game tabs and reopen without deleting site data. An older cached client can require a second close/reopen. Documentation-only commits after the source hash do not change the deployed bundle.
+
+
 ## Volumetric figures and floor-driven exteriors — 2026-10-17
 
 Source `430a65d2dfacf41caceacc7bcf3bcde6194566e8` is pushed to main and published as ready/current Netlify deploy `6ad2ef4d222e81a20dff8c6b` at **10:45:21 WIB** on [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). The normal `lib/main.dart` build includes 201 offline resources; review entry points remain ignored.

@@ -4,6 +4,8 @@
 
 Tenant/room taps now open a full-screen interior with live saved status and role-specific ambient routines. All four types, vacant units, food-floor party allocation, management confirmation and return navigation are covered. See [TenantInterior.md](docs/TenantInterior.md) for decisions and validation.
 
+Source `74c7df9` is pushed and published as ready/current deploy `6ad3196f794639eb74f70734` at 13:45 WIB. All 182 Flutter tests, six worker tests, format/analyzer/assets and the 201-resource normal-entry Web build pass. Primary release-file hashes match. Browser review preserves the existing QA save and verifies four-type navigation plus responsive final interiors. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Volumetric characters and visible upward upgrades — 2026-10-17
 
 Outdoor people and cars now use rotating, shaded XYZ geometry. Per-actor depth masks preserve front-side bodies and hide traffic behind nearer facades. Exteriors assemble approved ground/upper-storey texture bays on every footprint, with height tied to completed above-ground floors. Pending/canceled jobs and basement/lift upgrades keep their height. No schema/economy change or large art/dependency is added. See [VolumeAndHeight.md](docs/VolumeAndHeight.md).
