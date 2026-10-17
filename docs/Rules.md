@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Delete saved profiles — 2026-10-17
+
+Deleting a saved profile requires an explicit district/slot confirmation and is permanent. Cancel makes no change. Successful deletion clears only that district, freeing its slot; a replacement starts with the normal empty-game rules. Old sessions cannot save into a deleted/replaced profile under the current client. No prices, limits, occupancy or clock rules change. See [DeleteProfiles.md](DeleteProfiles.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 Tenant inspection is free and does not mutate the game. Time and business simulation continue in the full-screen interior. Daily routines are illustrative; saved occupancy, parking and catalogue income remain authoritative. Vacating still requires the existing confirmation and transaction, preserving accrued rent. Food courts expose dining floors rather than individual room leases. See [TenantInterior.md](TenantInterior.md).

@@ -9,6 +9,10 @@ import 'features/profiles/profile_view_model.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final saves = SaveManager(PreferencesSaveStore(SharedPreferencesAsync()));
-  runApp(TycoonApp(profiles: ProfileViewModel(saves), games: GameRepository()));
+  final games = GameRepository();
+  final saves = SaveManager(
+    PreferencesSaveStore(SharedPreferencesAsync()),
+    games: games,
+  );
+  runApp(TycoonApp(profiles: ProfileViewModel(saves), games: games));
 }

@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Delete saved profiles — 2026-10-17
+
+Use a transactional profiles/catalog record and profile_lifecycle ownership/deletion watermarks alongside districts. Validate legacy metadata once on import. Deletion checks the reviewed profile identity, removes its snapshot, clears its slot and advances its watermark atomically. Current game updates validate catalog/owner identity before catch-up/actions. Serialize local operations and use database transactions across manager instances. See [DeleteProfiles.md](DeleteProfiles.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 Resolve a full-screen interior by stable building/unit IDs from every DistrictViewModel snapshot. Derive its floor and live status without a second simulation or persisted navigation state. Reuse existing room removal transactions; refresh vacancy/error/retry in place. Schema 8/catalog 2 and economy are unchanged. See [TenantInterior.md](TenantInterior.md).

@@ -1,5 +1,9 @@
 # Project Overview
 
+## Delete saved profiles — 2026-10-17
+
+Occupied save slots now offer confirmed permanent deletion. Remove the selected district and all its progress together, preserve the other four slots and allow a clean new district in the freed slot. See [DeleteProfiles.md](DeleteProfiles.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 Tapping a tenant now opens the entire application viewport to its interior and daily activity, for all four building types. Inspect actual occupancy, parking and finances and retain the existing confirmed management actions. See [TenantInterior.md](TenantInterior.md).

@@ -1,5 +1,9 @@
 # Design Document
 
+## Delete saved profiles — 2026-10-17
+
+Add a labelled red Delete control beneath Load on occupied profile cards. Confirm the full district name and slot with a permanent-progress warning, Cancel and Delete permanently. Keep the dialog open with retryable errors, disable duplicate actions/back during commit and show the freed New slot after success. Preserve responsive scrolling and the approved BM artwork. See [DeleteProfiles.md](DeleteProfiles.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 Room/lease cards and tenant-directory rows now open a full-screen illustrated interior instead of immediately showing a management dialog. Show live time, current routine and all four daily activity windows, plus actual unit/building status. Food floor artwork opens dining activity. Back retains the floor; Manage opens the existing confirmation. See [TenantInterior.md](TenantInterior.md) for responsive, artwork and ambient-animation limits.

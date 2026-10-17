@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Delete saved profiles — 2026-10-17
+
+The local Sembast database now owns a version-1 five-slot profile catalog, imported once from validated SharedPreferences metadata. Delete the catalog entry and full game snapshot in one database transaction; preferences remain a repairable compatibility mirror. SQLite/IndexedDB, local-only saves and game schema 8/catalog 2 remain unchanged. See [DeleteProfiles.md](DeleteProfiles.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 An opaque Flutter Navigator route listens to the existing district view model; a read-only tenant presentation model derives the selected unit from each current snapshot. Reuse bundled cutaway/animation assets with responsive scrolling and reduced motion. No dependency, network service or schema change. See [TenantInterior.md](TenantInterior.md).

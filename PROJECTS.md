@@ -1,5 +1,9 @@
 # Building Management Tycoon
 
+## Delete saved profiles — 2026-10-17
+
+Saved profiles now have a confirmed Delete flow, freeing only the selected slot and all its game progress. A local transactional profile catalog/lifecycle prevents stale current-client autosaves and clean-slot inheritance. See [DeleteProfiles.md](docs/DeleteProfiles.md) for behavior, migration and validation.
+
 ## Full-screen tenant activity — 2026-10-17
 
 Tenant/room taps now open a full-screen interior with live saved status and role-specific ambient routines. All four types, vacant units, food-floor party allocation, management confirmation and return navigation are covered. See [TenantInterior.md](docs/TenantInterior.md) for decisions and validation.

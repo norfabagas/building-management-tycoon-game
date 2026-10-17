@@ -40,12 +40,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (profile != null && mounted) _open(profile);
   }
 
-  void _open(LocalProfile profile) => Navigator.of(context).push<void>(
-    MaterialPageRoute(
+  Future<void> _open(LocalProfile profile) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) =>
+            DistrictScreen(profile: profile, repository: widget.games),
+      ),
+    );
+    if (mounted) await widget.viewModel.load();
+  }
+
+  Future<void> _delete(LocalProfile profile) async {
+    final deleted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
       builder: (_) =>
-          DistrictScreen(profile: profile, repository: widget.games),
-    ),
-  );
+          _DeleteDistrictDialog(profile: profile, viewModel: widget.viewModel),
+    );
+    if (deleted == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${profile.areaName} deleted. Slot ${profile.slot.toString().padLeft(2, '0')} is available.',
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -190,12 +211,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(width: 12),
-        GameButton(
-          label: profile == null ? 'New' : 'Load',
-          secondary: profile == null,
-          onPressed: widget.viewModel.busy || !widget.viewModel.loaded
-              ? null
-              : () => profile == null ? _create(slot) : _open(profile),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GameButton(
+              label: profile == null ? 'New' : 'Load',
+              secondary: profile == null,
+              onPressed: widget.viewModel.busy || !widget.viewModel.loaded
+                  ? null
+                  : () => profile == null ? _create(slot) : _open(profile),
+            ),
+            if (profile != null)
+              TextButton.icon(
+                key: ValueKey('delete-profile-$slot'),
+                style: TextButton.styleFrom(foregroundColor: GameColors.danger),
+                onPressed: widget.viewModel.busy || !widget.viewModel.loaded
+                    ? null
+                    : () => _delete(profile),
+                icon: const Icon(Icons.delete_outline, size: 20),
+                label: const Text('Delete'),
+              ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+class _DeleteDistrictDialog extends StatefulWidget {
+  const _DeleteDistrictDialog({required this.profile, required this.viewModel});
+  final LocalProfile profile;
+  final ProfileViewModel viewModel;
+  @override
+  State<_DeleteDistrictDialog> createState() => _DeleteDistrictDialogState();
+}
+
+class _DeleteDistrictDialogState extends State<_DeleteDistrictDialog> {
+  bool _deleting = false;
+  String? _error;
+  Future<void> _confirm() async {
+    if (_deleting) return;
+    setState(() {
+      _deleting = true;
+      _error = null;
+    });
+    try {
+      await widget.viewModel.delete(widget.profile);
+      if (mounted) Navigator.pop(context, true);
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _deleting = false;
+          _error = 'Could not delete this district. Your last saved data is kept. Cancel and refresh the profile list, or try again.';
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => PopScope(
+    canPop: !_deleting,
+    child: AlertDialog(
+      title: const Text('Delete saved district?'),
+      content: SingleChildScrollView(
+        child: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.profile.areaName,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Slot ${widget.profile.slot.toString().padLeft(2, '0')} · Saved on this device',
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'All buildings, money, tenants and progress in this district will be permanently deleted. This cannot be undone.',
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 16),
+                Text(_error!, style: const TextStyle(color: GameColors.danger)),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _deleting ? null : () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(backgroundColor: GameColors.danger),
+          onPressed: _deleting ? null : _confirm,
+          icon: _deleting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.delete_outline),
+          label: Text(_deleting ? 'Deleting…' : 'Delete permanently'),
         ),
       ],
     ),

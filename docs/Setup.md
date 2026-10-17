@@ -1,5 +1,9 @@
 # Project setup
 
+## Delete saved profiles — 2026-10-17
+
+No package, asset regeneration or configuration change is required. The first profile-list load imports validated metadata into the existing local database; retain browser/app storage. Run delete_profile_test.dart with the full regression suite and normal production Web build. Do not delete real player profiles during QA. See [DeleteProfiles.md](DeleteProfiles.md) for persistence and compatibility limits.
+
 ## Full-screen tenant activity — 2026-10-17
 
 No additional packages, regenerated assets or migration is needed for full-screen tenant interiors. Run the normal Flutter suite, including tenant_activity_test.dart, and the standard lib/main.dart Web packaging command. Keep local site data when activating offline updates. Final checks and limitations are recorded in [TenantInterior.md](TenantInterior.md). All 182 Flutter tests, six worker tests, formatting, analysis, assets and the final 201-resource release Web build pass. Android debug compilation remains blocked by the missing SDK. Publication uses the existing linked Netlify site and `--no-build` after the explicit production build; see [Deployment.md](Deployment.md).
@@ -118,7 +122,7 @@ The setup uses MVVM with Flutter `ChangeNotifier`, without an extra state-manage
 | `lib/shared/widgets/` | Defined BM title lockup and shared actions |
 | `test/` | Save safety, concurrent reservations, clock/construction/rent, offline parity and responsive build/room flows |
 
-`PreferencesSaveStore` retains **profile metadata only**: slot, trimmed district name and creation time, under the existing schema/key. Its serialized slot-creation rules and corrupt-data preservation remain. `GameRepository` now stores complete version-1 game records separately in Sembast transactions, backed by SQLite on Android and IndexedDB on Web. Each transaction loads the latest snapshot, applies elapsed phases and a validated action, then commits before the view model publishes it. The wallet, rent ledger, closing ID, orders, buildings and watermark are saved together. Road tiles are derived deterministically from saved plots. Existing metadata-only profiles initialize an empty $40,000 game once at first gameplay load. No reset/delete action exists. See [Gameplay.md](Gameplay.md) for persistence, migration and browser storage limitations.
+`PreferencesSaveStore` retains **profile metadata only**: slot, trimmed district name and creation time, under the existing schema/key. Its serialized slot-creation rules and corrupt-data preservation remain. `GameRepository` now stores complete version-1 game records separately in Sembast transactions, backed by SQLite on Android and IndexedDB on Web. Each transaction loads the latest snapshot, applies elapsed phases and a validated action, then commits before the view model publishes it. The wallet, rent ledger, closing ID, orders, buildings and watermark are saved together. Road tiles are derived deterministically from saved plots. Existing metadata-only profiles initialize an empty $40,000 game once at first gameplay load. The original release had no reset/delete action; confirmed deletion now follows [DeleteProfiles.md](DeleteProfiles.md). See [Gameplay.md](Gameplay.md) for persistence, migration and browser storage limitations.
 
 ## Current application scope
 

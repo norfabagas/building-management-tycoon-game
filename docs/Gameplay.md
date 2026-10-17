@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Delete saved profiles — 2026-10-17
+
+From Choose a district, select Delete on the saved profile and confirm Delete permanently. Cancel keeps the district. Successful deletion removes that district's progress and makes its slot available for New; the other four slots stay intact. Close older tabs before activating the update. See [DeleteProfiles.md](DeleteProfiles.md).
+
 ## Full-screen tenant activity — 2026-10-17
 
 Tap a room, office lease or directory tenant to see its full-screen interior, time-of-day routine and saved status. Inspect vacant rooms too; tap food-court art/dining entries for real floor party counts. Manage retains existing confirmation actions; Back restores the floor and subsequent Exit restores the directory/map camera. Activity is cosmetic and never produces additional income. See [TenantInterior.md](TenantInterior.md).

@@ -54,4 +54,17 @@ class ProfileViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> delete(LocalProfile profile) async {
+    if (_busy || !_loaded) throw StateError('Profiles are not ready');
+    _busy = true;
+    notifyListeners();
+    try {
+      await _saves.deleteProfile(profile);
+      _profiles = [..._profiles]..[profile.slot - 1] = null;
+    } finally {
+      _busy = false;
+      notifyListeners();
+    }
+  }
 }
