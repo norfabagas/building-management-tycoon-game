@@ -34,6 +34,10 @@ class AccelerationButton extends StatelessWidget {
                 model.busy || model.error != null || model.game!.gems < cost
                 ? null
                 : () async {
+                    final quotedJob = DistrictProgression.accelerationJob(
+                      building,
+                    );
+                    if (quotedJob == null) return;
                     final job =
                         building.upgrade?.kind.label ??
                         (building.stage == ConstructionStage.shell
@@ -43,8 +47,10 @@ class AccelerationButton extends StatelessWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('Accelerate active job'),
-                        content: Text(
-                          '$job in ${building.name}\nPrice: $cost gems\n\nThis job completes next Morning. Remaining jobs still run separately. New buildings still require Open to Business.',
+                        content: SingleChildScrollView(
+                          child: Text(
+                            '$job in ${building.name}\nPrice: $cost gems\n\nThis job completes next Morning. Remaining jobs still run separately. New buildings still require Open to Business.',
+                          ),
                         ),
                         actions: [
                           TextButton(
@@ -64,6 +70,7 @@ class AccelerationButton extends StatelessWidget {
                           state,
                           building.id,
                           quotedCost: cost,
+                          quotedJob: quotedJob,
                         ),
                       );
                     }

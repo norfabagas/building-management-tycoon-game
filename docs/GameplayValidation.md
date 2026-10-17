@@ -1,5 +1,15 @@
 # Gameplay validation — 2026-10-16
 
+## Follow-up self-test — 2026-10-17
+
+A new regression test reproduced an incorrect gem charge: a shell review priced at one gem could remain open across midnight, then accelerate the subsequent B1 job at the same price. Price equality alone did not identify the reviewed work. Confirmation now carries the building ID, job kind/stage and start day captured when review opens; the domain rechecks that identity and price after transactional catch-up. A changed job rejects the action and preserves gems. The player retries synchronization and reviews the current job. No save field, catalog value or timing rule changes. Dialog content scrolls at short heights.
+
+Six regression cases cover the equal-price shell/B1 transition, a later upgrade of the same kind, transactional rollback/retry idempotence, and a dialog held across midnight at 390×844, 844×390 and 1440×900. The reproduction failed on the previous implementation and passes with the fix. The 132 existing tests remain part of the full suite.
+
+Six network-free Node tests exercise the actual offline-worker source with mocked CacheStorage/fetch: scoped resource precaching, cached startup/media with query parameters during network failure, offline navigation, old-pack cleanup retaining unrelated caches, failed installation retaining the active pack, and bypass of foreign requests/writes. Missing media errors rather than returning HTML. These are worker logic tests, not a physical disconnected-browser certification. GitHub Actions includes the same command. Final checks/publication are recorded in Deployment.md; limitations below remain applicable.
+
+Current checks pass: format 53 Dart files, Flutter analysis, all 138 Flutter tests, six Node tests, validation of 158 runtime resources / 124 frames, and the production Web build with 201 resources. Android debug compilation was attempted again and reports No Android SDK found. Runtime artwork, fonts, BM master, economy and save schema are unchanged. Later sections record the preceding audit's measurements and evidence.
+
 ## Review standard
 
 The audit follows the approved catalog and the sixteen archived design boards. A tycoon loop must let a player compare businesses, commit limited cash and land, wait for construction, deliberately open, see actual demand/parking/revenue, then reinvest. Illustrations or placeholder counters alone do not satisfy this. The review also checks save durability, responsive navigation and feedback that does not move the controls.

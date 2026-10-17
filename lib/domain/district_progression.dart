@@ -141,10 +141,26 @@ abstract final class DistrictProgression {
     return null;
   }
 
+  /// Identifies the reviewed work across repository snapshot replacements.
+  /// Type/stage plus start day also distinguishes repeated upgrades.
+  static String? accelerationJob(ApartmentBuilding building) {
+    final upgrade = building.upgrade;
+    if (upgrade?.stage == UpgradeStage.building && !upgrade!.rushed) {
+      return '${building.id}:upgrade:${upgrade.kind.name}:${upgrade.startedDay}';
+    }
+    if (!building.rushed &&
+        (building.stage == ConstructionStage.shell ||
+            building.stage == ConstructionStage.basement)) {
+      return '${building.id}:construction:${building.stage.name}:${building.startedDay}';
+    }
+    return null;
+  }
+
   static void accelerate(
     DistrictGame state,
     int id, {
     required int quotedCost,
+    required String quotedJob,
   }) {
     final building = DistrictSimulation._find(state, id);
     final cost = accelerationCost(state, building);
@@ -153,9 +169,9 @@ abstract final class DistrictProgression {
         'Only an active construction job can be accelerated.',
       );
     }
-    if (quotedCost != cost) {
+    if (quotedCost != cost || quotedJob != accelerationJob(building)) {
       throw const GameplayException(
-        'The job changed. Review the new acceleration price.',
+        'The job changed. Review acceleration again.',
       );
     }
     if (state.gems < cost) throw const GameplayException('Not enough gems.');

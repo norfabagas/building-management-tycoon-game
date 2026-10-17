@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Acceleration review safety — 2026-10-17
+
+An acceleration review applies to the displayed work only. If time advances and another job replaces it, confirmation displays “The job changed. Review acceleration again.” without spending gems, even when both jobs have the same price. Use Retry to synchronize and review the current job. The dialog scrolls in short viewports. Existing costs, next-Morning completion, manual business opening and refunds remain as defined in the approved catalog.
+
 ## Gameplay quality audit — 2026-10-16
 
 Type cards now explain base income and B1 cost. Purchase review shows the remaining cash and how much of the completed capacity B1 can actually support; demand, bonuses and tax remain separate. Completed unopened businesses have a map shortcut to the explicit opening review. Selected-floor rooms/facilities precede generic building accounting, with larger room cutaways and expandable Building details. Short landscape uses a compact HUD and side-by-side overview/floor where width allows; fixed floor navigation/footer clearance remain. Closing coins animate over the Balance icon without moving the map. See [GameplayValidation.md](GameplayValidation.md) for findings, the preserved economic contract, offline performance, tests and remaining limits.

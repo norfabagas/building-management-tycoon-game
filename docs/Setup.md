@@ -1,5 +1,9 @@
 # Project setup
 
+## Self-test additions — 2026-10-17
+
+Run `node --test tool/offline_worker_test.mjs` alongside the Dart suite; Node 24 is already configured in GitHub Actions. It uses built-in modules and mocked CacheStorage/fetch with the actual worker source, needs no network/package installation, and checks cached reloads plus update/failure isolation. It does not verify browser persistence quotas or device disconnection. `test/acceleration_review_test.dart` adds controlled-clock job-change, gem preservation and repository/UI regressions. Keep using `dart run tool/build_web.dart` for production packaging and retain browser site data when activating an update. Android/device and live-Figma limits remain recorded in GameplayValidation.md.
+
 ## Four-type catalog and local audio — 2026-10-16
 
 Run `./tool/flutter.ps1 pub get` after pulling to install the locked local-audio platform implementations. Catalog 2 is approved in FigmaCatalogProposal.md. The normal production entry point remains `lib/main.dart`; in-memory review entry points live only in ignored `.tools/` and must never be deployed. Build the offline release with `dart run tool/build_web.dart`, which explicitly compiles the normal entry point and creates the local resource manifest. Existing manual Netlify linkage remains ignored. Schema 1–6 saves catch up under the original catalog before migrating to schema 7/catalog 2; retain site data and close old tabs before reopening the updated app.

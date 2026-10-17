@@ -1,5 +1,9 @@
 # Building Management Tycoon
 
+## Follow-up self-test — 2026-10-17
+
+Reproduced and fixed an equal-price acceleration race: an old shell dialog could accelerate the new B1 job after midnight. The domain now validates the reviewed building/job/start-day identity and price after catch-up; UI captures that identity before opening a scrollable dialog. Six new regressions cover shell/B1, repeated upgrades, rollback/retry and three viewport sizes. Six Node tests cover offline-worker cache, navigation, update isolation and failure behavior; Actions runs them too. See GameplayValidation.md and Deployment.md for current results, publication and limits.
+
 ## Gameplay quality audit — 2026-10-16
 
 The [audit](docs/GameplayValidation.md) fixes investment clarity, B1-limited capacity review, selected-floor hierarchy, short-landscape usability, portrait opening discovery and layout-stable cash feedback. It retains the approved art, offline five-slot saves, 24-second days and catalog values. A transient synergy cache removes repeated geometry work during chronological offline advancement: the 20-business/30-real-day local benchmark improves from about 90 seconds to 1.5 seconds with identical final cash/gems/closing count. No new schema, economy adjustment or runtime artwork is introduced.

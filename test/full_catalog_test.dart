@@ -321,7 +321,12 @@ void main() {
     );
     final state = district(building)..gems = 5;
     expect(DistrictProgression.accelerationCost(state, building), 2);
-    DistrictProgression.accelerate(state, 1, quotedCost: 2);
+    DistrictProgression.accelerate(
+      state,
+      1,
+      quotedCost: 2,
+      quotedJob: DistrictProgression.accelerationJob(building)!,
+    );
     expect(state.gems, 3);
     final restored = DistrictGame.fromJson(state.toJson());
     final savedBuilding = restored.buildings.single;
@@ -330,7 +335,12 @@ void main() {
     DistrictSimulation.advance(restored, 24000);
     expect(savedBuilding.stage, ConstructionStage.basement);
     expect(savedBuilding.occupied, isEmpty);
-    DistrictProgression.accelerate(restored, 1, quotedCost: 1);
+    DistrictProgression.accelerate(
+      restored,
+      1,
+      quotedCost: 1,
+      quotedJob: DistrictProgression.accelerationJob(savedBuilding)!,
+    );
     DistrictSimulation.advance(restored, 48000);
     expect(savedBuilding.stage, ConstructionStage.parkingDone);
     expect(savedBuilding.occupied, isEmpty);
@@ -342,7 +352,12 @@ void main() {
     DistrictSimulation.orderUpgrade(state, 1, BuildingUpgrade.floor);
     DistrictSimulation.advance(state, 24000);
     final before = state.gems;
-    DistrictProgression.accelerate(state, 1, quotedCost: 2);
+    DistrictProgression.accelerate(
+      state,
+      1,
+      quotedCost: 2,
+      quotedJob: DistrictProgression.accelerationJob(building)!,
+    );
     final restored = DistrictGame.fromJson(state.toJson());
     DistrictSimulation.cancelUpgrade(restored, 1);
     expect(restored.gems, before);

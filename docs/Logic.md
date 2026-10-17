@@ -2,6 +2,8 @@
 
 ## Current override — 2026-10-16
 
+Self-test correction (2026-10-17): acceleration confirmation validates a transient reviewed-job token (building ID, construction stage or upgrade kind, and start day) together with the gem quote, after repository catch-up. Equal-price replacement jobs require a fresh review. Capture the token before awaiting the dialog; never rederive it at confirmation. A rejection rolls back the transaction, including catch-up, so Retry advances the preserved record once. The token is not persisted and schema 7 remains unchanged. See GameplayValidation.md for the failing reproduction and regression cases.
+
 The gameplay audit optimizes offline advancement by memoizing each receiver's synergy only within one synchronous advance. Layout and compatible neighbor types do not change during that operation, including construction/upgrade completion. Clear the transient map in finally; never serialize or retain it across placement/cancellation or other player actions. Every chronological phase, closing, rounding and reward still executes. See GameplayValidation.md for whole-state replay and performance evidence.
 
 Schema 7/catalog 2 implements the user's approved [four-type catalog](FigmaCatalogProposal.md). Existing schema 1–6 saves first catch up using catalog 1 and their saved clock cadence; only then switch to catalog 2 and award eligible historical achievements once. Existing balances, room IDs, pending rent, completed levels/lifts, queue stages and closing IDs survive. Old clients reject schema 7. All mutations, achievement rewards, visits/sales, gems and decoration placement/moves remain in the existing repository transaction. Unknown versions/catalogs and invalid caps/collisions preserve the original record.
