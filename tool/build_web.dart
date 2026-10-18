@@ -3,6 +3,11 @@ import 'dart:io';
 
 /// Build self-hosted Web resources and the offline cache manifest.
 Future<void> main() async {
+  final version = DateTime.now()
+      .toUtc()
+      .toIso8601String()
+      .replaceAll(RegExp(r'\D'), '')
+      .substring(0, 17);
   final local = Platform.isWindows
       ? '.tools/flutter/bin/flutter.bat'
       : '.tools/flutter/bin/flutter';
@@ -15,6 +20,7 @@ Future<void> main() async {
       'build',
       'web',
       '--release',
+      '--dart-define=APP_BUILD=$version',
       '--target',
       'lib/main.dart',
       '--no-web-resources-cdn',
@@ -31,10 +37,16 @@ Future<void> main() async {
   index.writeAsStringSync(
     index.readAsStringSync().replaceFirst(
       '<!-- OFFLINE_REGISTRATION -->',
-      "<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('offline_worker.js').catch(console.error)); }</script>",
+      '<script src="app_update.js"></script>',
     ),
   );
-  final version = DateTime.now().toUtc().microsecondsSinceEpoch.toString();
+  File('build/web/app-version.json')
+      .writeAsStringSync(jsonEncode({'version': version}));
+  File('build/web/app_update.js').writeAsStringSync(
+    File('web/app_update.js')
+        .readAsStringSync()
+        .replaceAll('__BUILD_VERSION__', version),
+  );
   final worker = File('web/offline_worker.js')
       .readAsStringSync()
       .replaceAll('__BUILD_VERSION__', version);
@@ -49,13 +61,19 @@ Future<void> main() async {
                 .substring('build/web/'.length);
           })
           .where(
-            (name) => !name.endsWith('.map') && name != 'offline-assets.json',
+            (name) =>
+                !name.endsWith('.map') &&
+                ![
+                  'offline-assets.json',
+                  'app-version.json',
+                  'offline_worker.js',
+                ].contains(name),
           )
           .toList()
         ..sort();
   File('build/web/offline-assets.json')
       .writeAsStringSync(jsonEncode(resources));
   stdout.writeln(
-    'Prepared ${resources.length} local resources for offline use.',
+    'Prepared ${resources.length} local resources for offline use. Version $version UTC.',
   );
 }

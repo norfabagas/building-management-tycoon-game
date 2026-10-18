@@ -1,5 +1,9 @@
 # Project Overview
 
+## Timestamp version and Sync — 2026-10-18
+
+Web releases use a shared UTC timestamp code and a home-screen Sync action for mismatched static app versions. Gameplay and all five saves remain local/offline; same-origin update metadata/assets are the only added requests. See [AppVersionSync.md](AppVersionSync.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 Improve building action hierarchy and support map rotation. Keep Upgrade building/Back to floors visible above independently scrolling content; replace ambiguous panel crosses with labelled Close actions. Add two-finger isometric yaw plus compass controls. See [CameraAndActions.md](CameraAndActions.md).

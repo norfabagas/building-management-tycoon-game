@@ -1,5 +1,9 @@
 # Project setup
 
+## Timestamp version and Sync — 2026-10-18
+
+Always package with dart run tool/build_web.dart to compile APP_BUILD and emit the matching timestamp metadata/bridge/worker. Run node --test tool/offline_worker_test.mjs tool/app_update_test.mjs plus the Flutter suite. Retain site storage; pre-feature cached clients need one initial close-all-tabs/reopen to receive this updater. See [AppVersionSync.md](AppVersionSync.md). Formatting (77 Dart files), analyzer, all 272 Flutter tests, 20 Node tests, asset validation and the 201-resource release Web build pass. Two-release browser Sync preserves the local profile/game. Android debug compilation remains blocked by the missing SDK.
+
 ## Camera rotation and building actions — 2026-10-18
 
 No dependency, asset regeneration, migration or hosting configuration change. Run map_rotation_test.dart and building_actions_ux_test.dart with the full regression suite, format/analyze and normal production Web build. Physical Android/touch validation still requires the Android SDK/device. Formatting (70 Dart files), analyzer, all 263 Flutter tests, six worker tests, asset validation and the 201-resource normal-entry Web build pass. Android debug compilation reports No Android SDK found. See [CameraAndActions.md](CameraAndActions.md).
@@ -116,7 +120,7 @@ On another workstation, use the version in `toolchain.json`, install the Android
 
 For a global SDK, use `dart` and `flutter` in the equivalent commands. GitHub Actions runs format, analyze, tests, the offline Web build, and an Android debug build. Store signing is not configured. Manual Netlify Web hosting is recorded in [Deployment.md](Deployment.md).
 
-Web output is `build/web/`. Serve that entire directory from HTTPS, or localhost during development. `tool/build_web.dart` disables the Flutter resource CDN, generates a versioned offline asset manifest, and includes a service worker. After the initial load and cache installation, the app can reload without the host being reachable. Updates wait for the previous service worker's clients to close. Direct `flutter build web` omits this offline packaging step. Local profiles are tied to the browser origin and can be removed by browser storage clearing.
+Web output is `build/web/`. Serve that entire directory from HTTPS, or localhost during development. `tool/build_web.dart` disables the Flutter resource CDN, generates a versioned offline asset manifest, and includes a service worker. After the initial load and cache installation, the app can reload without the host being reachable. Home-screen Sync now activates a verified update explicitly after other game tabs close; see AppVersionSync.md. Direct `flutter build web` omits this offline packaging step. Local profiles are tied to the browser origin and can be removed by browser storage clearing.
 
 The native Android app bundles its assets and fonts. Release application permissions contain no Internet permission. Flutter's debug/profile manifests allow network access for development tools. Android backup and transfer exclusions keep profile metadata local.
 

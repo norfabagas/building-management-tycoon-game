@@ -1,5 +1,9 @@
 # Design Document
 
+## Timestamp version and Sync — 2026-10-18
+
+Pin a compact timestamp version row above the home/profile scroll area. When hosted and installed versions differ, show a green Sync button at the top right with at least 48px touch target. Show inline syncing/retry/other-tab status; matching or unverified offline versions do not invent an update. See [AppVersionSync.md](AppVersionSync.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 Upgrade building is the pinned green primary action in the selected-building header; Back to floors replaces it in the upgrades view. Building exit stays in bottom navigation; remove its redundant cross and shrink neither touch targets nor text to fit. Panel close controls show an icon and Close label. Floor movement is neutral outlined navigation; upgrade/acceleration confirmation is green. A compass beside Main road opens labelled Rotate left/right (90°) and Reset rotation controls; two-finger twist rotates continuously, combined with pinch/pan. Streets turn in the ground plane while buildings/people remain upright and labels readable. This supersedes the earlier camera-without-orbit limitation. See [CameraAndActions.md](CameraAndActions.md).

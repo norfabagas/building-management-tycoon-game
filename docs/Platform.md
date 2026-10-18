@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Timestamp version and Sync — 2026-10-18
+
+The production Web pack shares one yyyyMMddHHmmssSSS UTC build identifier across Dart, bridge, worker and uncached app-version.json. Explicit Sync activates a fully installed matching worker then reloads; native Android performs no Web version check. See [AppVersionSync.md](AppVersionSync.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 Extend the existing Flutter canvas camera with local session yaw; no 3D engine, external dependency, network service, account or save migration. Preserve Android/Web, portrait/landscape, reduced motion and existing offline resources. This supersedes the earlier no-orbit-control limit. See [CameraAndActions.md](CameraAndActions.md).

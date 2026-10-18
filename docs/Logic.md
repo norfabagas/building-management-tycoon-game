@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Timestamp version and Sync — 2026-10-18
+
+AppUpdateViewModel and a conditional AppUpdateGateway separate home UI state from the bundled Web update bridge. Metadata bypasses caches; installation validates release boundaries; explicit version-checked activation reloads only after a matching controller is confirmed. IndexedDB and local preferences are never cleared. See [AppVersionSync.md](AppVersionSync.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 MapCameraViewModel stores session yaw/zoom/pan. Projection applies world-plane yaw before isometric projection and inverse picking; focal transforms use I·R·I⁻¹ and account for the zoom-scaled origin offset. View-facing vertices drive facades/silhouette/depth sorting, and rotated actor rays drive occlusion. Pinned action headers reuse the same district view model and existing guarded transactions. See [CameraAndActions.md](CameraAndActions.md).

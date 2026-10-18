@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Timestamp version and Sync — 2026-10-18
+
+Sync updates application files only. It does not alter saves, five slots, time, economy or schema. Keep playing offline when checks fail; refuse activation while another same-scope game tab is open. See [AppVersionSync.md](AppVersionSync.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 Map rotation and action hierarchy are presentation only. Twisting/rotating, opening upgrade review, closing panels and returning to floors do not purchase or alter land. Road connectivity, footprint dimensions, capacity, prices, limits, phases and five local save slots are unchanged. See [CameraAndActions.md](CameraAndActions.md).

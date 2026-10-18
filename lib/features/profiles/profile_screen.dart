@@ -12,28 +12,65 @@ import '../../shared/widgets/game_brand.dart';
 import '../../shared/widgets/game_button.dart';
 import '../district/district_screen.dart';
 import 'profile_view_model.dart';
+import '../../data/app_update_platform.dart';
+import 'app_update_view_model.dart';
+import 'app_update_bar.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
     required this.viewModel,
     required this.games,
+    this.updates,
   });
   final ProfileViewModel viewModel;
   final GameRepository games;
+  final AppUpdateViewModel? updates;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen>
+    with WidgetsBindingObserver {
+  late final AppUpdateViewModel _updates;
+  Timer? _versionTimer;
   @override
   void initState() {
     super.initState();
+    _updates = widget.updates ?? AppUpdateViewModel(createAppUpdateGateway());
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_updates.check());
+    _versionTimer = Timer.periodic(
+      const Duration(minutes: 1),
+      (_) => _checkVersion(),
+    );
     unawaited(widget.viewModel.load());
   }
 
+  void _checkVersion() {
+    if (mounted &&
+        (ModalRoute.of(context)?.isCurrent ?? false) &&
+        WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
+      unawaited(_updates.check());
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _checkVersion();
+  }
+
+  @override
+  void dispose() {
+    _versionTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    if (widget.updates == null) _updates.dispose();
+    super.dispose();
+  }
+
   Future<void> _create(int slot) async {
+    if (_updates.syncing) return;
     final profile = await showDialog<LocalProfile>(
       context: context,
       builder: (_) =>
@@ -43,16 +80,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _open(LocalProfile profile) async {
+    if (_updates.syncing) return;
     await Navigator.of(context).push<void>(
       MaterialPageRoute(
         builder: (_) =>
             DistrictScreen(profile: profile, repository: widget.games),
       ),
     );
-    if (mounted) await widget.viewModel.load();
+    if (mounted) {
+      unawaited(_updates.check());
+      await widget.viewModel.load();
+    }
   }
 
   Future<void> _delete(LocalProfile profile) async {
+    if (_updates.syncing) return;
     final deleted = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -73,60 +115,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
-      child: AnimatedBuilder(
-        animation: widget.viewModel,
-        builder: (context, _) => LayoutBuilder(
-          builder: (context, constraints) {
-            final wide = constraints.maxWidth >= 900;
-            final introduction = Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GameBrand(size: wide ? 72 : 48, fontSize: wide ? 36 : 28),
-                const SizedBox(height: 24),
-                const Text(
-                  'Build and manage your district.',
-                  style: TextStyle(fontSize: 22, color: GameColors.muted),
-                ),
-                const SizedBox(height: 24),
-                Image.asset(
-                  GameAssets.district,
-                  fit: BoxFit.contain,
-                  semanticLabel: 'Illustrated district with apartments, a hotel, offices and a food court',
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Progress saves on this device.',
-                  style: TextStyle(fontSize: 18, color: GameColors.muted),
-                ),
-              ],
-            );
-            final slots = _slots();
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1360),
-                  child: wide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(child: introduction),
-                            const SizedBox(width: 48),
-                            Expanded(child: slots),
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            introduction,
-                            const SizedBox(height: 32),
-                            slots,
-                          ],
-                        ),
-                ),
+      child: Column(
+        children: [
+          if (_updates.supported) AppUpdateBar(model: _updates),
+          Expanded(
+            child: AnimatedBuilder(
+              animation: Listenable.merge([widget.viewModel, _updates]),
+              builder: (context, _) => LayoutBuilder(
+                builder: (context, constraints) {
+                  final wide = constraints.maxWidth >= 900;
+                  final introduction = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GameBrand(size: wide ? 72 : 48, fontSize: wide ? 36 : 28),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Build and manage your district.',
+                        style: TextStyle(fontSize: 22, color: GameColors.muted),
+                      ),
+                      const SizedBox(height: 24),
+                      Image.asset(
+                        GameAssets.district,
+                        fit: BoxFit.contain,
+                        semanticLabel: 'Illustrated district with apartments, a hotel, offices and a food court',
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Progress saves on this device.',
+                        style: TextStyle(fontSize: 18, color: GameColors.muted),
+                      ),
+                    ],
+                  );
+                  final slots = _slots();
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 1360),
+                        child: wide
+                            ? Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(child: introduction),
+                                  const SizedBox(width: 48),
+                                  Expanded(child: slots),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  introduction,
+                                  const SizedBox(height: 32),
+                                  slots,
+                                ],
+                              ),
+                      ),
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     ),
   );
@@ -225,7 +274,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             GameButton(
               label: profile == null ? 'New' : 'Load',
               secondary: profile == null,
-              onPressed: widget.viewModel.busy || !widget.viewModel.loaded
+              onPressed:
+                  widget.viewModel.busy ||
+                      !widget.viewModel.loaded ||
+                      _updates.syncing
                   ? null
                   : () => profile == null ? _create(slot) : _open(profile),
             ),
@@ -233,7 +285,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               TextButton.icon(
                 key: ValueKey('delete-profile-$slot'),
                 style: TextButton.styleFrom(foregroundColor: GameColors.danger),
-                onPressed: widget.viewModel.busy || !widget.viewModel.loaded
+                onPressed:
+                    widget.viewModel.busy ||
+                        !widget.viewModel.loaded ||
+                        _updates.syncing
                     ? null
                     : () => _delete(profile),
                 icon: const Icon(Icons.delete_outline, size: 20),
