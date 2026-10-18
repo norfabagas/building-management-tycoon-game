@@ -4,6 +4,8 @@
 
 Home checks compare the installed UTC timestamp with uncached hosted metadata. A pinned top-right Sync downloads/activates a complete matching app pack without clearing local saves. See [AppVersionSync.md](docs/AppVersionSync.md).
 
+Source `c6cd3fe` is pushed and published as ready/current deploy `6ad49ff1819b775e2081ef09` at 17:31:18 WIB with timestamp `20261018102654273`. All 272 Flutter tests, 20 Node tests, formatter/analyzer/assets and the 201-resource Web build pass. Two-release browser Sync and offline reload preserve local profile/game progress. Primary hashes and no-store version/worker headers are verified. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 Building actions now have a pinned primary upgrade/back header, labelled panel close controls and neutral floor navigation. The map supports continuous two-finger yaw and compass rotation/reset with matching world picking, upright buildings and traffic. See [CameraAndActions.md](docs/CameraAndActions.md).
