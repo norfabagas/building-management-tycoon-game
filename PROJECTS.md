@@ -4,6 +4,8 @@
 
 Building actions now have a pinned primary upgrade/back header, labelled panel close controls and neutral floor navigation. The map supports continuous two-finger yaw and compass rotation/reset with matching world picking, upright buildings and traffic. See [CameraAndActions.md](docs/CameraAndActions.md).
 
+Source `e6ad234` is pushed and published as ready/current deploy `6ad4982f4a7f32000890157a` at 16:58:11 WIB. Formatting/analyzer, all 263 Flutter tests, six worker tests, asset validation and the 201-resource Web build pass. Primary release hashes match. Final browser review verifies rotated picking, pinned portrait/landscape actions and actual 48px touch targets with no console errors. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Small-device reachability — 2026-10-17
 
 Small-device construction reviews now have a full-area scrollable body and pinned costs/actions. Shared game-styled dialogs keep actions above the keyboard; compact navigation, responsive profile cards and short-landscape layouts recover map/content space. See [MobileReachability.md](docs/MobileReachability.md) for decisions and validation.

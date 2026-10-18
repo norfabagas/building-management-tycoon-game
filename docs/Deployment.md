@@ -1,5 +1,17 @@
 # Netlify Web deployment
 
+## Camera rotation and building actions — 2026-10-18
+
+Source [`e6ad234`](https://github.com/norfabagas/building-management-tycoon-game/commit/e6ad2341d1e293c0c872bc77fbec401a2b5a0aa0) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad4982f4a7f32000890157a`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad4982f4a7f32000890157a) is ready/current, published **2026-10-18 at 16:58:11 WIB**. The linked site's manual production upload uses the normal-entry release Web build with the full source hash in its message.
+
+Building interiors now pin Upgrade/Back above the scrolling content, panel close controls have a visible label, and neutral floor navigation gives the primary upgrade action clear priority. Touch controls keep at least 48px targets on Web desktop as well as mobile. The map supports two-finger twist/pinch/pan and compass quarter-turn/reset with matching projected road geometry, facade/depth ordering, actor headings/occlusion and world picking. See [CameraAndActions.md](CameraAndActions.md) for behavior and material rendering limits.
+
+- Formatting of **70 Dart files**, Flutter analysis, all **263 Flutter tests** (19 new camera/action regressions), six offline-worker tests and the **158-asset / 124-frame** catalog validator pass. The normal lib/main.dart Web build passes its Wasm dry run and packages **201 offline resources**. Android debug compilation reports **No Android SDK found**; physical Android/touchscreen execution remains unverified.
+- Final browser QA on the isolated Camera QA origin verifies rotated map selection, correct road/building/traffic yaw, pinned portrait Upgrade/Back after scrolling, landscape review and actual 48px DOM touch targets. Console errors are empty. The isolated QA apartment was built/opened through normal controls; existing player tabs/saves were preserved. Ignored proof: `.tools/camera-map-final.png`, `.tools/building-actions-final-320.png`, `.tools/building-actions-final-landscape.png`. Review tab/servers are closed and viewport reset.
+- Primary HTTP responses are **200** and SHA-256 matches the local release: main.dart.js **fe57a0be5b7048628e50559145c8e49f4d6824b76d668250766b03be04634cc8**, offline_worker.js **67e761e88f89d5ec8d674985324369ef92bdda3a9a1fed90838cddac806635a7**, offline-assets.json **d88b8768ca6a3e49c002341e16bfd700e04e0acb3951fbe860d9c7ee6406b6ea**. GitHub returned no commit statuses; remote CI is not certified.
+
+Keep browser/app storage. Let the offline pack install, close all old game tabs and reopen; cached clients can need a second close/reopen. Documentation-only commits after the source hash do not change the deployed bundle.
+
 ## Small-device reachability — 2026-10-17
 
 Source [`2ca091d`](https://github.com/norfabagas/building-management-tycoon-game/commit/2ca091d5e9f15267eae9e633637ba01f16cbb8c1) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad337668d368ce959049c1e`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad337668d368ce959049c1e) is ready/current, published **2026-10-17 at 15:52:59 WIB**. The existing linked site's manual production upload uses the explicit normal-entry Web build and records the source hash.
