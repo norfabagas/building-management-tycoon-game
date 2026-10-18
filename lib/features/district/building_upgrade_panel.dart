@@ -18,24 +18,28 @@ class BuildingUpgradePanel extends StatelessWidget {
     required this.model,
     required this.building,
     required this.onClose,
+    this.showHeader = true,
   });
   final DistrictViewModel model;
   final ApartmentBuilding building;
   final VoidCallback onClose;
+  final bool showHeader;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      TextButton.icon(
-        onPressed: onClose,
-        icon: const Icon(Icons.arrow_back),
-        label: const Text('Back to floors'),
-      ),
-      Text(
-        '${building.name} · Upgrades',
-        style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
-      ),
+      if (showHeader) ...[
+        TextButton.icon(
+          onPressed: onClose,
+          icon: const Icon(Icons.arrow_back),
+          label: const Text('Back to floors'),
+        ),
+        Text(
+          '${building.name} · Upgrades',
+          style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
+        ),
+      ],
       const SizedBox(height: 8),
       const Text('Add one level or lift at a time. Your building stays open.'),
       if (building.stage != ConstructionStage.ready) ...[
@@ -227,9 +231,10 @@ class BuildingUpgradePanel extends StatelessWidget {
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
-          TextButton(
+          GameButton(
+            compact: true,
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Confirm upgrade'),
+            label: 'Confirm upgrade',
           ),
         ],
       ),

@@ -1,5 +1,9 @@
 # Design Document
 
+## Camera rotation and building actions — 2026-10-18
+
+Upgrade building is the pinned green primary action in the selected-building header; Back to floors replaces it in the upgrades view. Building exit stays in bottom navigation; remove its redundant cross and shrink neither touch targets nor text to fit. Panel close controls show an icon and Close label. Floor movement is neutral outlined navigation; upgrade/acceleration confirmation is green. A compass beside Main road opens labelled Rotate left/right (90°) and Reset rotation controls; two-finger twist rotates continuously, combined with pinch/pan. Streets turn in the ground plane while buildings/people remain upright and labels readable. This supersedes the earlier camera-without-orbit limitation. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 On small screens, give final building review the full content area and pin total cost, remaining balance, Confirm construction, Cancel construction and Redraw footprint. Use independently scrolling details, 48px minimum actions, compact HUD/floor controls (current floor/live balance replace the HUD in short landscape), a visibly scrollable one-row district toolbar and a fixed activities menu. Short landscape puts planning beside the map; narrow/shallow maps stack zoom buttons on the right to keep the centre drawable. Popup titles/details scroll above fixed actions and adapt above keyboard insets. Keep the custom tenant release page. See [MobileReachability.md](MobileReachability.md).

@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Camera rotation and building actions — 2026-10-18
+
+Map rotation and action hierarchy are presentation only. Twisting/rotating, opening upgrade review, closing panels and returning to floors do not purchase or alter land. Road connectivity, footprint dimensions, capacity, prices, limits, phases and five local save slots are unchanged. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 Mobile reachability changes only presentation: reviewing, scrolling, redraw and Cancel construction reserve no money. Confirm construction still revalidates placement, road access and the current balance through the existing domain transaction. Prices, capacities, construction timing, phases and five save slots are unchanged. See [MobileReachability.md](MobileReachability.md).

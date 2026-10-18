@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Camera rotation and building actions — 2026-10-18
+
+MapCameraViewModel stores session yaw/zoom/pan. Projection applies world-plane yaw before isometric projection and inverse picking; focal transforms use I·R·I⁻¹ and account for the zoom-scaled origin offset. View-facing vertices drive facades/silhouette/depth sorting, and rotated actor rays drive occlusion. Pinned action headers reuse the same district view model and existing guarded transactions. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 Planning details scroll independently from their action footer. Final review keeps the selected footprint/floor quote and current balance visible; redraw restores the saved preview and camera, while cancellation clears the unsaved plan. Upgrade/acceleration/profile dialogs share a bounded, keyboard-aware review shell; existing view-model/repository busy/error/commit guards remain authoritative. No schema or asset changes. See [MobileReachability.md](MobileReachability.md).

@@ -764,6 +764,7 @@ class _DistrictScreenState extends State<DistrictScreen>
         Expanded(
           child: GameButton(
             compact: true,
+            secondary: true,
             label: 'Go up',
             onPressed: _model.canGoUp
                 ? () => setState(() {
@@ -777,6 +778,7 @@ class _DistrictScreenState extends State<DistrictScreen>
         Expanded(
           child: GameButton(
             compact: true,
+            secondary: true,
             label: 'Go down',
             onPressed: _model.canGoDown
                 ? () => setState(() {
@@ -826,18 +828,58 @@ class _DistrictScreenState extends State<DistrictScreen>
       side: const BorderSide(color: GameColors.border, width: 2),
       borderRadius: BorderRadius.circular(18),
     ),
-    child: SingleChildScrollView(
-      key: ValueKey(
-        'floor-$_selected-${_model.currentFloor}-$_upgrades-${_model.selectedBuilding?.stage == ConstructionStage.ready}',
-      ),
-      padding: const EdgeInsets.all(16),
-      child: _upgrades && _model.selectedBuilding != null
-          ? BuildingUpgradePanel(
-              model: _model,
-              building: _model.selectedBuilding!,
-              onClose: () => setState(() => _upgrades = false),
-            )
-          : _buildingPanel(game),
+    child: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          child: LayoutBuilder(
+            builder: (context, header) => Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _upgrades
+                        ? '${_model.selectedBuilding!.name} · Upgrades'
+                        : _model.selectedBuilding!.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: header.maxWidth * .58),
+                  child: GameButton(
+                    compact: true,
+                    secondary: _upgrades,
+                    label: _upgrades ? 'Back to floors' : 'Upgrade building',
+                    onPressed: () => setState(() => _upgrades = !_upgrades),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: SingleChildScrollView(
+            key: ValueKey(
+              'floor-$_selected-${_model.currentFloor}-$_upgrades-${_model.selectedBuilding?.stage == ConstructionStage.ready}',
+            ),
+            padding: const EdgeInsets.all(16),
+            child: _upgrades && _model.selectedBuilding != null
+                ? BuildingUpgradePanel(
+                    model: _model,
+                    building: _model.selectedBuilding!,
+                    showHeader: false,
+                    onClose: () => setState(() => _upgrades = false),
+                  )
+                : _buildingPanel(game),
+          ),
+        ),
+      ],
     ),
   );
 
@@ -964,10 +1006,17 @@ class _DistrictScreenState extends State<DistrictScreen>
           _districtUpgrades ||
           _collection != null ||
           _selected != null)
-        IconButton(
-          tooltip: 'Close panel',
-          onPressed: _closePanel,
-          icon: const Icon(Icons.close),
+        Tooltip(
+          message: 'Close panel',
+          child: TextButton.icon(
+            style: TextButton.styleFrom(
+              minimumSize: const Size(48, 48),
+              backgroundColor: GameColors.mint,
+            ),
+            onPressed: _model.busy ? null : _closePanel,
+            icon: const Icon(Icons.close, size: 20),
+            label: const Text('Close'),
+          ),
         ),
     ],
   );
@@ -1604,19 +1653,6 @@ class _DistrictScreenState extends State<DistrictScreen>
         final overview = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _heading(
-              building.name,
-              action: TextButton.icon(
-                onPressed: () => setState(() => _upgrades = true),
-                icon: Image.asset(
-                  ProductionAssets.iconsUpgrade,
-                  width: 22,
-                  height: 22,
-                  excludeFromSemantics: true,
-                ),
-                label: const Text('Upgrade building'),
-              ),
-            ),
             Text(
               building.status,
               style: const TextStyle(

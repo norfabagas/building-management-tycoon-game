@@ -1,5 +1,9 @@
 # Project setup
 
+## Camera rotation and building actions — 2026-10-18
+
+No dependency, asset regeneration, migration or hosting configuration change. Run map_rotation_test.dart and building_actions_ux_test.dart with the full regression suite, format/analyze and normal production Web build. Physical Android/touch validation still requires the Android SDK/device. Formatting (70 Dart files), analyzer, all 263 Flutter tests, six worker tests, asset validation and the 201-resource normal-entry Web build pass. Android debug compilation reports No Android SDK found. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 No package, asset regeneration, storage migration or deployment configuration change is required. Run mobile_reachability_test.dart plus the expanded existing UI regressions and full suite; build the normal lib/main.dart production Web entry. Keyboard insets/text scale are simulated in widget tests; browser viewport checks do not certify a real phone keyboard. Preserve saved browser data when activating the offline update. Formatting (68 Dart files), analyzer, all 244 Flutter tests, six worker tests, assets and the normal 201-resource release Web build pass. Android compilation remains blocked by the absent SDK. See [MobileReachability.md](MobileReachability.md).

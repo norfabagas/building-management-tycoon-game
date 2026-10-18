@@ -27,9 +27,18 @@ ThemeData buildGameTheme() {
   );
   return ThemeData(
     colorScheme: scheme,
+    visualDensity: VisualDensity.standard,
+    materialTapTargetSize: MaterialTapTargetSize.padded,
     scaffoldBackgroundColor: GameColors.canvas,
     fontFamily: 'Trebuchet MS',
     fontFamilyFallback: const ['Roboto', 'NotoSansThai', 'sans-serif'],
+    iconButtonTheme: const IconButtonThemeData(
+      style: ButtonStyle(
+        minimumSize: WidgetStatePropertyAll(Size(48, 48)),
+        visualDensity: VisualDensity.standard,
+        tapTargetSize: MaterialTapTargetSize.padded,
+      ),
+    ),
     appBarTheme: const AppBarTheme(
       backgroundColor: GameColors.canvas,
       foregroundColor: GameColors.ink,

@@ -1,5 +1,9 @@
 # Game gameplay
 
+## Camera rotation and building actions — 2026-10-18
+
+Tap the map compass to Rotate left/right or Reset rotation; twist two fingers to rotate freely while pinching/panning. Main road focuses the highway at the current bearing; Center map restores the default bearing/centre while preserving zoom. Tap a building, then use pinned Upgrade building; Back to floors returns from its upgrade catalog. Exit building remains at the bottom. Panels use labelled Close controls. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 Use Review cost to open a full-area final construction review. Read the scrollable cost/capacity details while the total, remaining balance and confirmation/cancellation remain below. Redraw restores the map preview; cancel returns without a charge. The bottom district toolbar scrolls horizontally on narrow phones; the activities menu stays visible. See [MobileReachability.md](MobileReachability.md).

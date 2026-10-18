@@ -59,9 +59,12 @@ class _DistrictMapState extends State<DistrictMap>
   LandCell? _start;
   int? _drawingPointer;
   final _pointers = <int>{};
+  final _pointerPositions = <int, Offset>{};
+  Offset? _multiStartFocal;
   bool _hadMultiTouch = false;
   Footprint? _previousPreview;
   double _gestureZoom = 1, _gestureScale = 1;
+  double _gestureRotation = 0, _rotationOffset = 0;
   int _scalePointers = 0;
   Offset _previousFocal = Offset.zero;
   Map<String, ui.Image> _images = {};
@@ -156,7 +159,12 @@ class _DistrictMapState extends State<DistrictMap>
     builder: (context, _) => LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.biggest;
-        final projection = MapProjection(size, _camera.pan, zoom: _camera.zoom);
+        final projection = MapProjection(
+          size,
+          _camera.pan,
+          zoom: _camera.zoom,
+          rotation: _camera.rotation,
+        );
         return Stack(
           fit: StackFit.expand,
           children: [
@@ -169,8 +177,14 @@ class _DistrictMapState extends State<DistrictMap>
                   if (_pointers.isEmpty) {
                     _hadMultiTouch = false;
                     _previousPreview = widget.preview;
+                    _multiStartFocal = null;
                   }
                   _pointers.add(event.pointer);
+                  _pointerPositions[event.pointer] = event.localPosition;
+                  if (_pointers.length == 2) {
+                    _multiStartFocal =
+                        _pointerPositions.values.reduce((a, b) => a + b) / 2;
+                  }
                   if (_pointers.length > 1) {
                     _hadMultiTouch = true;
                     _start = null;
@@ -193,6 +207,7 @@ class _DistrictMapState extends State<DistrictMap>
                   }
                 },
                 onPointerMove: (event) {
+                  _pointerPositions[event.pointer] = event.localPosition;
                   if (_drawingPointer == event.pointer && _start != null) {
                     widget.onFootprint(
                       Footprint.between(
@@ -204,6 +219,7 @@ class _DistrictMapState extends State<DistrictMap>
                 },
                 onPointerUp: (event) {
                   _pointers.remove(event.pointer);
+                  _pointerPositions.remove(event.pointer);
                   if (_drawingPointer == event.pointer && _start != null) {
                     widget.onFootprint(
                       Footprint.between(
@@ -217,6 +233,7 @@ class _DistrictMapState extends State<DistrictMap>
                 },
                 onPointerCancel: (event) {
                   _pointers.remove(event.pointer);
+                  _pointerPositions.remove(event.pointer);
                   if (_drawingPointer == event.pointer) {
                     _start = null;
                     _drawingPointer = null;
@@ -230,21 +247,36 @@ class _DistrictMapState extends State<DistrictMap>
                   onScaleStart: (details) {
                     _gestureZoom = _camera.zoom;
                     _gestureScale = 1;
+                    _gestureRotation = _camera.rotation;
+                    _rotationOffset = 0;
                     _scalePointers = details.pointerCount;
-                    _previousFocal = details.localFocalPoint;
+                    _previousFocal = details.pointerCount >= 2
+                        ? _multiStartFocal ?? details.localFocalPoint
+                        : details.localFocalPoint;
                   },
                   onScaleUpdate: (details) {
                     if (_scalePointers != details.pointerCount) {
                       _gestureZoom = _camera.zoom;
                       _gestureScale = details.scale;
+                      _gestureRotation = _camera.rotation;
+                      _rotationOffset = details.rotation;
                       _scalePointers = details.pointerCount;
-                      _previousFocal = details.localFocalPoint;
+                      _previousFocal = details.pointerCount >= 2
+                          ? _multiStartFocal ?? details.localFocalPoint
+                          : details.localFocalPoint;
                     }
                     if (details.pointerCount >= 2 ||
                         details.pointerCount == 0) {
                       final centre = size.center(Offset.zero);
                       _camera.transform(
                         zoom: _gestureZoom * details.scale / _gestureScale,
+                        rotation:
+                            _gestureRotation +
+                            details.rotation -
+                            _rotationOffset,
+                        originOffset:
+                            projection.originOffset *
+                            (_camera.zoom / projection.zoom),
                         fromFocal: _previousFocal - centre,
                         toFocal: details.localFocalPoint - centre,
                       );
@@ -258,6 +290,7 @@ class _DistrictMapState extends State<DistrictMap>
                     if (!widget.drawing && !_hadMultiTouch) {
                       for (final building in _depthSorted(
                         widget.game,
+                        projection,
                       ).reversed) {
                         final facadeHit =
                             building.shellComplete &&
@@ -371,11 +404,14 @@ class _DistrictMapState extends State<DistrictMap>
                                 vertical: 6,
                               ),
                               child: SizedBox(
-                                width: math.min(310, size.width - 104),
+                                width: math.max(
+                                  40,
+                                  math.min(310, size.width - 164),
+                                ),
                                 child: Text(
                                   widget.drawing
-                                      ? 'Road access required · Pinch to zoom'
-                                      : 'Drag to pan · Pinch to zoom · Tap a building',
+                                      ? 'Road access required · Pinch / twist'
+                                      : 'Drag to pan · Pinch / twist · Tap a building',
                                   style: const TextStyle(
                                     fontSize: 13,
                                     color: GameColors.ink,
@@ -388,6 +424,68 @@ class _DistrictMapState extends State<DistrictMap>
                       ],
                     ),
                   ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 68,
+              top: 12,
+              child: Material(
+                color: GameColors.surface,
+                borderRadius: BorderRadius.circular(8),
+                child: PopupMenuButton<String>(
+                  key: const ValueKey('map-rotation'),
+                  tooltip: 'Rotate map',
+                  constraints: const BoxConstraints(minWidth: 220),
+                  icon: Transform.rotate(
+                    angle: _camera.rotation,
+                    child: const Icon(Icons.explore_outlined),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'reset') {
+                      _camera.resetRotation(
+                        originOffset: projection.originOffset,
+                      );
+                    } else {
+                      _camera.rotateBy(
+                        (value == 'left' ? -1 : 1) * math.pi / 2,
+                        originOffset: projection.originOffset,
+                      );
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    PopupMenuItem<String>(
+                      enabled: false,
+                      child: Text('Map bearing ${_camera.bearing}°'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'left',
+                      height: 48,
+                      child: ListTile(
+                        dense: true,
+                        leading: Icon(Icons.rotate_left),
+                        title: Text('Rotate left'),
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'right',
+                      height: 48,
+                      child: ListTile(
+                        dense: true,
+                        leading: Icon(Icons.rotate_right),
+                        title: Text('Rotate right'),
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'reset',
+                      height: 48,
+                      child: ListTile(
+                        dense: true,
+                        leading: Icon(Icons.north),
+                        title: Text('Reset rotation'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -486,26 +584,85 @@ class _DistrictMapState extends State<DistrictMap>
 }
 
 class MapProjection {
-  MapProjection(this.size, this.pan, {this.zoom = 1});
+  MapProjection(this.size, this.pan, {this.zoom = 1, this.rotation = 0});
   final Size size;
   final Offset pan;
   final double zoom;
+  final double rotation;
   double get _baseTile => size.width < 500 ? 54 : 80;
   double get tile => _baseTile * zoom;
   // Keep the starting street/plot below the hint in short viewports. This
   // offset scales with zoom, preserving the camera's focal-point transform.
-  Offset get origin =>
-      size.center(Offset.zero) +
-      Offset(0, -math.min(_baseTile * 1.5, size.height / 2 - 64) * zoom) +
-      pan;
-  Offset point(num x, num y) =>
-      origin + Offset((x - y) * tile / 2, (x + y) * tile / 4);
-  LandCell cellAt(Offset screen) {
+  Offset get originOffset =>
+      Offset(0, -math.min(_baseTile * 1.5, size.height / 2 - 64) * zoom);
+  Offset get origin => size.center(Offset.zero) + originOffset + pan;
+  Offset turn(Offset p) => Offset(
+    p.dx * math.cos(rotation) - p.dy * math.sin(rotation),
+    p.dx * math.sin(rotation) + p.dy * math.cos(rotation),
+  );
+  Offset point(num x, num y) {
+    final view = turn(Offset(x.toDouble(), y.toDouble()));
+    return origin +
+        Offset((view.dx - view.dy) * tile / 2, (view.dx + view.dy) * tile / 4);
+  }
+
+  Offset worldAt(Offset screen) {
     final local = screen - origin;
-    return LandCell(
-      (local.dx / tile + 2 * local.dy / tile).floor(),
-      (2 * local.dy / tile - local.dx / tile).floor(),
+    final x = local.dx / tile + 2 * local.dy / tile;
+    final y = 2 * local.dy / tile - local.dx / tile;
+    return Offset(
+      x * math.cos(rotation) + y * math.sin(rotation),
+      -x * math.sin(rotation) + y * math.cos(rotation),
     );
+  }
+
+  LandCell cellAt(Offset screen) {
+    final world = worldAt(screen);
+    return LandCell(world.dx.floor(), world.dy.floor());
+  }
+
+  List<Offset> orderCorners(List<Offset> points) {
+    var back = 0;
+    for (var i = 1; i < points.length; i++) {
+      if (points[i].dy < points[back].dy - 0.000001) back = i;
+    }
+    return [
+      for (var i = 0; i < points.length; i++)
+        points[(back + i) % points.length],
+    ];
+  }
+
+  /// A ray toward the camera must cross the footprint to hide this actor.
+  bool occludesPoint(Footprint site, Offset world) {
+    final direction = Offset(
+      math.cos(rotation) + math.sin(rotation),
+      math.cos(rotation) - math.sin(rotation),
+    );
+    var near = 0.0, far = double.infinity;
+    for (final axis in [
+      (
+        world.dx,
+        direction.dx,
+        site.x.toDouble(),
+        (site.x + site.width).toDouble(),
+      ),
+      (
+        world.dy,
+        direction.dy,
+        site.y.toDouble(),
+        (site.y + site.length).toDouble(),
+      ),
+    ]) {
+      if (axis.$2.abs() < 0.000001) {
+        if (axis.$1 <= axis.$3 || axis.$1 >= axis.$4) return false;
+      } else {
+        final a = (axis.$3 - axis.$1) / axis.$2;
+        final b = (axis.$4 - axis.$1) / axis.$2;
+        near = math.max(near, math.min(a, b));
+        far = math.min(far, math.max(a, b));
+      }
+    }
+    return far > near && far > 0;
   }
 
   Path footprint(Footprint site, [double lift = 0]) {
@@ -533,22 +690,23 @@ class MapProjection {
     bool roof = false,
     BuildingType type = BuildingType.apartment,
     int floors = 1,
-  }) =>
-      [
-            point(site.x, site.y),
-            point(site.x + site.width, site.y),
-            point(site.x + site.width, site.y + site.length),
-            point(site.x, site.y + site.length),
-          ]
-          .map(
-            (p) =>
-                p -
-                Offset(
-                  0,
-                  roof ? buildingHeight(site, type: type, floors: floors) : 0,
-                ),
-          )
-          .toList();
+  }) => orderCorners(
+    [
+          point(site.x, site.y),
+          point(site.x + site.width, site.y),
+          point(site.x + site.width, site.y + site.length),
+          point(site.x, site.y + site.length),
+        ]
+        .map(
+          (p) =>
+              p -
+              Offset(
+                0,
+                roof ? buildingHeight(site, type: type, floors: floors) : 0,
+              ),
+        )
+        .toList(),
+  );
 
   Path buildingSilhouette(
     Footprint site, {
@@ -574,20 +732,18 @@ class MapProjection {
   }) => buildingSilhouette(site, type: type, floors: floors).getBounds();
 }
 
-List<ApartmentBuilding> _depthSorted(DistrictGame game) =>
-    game.buildings.toList()..sort(
-      (a, b) =>
-          (a.footprint.x +
-                  a.footprint.y +
-                  a.footprint.width +
-                  a.footprint.length)
-              .compareTo(
-                b.footprint.x +
-                    b.footprint.y +
-                    b.footprint.width +
-                    b.footprint.length,
-              ),
-    );
+List<ApartmentBuilding> _depthSorted(
+  DistrictGame game,
+  MapProjection projection,
+) => game.buildings.toList()
+  ..sort((a, b) {
+    final depth = projection
+        .footprint(a.footprint)
+        .getBounds()
+        .bottom
+        .compareTo(projection.footprint(b.footprint).getBounds().bottom);
+    return depth == 0 ? a.id.compareTo(b.id) : depth;
+  });
 
 class _DistrictPainter extends CustomPainter {
   _DistrictPainter(
@@ -678,16 +834,25 @@ class _DistrictPainter extends CustomPainter {
       bool road(LandCell cell) =>
           localRoads.contains(cell) || game.roadNetwork.contains(cell);
       final scale = projection.tile / 256;
+      final c = math.cos(projection.rotation),
+          s = math.sin(projection.rotation);
+      final groundTransform =
+          (Matrix4.identity()
+                ..setEntry(0, 0, c)
+                ..setEntry(0, 1, -2 * s)
+                ..setEntry(1, 0, s / 2)
+                ..setEntry(1, 1, c))
+              .storage;
       for (var diagonal = minX + minY; diagonal <= maxX + maxY; diagonal++) {
         for (var x = minX; x <= maxX; x++) {
           final y = diagonal - x;
           if (y < minY || y > maxY) continue;
           final cell = LandCell(x, y);
           final top = projection.point(x, y);
-          if (top.dx < -projection.tile ||
-              top.dx > size.width + projection.tile ||
-              top.dy < -projection.tile ||
-              top.dy > size.height + projection.tile) {
+          if (top.dx < -projection.tile * 2 ||
+              top.dx > size.width + projection.tile * 2 ||
+              top.dy < -projection.tile * 2 ||
+              top.dy > size.height + projection.tile * 2) {
             continue;
           }
           var path = ProductionAssets.tilesLand;
@@ -702,6 +867,9 @@ class _DistrictPainter extends CustomPainter {
           }
           final image = images[path];
           if (image != null) {
+            canvas.save();
+            canvas.translate(top.dx, top.dy);
+            canvas.transform(groundTransform);
             canvas.drawImageRect(
               image,
               Rect.fromLTWH(
@@ -710,14 +878,10 @@ class _DistrictPainter extends CustomPainter {
                 image.width.toDouble(),
                 image.height.toDouble(),
               ),
-              Rect.fromLTWH(
-                top.dx - 130 * scale,
-                top.dy - 4 * scale,
-                260 * scale,
-                148 * scale,
-              ),
+              Rect.fromLTWH(-130 * scale, -4 * scale, 260 * scale, 148 * scale),
               Paint()..filterQuality = FilterQuality.low,
             );
+            canvas.restore();
           } else {
             final tile = projection.footprint(Footprint(x, y, 1, 1));
             canvas.drawPath(
@@ -739,7 +903,7 @@ class _DistrictPainter extends CustomPainter {
       _mainRoad(canvas, minX, maxX, road);
     }
     if (terrainOnly) return;
-    final buildings = _depthSorted(game);
+    final buildings = _depthSorted(game, projection);
     for (final building in buildings) {
       final site = building.footprint;
       if (!labelsOnly) {
@@ -1047,8 +1211,20 @@ class _DistrictPainter extends CustomPainter {
           Offset(312, 367),
         ],
       };
-      wall(3, 2, site.width, leftUv);
-      wall(2, 1, site.length, rightUv);
+      wall(
+        3,
+        2,
+        (projection.worldAt(base[3]) - projection.worldAt(base[2])).distance
+            .round(),
+        leftUv,
+      );
+      wall(
+        2,
+        1,
+        (projection.worldAt(base[2]) - projection.worldAt(base[1])).distance
+            .round(),
+        rightUv,
+      );
       final roofPath = Path()..addPolygon(roof, true);
       canvas.drawPath(
         roofPath,
@@ -1083,6 +1259,7 @@ class _DistrictPainter extends CustomPainter {
               ),
             );
       }
+      bottom.setAll(0, projection.orderCorners(bottom));
       final top = bottom
           .map((p) => p - Offset(0, projection.tile * .22))
           .toList();
@@ -1115,6 +1292,7 @@ class _DistrictPainter extends CustomPainter {
       oldDelegate.projection.size != projection.size ||
       oldDelegate.projection.pan != projection.pan ||
       oldDelegate.projection.zoom != projection.zoom ||
+      oldDelegate.projection.rotation != projection.rotation ||
       oldDelegate.preview != preview ||
       oldDelegate.selected != selected ||
       oldDelegate.elapsedMilliseconds != elapsedMilliseconds ||

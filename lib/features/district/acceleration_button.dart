@@ -57,9 +57,10 @@ class AccelerationButton extends StatelessWidget {
                             onPressed: () => Navigator.pop(context, false),
                             child: const Text('Cancel'),
                           ),
-                          TextButton(
+                          GameButton(
+                            compact: true,
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Confirm acceleration'),
+                            label: 'Confirm acceleration',
                           ),
                         ],
                       ),

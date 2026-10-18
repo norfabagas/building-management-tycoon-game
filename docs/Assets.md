@@ -1,5 +1,9 @@
 # Repository game assets
 
+## Camera rotation and building actions — 2026-10-18
+
+Camera yaw reuses existing land/road textures through an isometric ground-plane affine transform. Choose front-facing facade edges from projected geometry; reuse approved facade strips on the visible sides, retaining actual completed height and upright labels. No asset bytes, references, catalog hashes or BM master change. See [CameraAndActions.md](CameraAndActions.md) for opposite-side artwork limitations.
+
 ## Volumetric figures and visible floors — 2026-10-17
 
 Outdoor XYZ figures replace the side-view walk/car billboards on the map; indoor actor sheets and all 158 packaged assets remain unchanged. Reuse the four approved exterior PNGs as per-storey facade textures. Ground strips retain entrances; upper strips repeat without stretching a whole four-storey image. No bitmap regeneration, asset-byte change or BM master edit is required. Earlier sprite-only outdoor and fixed square-exterior contracts are historical. See [VolumeAndHeight.md](VolumeAndHeight.md).

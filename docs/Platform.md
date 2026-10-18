@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Camera rotation and building actions — 2026-10-18
+
+Extend the existing Flutter canvas camera with local session yaw; no 3D engine, external dependency, network service, account or save migration. Preserve Android/Web, portrait/landscape, reduced motion and existing offline resources. This supersedes the earlier no-orbit-control limit. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 Responsive layout covers 320×568 and 360×640 phones, 568×320 and 640×360 landscape, keyboard insets and enlarged text. Use safe areas and the existing hosted-Web footer clearance. Android physical-device testing remains dependent on the local SDK. See [MobileReachability.md](MobileReachability.md).

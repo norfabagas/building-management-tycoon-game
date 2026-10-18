@@ -41,7 +41,7 @@ class _MapActivityPainter extends CustomPainter {
     _routes.clear();
     _silhouettes.clear();
     final viewport = Offset.zero & size;
-    final visible = _depthSorted(game)
+    final visible = _depthSorted(game, projection)
         .where(
           (b) => projection
               .buildingRect(
@@ -79,6 +79,7 @@ class _MapActivityPainter extends CustomPainter {
       size,
       projection.pan,
       projection.zoom,
+      projection.rotation,
       Object.hashAll(
         game.buildings.map(
           (b) => Object.hash(
@@ -138,13 +139,11 @@ class _MapActivityPainter extends CustomPainter {
       // A front-side pedestrian must stay in front of the facade. Clip only
       // buildings lying between its world position and the isometric camera.
       final behind = _occluders
-          .where(
-            (b) =>
-                actor.world.dx < b.footprint.x + b.footprint.width &&
-                actor.world.dy < b.footprint.y + b.footprint.length,
-          )
+          .where((b) => projection.occludesPoint(b.footprint, actor.world))
           .toList();
-      final heading = math.atan2(actor.direction.dy, actor.direction.dx);
+      final heading =
+          math.atan2(actor.direction.dy, actor.direction.dx) +
+          projection.rotation;
       final mesh = car
           ? CityFigure.car(heading)
           : CityFigure.walker(

@@ -26,6 +26,8 @@ class GameButton extends StatelessWidget {
     child: FilledButton(
       onPressed: onPressed,
       style: ButtonStyle(
+        visualDensity: VisualDensity.standard,
+        tapTargetSize: MaterialTapTargetSize.padded,
         minimumSize: WidgetStatePropertyAll(
           compact ? const Size(48, 48) : const Size(96, 52),
         ),

@@ -1,5 +1,9 @@
 # Project Overview
 
+## Camera rotation and building actions — 2026-10-18
+
+Improve building action hierarchy and support map rotation. Keep Upgrade building/Back to floors visible above independently scrolling content; replace ambiguous panel crosses with labelled Close actions. Add two-finger isometric yaw plus compass controls. See [CameraAndActions.md](CameraAndActions.md).
+
 ## Small-device reachability — 2026-10-17
 
 Small phones must retain usable map, building reviews and bottom actions. Final construction cost reviews use the full content area, independently scrolling details and pinned total/balance/confirm/cancel/redraw. See [MobileReachability.md](MobileReachability.md).
