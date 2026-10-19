@@ -365,7 +365,7 @@ void main() {
       expect(find.byKey(const ValueKey('district-map')), findsOneWidget);
       expect(find.text('125%'), findsOneWidget);
       // Select the other building through the native district list.
-      if (size.width < 700 && size.height < 450) {
+      if (size.height < 500) {
         // The distant building is outside the shallow map: use its directory.
         await tester.ensureVisible(find.text('Tenants'));
         await tester.tap(find.text('Tenants'));
@@ -422,7 +422,19 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.text('Balance'), findsOneWidget);
+        if (size.width < 700 || size.height < 500) {
+          expect(
+            find.byWidgetPredicate(
+              (widget) =>
+                  widget is Semantics &&
+                  (widget.properties.label ?? '').startsWith('Balance '),
+            ),
+            findsOneWidget,
+          );
+          expect(find.text(r'$40,000.00'), findsOneWidget);
+        } else {
+          expect(find.text('Balance'), findsOneWidget);
+        }
         await tester.tap(find.text('Build'));
         await tester.pumpAndSettle();
         await tester.ensureVisible(find.text('Choose apartment'));

@@ -1,5 +1,9 @@
 # Design Document
 
+## Full-area mobile map — 2026-10-18
+
+Mobile map fills the safe viewport behind compact floating HUD/actions. Place compass/road controls below the HUD and zoom above actions. Use compact footprint/floor controls with expandable Plan details; interiors and final cost reviews retain pinned full-area layouts. Compass left/right turns ease over 320ms; Reset follows the shortest path and two-finger twisting follows the fingers. See [MobileMap.md](MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 Pin a compact timestamp version row above the home/profile scroll area. When hosted and installed versions differ, show a green Sync button at the top right with at least 48px touch target. Show inline syncing/retry/other-tab status; matching or unverified offline versions do not invent an update. See [AppVersionSync.md](AppVersionSync.md).

@@ -1,5 +1,13 @@
 # Building Management Tycoon
 
+## Preserve features and simplify implementation — 2026-10-20
+
+Consolidate repeated district controls/validation and simplify the full-area mobile map composition without new dependencies or stored fields. Existing gameplay, local saves and timestamp Sync remain intact. See [CodeMaintenance.md](docs/CodeMaintenance.md).
+
+## Full-area mobile map and smooth rotation — 2026-10-18
+
+Compact overview/drawing now uses the full safe viewport under floating HUD/actions. Compass rotation animates smoothly and remains interruptible; two-finger rotation/pinch/pan stays directly anchored. See [MobileMap.md](docs/MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 Home checks compare the installed UTC timestamp with uncached hosted metadata. A pinned top-right Sync downloads/activates a complete matching app pack without clearing local saves. See [AppVersionSync.md](docs/AppVersionSync.md).

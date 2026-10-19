@@ -59,6 +59,7 @@ class _DistrictScreenState extends State<DistrictScreen>
   int _seenAction = 0;
   Set<String>? _seenJobs;
   bool _audioBusy = false;
+  bool _mobilePlanDetails = false;
   Footprint? _preview;
   int? get _selected => _model.selectedBuildingId;
   set _selected(int? id) {
@@ -100,6 +101,7 @@ class _DistrictScreenState extends State<DistrictScreen>
   }
 
   void _chooseBuild() => setState(() {
+    _mobilePlanDetails = false;
     _buildMenu = true;
     _drawing = false;
     _review = false;
@@ -112,6 +114,7 @@ class _DistrictScreenState extends State<DistrictScreen>
     _initialFloors = 1;
   });
   void _closePanel() => setState(() {
+    _mobilePlanDetails = false;
     _buildMenu = false;
     _drawing = false;
     _review = false;
@@ -145,283 +148,559 @@ class _DistrictScreenState extends State<DistrictScreen>
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      toolbarHeight: 52,
-      title: const GameBrand(size: 30, fontSize: 16),
-      actions: [
-        AnimatedBuilder(
-          animation: _model,
-          builder: (context, _) => IconButton(
-            tooltip: _audio.enabled
-                ? 'Mute sound'
-                : _model.game?.soundEnabled == true
-                ? 'Resume sound'
-                : 'Enable sound',
-            onPressed: _model.game == null || _model.busy || _audioBusy
-                ? null
-                : _toggleSound,
-            icon: Icon(_audio.enabled ? Icons.volume_up : Icons.volume_off),
-          ),
-        ),
-      ],
-    ),
-    body: SafeArea(
-      child: AnimatedBuilder(
-        animation: _model,
-        builder: (context, _) {
-          final game = _model.game;
-          if (game == null) {
-            return Center(
-              child: _model.error == null
-                  ? const CircularProgressIndicator()
-                  : Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(_model.error!, textAlign: TextAlign.center),
-                          const SizedBox(height: 16),
-                          GameButton(
-                            label: 'Retry',
-                            onPressed: _model.busy
-                                ? null
-                                : () => unawaited(_model.load()),
-                          ),
-                        ],
-                      ),
-                    ),
-            );
-          }
-          final blocked = _model.busy || _model.error != null;
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final sidePanel =
-                  constraints.maxWidth >= 700 ||
-                  (constraints.maxWidth >= 500 && constraints.maxHeight < 450);
-              final smallHeight = constraints.maxHeight < 450;
-              final activePanel =
-                  _buildMenu ||
-                  _finance ||
-                  _tenants ||
-                  _districtUpgrades ||
-                  _collection != null;
-              return Padding(
-                // Keep floor controls above the hosted Web footer badge.
-                padding: EdgeInsets.fromLTRB(12, 4, 12, kIsWeb ? 64 : 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (!(_buildMenu && _review) &&
-                        !(_selected != null && smallHeight)) ...[
-                      if (constraints.maxWidth < 400 && !smallHeight)
-                        _phoneHud(game)
-                      else if (smallHeight)
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width:
-                                    150 *
-                                    MediaQuery.textScalerOf(context).scale(1),
-                                child: Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        widget.profile.areaName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      ' · ${game.weekdayLabel}',
-                                      style: const TextStyle(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              for (final stat in [
-                                _stat(
-                                  ProductionAssets.iconsDollar,
-                                  'Balance',
-                                  formatMoney(game.balance),
-                                  compact: true,
-                                ),
-                                _stat(
-                                  ProductionAssets.iconsClock,
-                                  'Day ${game.day}',
-                                  _model.clockLabel,
-                                  compact: true,
-                                ),
-                                _stat(
-                                  ProductionAssets.iconsGem,
-                                  'Gems',
-                                  '${game.gems}',
-                                  compact: true,
-                                ),
-                              ])
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8),
-                                  child: stat,
-                                ),
-                            ],
-                          ),
-                        )
-                      else ...[
-                        Row(
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _model,
+    builder: (context, _) => Scaffold(
+      appBar: _mobileMapMode
+          ? null
+          : AppBar(
+              toolbarHeight: 52,
+              title: const GameBrand(size: 30, fontSize: 16),
+              actions: [
+                _soundButton(blocked: _model.game == null || _model.busy),
+              ],
+            ),
+      body: SafeArea(
+        child: Builder(
+          builder: (context) {
+            final game = _model.game;
+            if (game == null) {
+              return Center(
+                child: _model.error == null
+                    ? const CircularProgressIndicator()
+                    : Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Expanded(
-                              child: Text(
-                                widget.profile.areaName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: smallHeight ? 20 : 25,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              game.weekdayLabel,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 6,
-                          children: [
-                            _stat(
-                              ProductionAssets.iconsDollar,
-                              'Balance',
-                              formatMoney(game.balance),
-                            ),
-                            _stat(
-                              ProductionAssets.iconsClock,
-                              'Day ${game.day}',
-                              _model.clockLabel,
-                            ),
-                            _stat(
-                              ProductionAssets.iconsGem,
-                              'Gems',
-                              '${game.gems}',
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                    if (_model.error case final error?)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                error,
-                                style: const TextStyle(
-                                  color: GameColors.danger,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            TextButton(
+                            Text(_model.error!, textAlign: TextAlign.center),
+                            const SizedBox(height: 16),
+                            GameButton(
+                              label: 'Retry',
                               onPressed: _model.busy
                                   ? null
-                                  : () => unawaited(_model.save()),
-                              child: const Text('Retry'),
+                                  : () => unawaited(_model.load()),
                             ),
                           ],
                         ),
                       ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Offstage(
-                            offstage:
-                                _selected != null ||
-                                (_buildMenu && (!_drawing || _review)),
-                            child: sidePanel
-                                ? Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+              );
+            }
+            final blocked = _model.busy || _model.error != null;
+            if (_mobileMapMode) return _mobileMap(game, blocked);
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final sidePanel =
+                    constraints.maxWidth >= 700 ||
+                    (constraints.maxWidth >= 500 &&
+                        constraints.maxHeight < 450);
+                final smallHeight = constraints.maxHeight < 450;
+                final activePanel =
+                    _buildMenu ||
+                    _finance ||
+                    _tenants ||
+                    _districtUpgrades ||
+                    _collection != null;
+                return Padding(
+                  // Keep floor controls above the hosted Web footer badge.
+                  padding: EdgeInsets.fromLTRB(12, 4, 12, kIsWeb ? 64 : 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!(_buildMenu && _review) &&
+                          !(_selected != null && smallHeight)) ...[
+                        if (constraints.maxWidth < 400 && !smallHeight)
+                          _phoneHud(game)
+                        else if (smallHeight)
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      150 *
+                                      MediaQuery.textScalerOf(context).scale(1),
+                                  child: Row(
                                     children: [
-                                      Expanded(child: _map(game)),
-                                      if (constraints.maxWidth >= 700 ||
-                                          !smallHeight ||
-                                          activePanel) ...[
-                                        const SizedBox(width: 12),
-                                        SizedBox(
-                                          width: constraints.maxWidth >= 1100
-                                              ? 340
-                                              : 280,
-                                          child: _panel(game),
-                                        ),
-                                      ],
-                                    ],
-                                  )
-                                : Column(
-                                    children: [
-                                      Expanded(child: _map(game)),
-                                      if (activePanel) ...[
-                                        const SizedBox(height: 10),
-                                        SizedBox(
-                                          height: math.min(
-                                            270,
-                                            constraints.maxHeight * .32,
+                                      Flexible(
+                                        child: Text(
+                                          widget.profile.areaName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
                                           ),
-                                          child: _panel(game),
                                         ),
-                                      ],
+                                      ),
+                                      Text(
+                                        ' · ${game.weekdayLabel}',
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
                                     ],
                                   ),
-                          ),
-                          if (_selected != null) _floorView(game),
-                          if (_selected == null &&
-                              _buildMenu &&
-                              (!_drawing || _review))
-                            Material(
-                              color: GameColors.surface,
-                              shape: RoundedRectangleBorder(
-                                side: const BorderSide(
-                                  color: GameColors.border,
-                                  width: 2,
                                 ),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: _planningPanel(game),
+                                for (final stat in [
+                                  _stat(
+                                    ProductionAssets.iconsDollar,
+                                    'Balance',
+                                    formatMoney(game.balance),
+                                    compact: true,
+                                  ),
+                                  _stat(
+                                    ProductionAssets.iconsClock,
+                                    'Day ${game.day}',
+                                    _model.clockLabel,
+                                    compact: true,
+                                  ),
+                                  _stat(
+                                    ProductionAssets.iconsGem,
+                                    'Gems',
+                                    '${game.gems}',
+                                    compact: true,
+                                  ),
+                                ])
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: stat,
+                                  ),
+                              ],
                             ),
+                          )
+                        else ...[
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  widget.profile.areaName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: smallHeight ? 20 : 25,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                game.weekdayLabel,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              _stat(
+                                ProductionAssets.iconsDollar,
+                                'Balance',
+                                formatMoney(game.balance),
+                              ),
+                              _stat(
+                                ProductionAssets.iconsClock,
+                                'Day ${game.day}',
+                                _model.clockLabel,
+                              ),
+                              _stat(
+                                ProductionAssets.iconsGem,
+                                'Gems',
+                                '${game.gems}',
+                              ),
+                            ],
+                          ),
                         ],
+                      ],
+                      if (_model.error case final error?)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  error,
+                                  style: const TextStyle(
+                                    color: GameColors.danger,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _model.busy
+                                    ? null
+                                    : () => unawaited(_model.save()),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Offstage(
+                              offstage:
+                                  _selected != null ||
+                                  (_buildMenu && (!_drawing || _review)),
+                              child: sidePanel
+                                  ? Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Expanded(child: _map(game)),
+                                        if (constraints.maxWidth >= 700 ||
+                                            !smallHeight ||
+                                            activePanel) ...[
+                                          const SizedBox(width: 12),
+                                          SizedBox(
+                                            width: constraints.maxWidth >= 1100
+                                                ? 340
+                                                : 280,
+                                            child: _panel(game),
+                                          ),
+                                        ],
+                                      ],
+                                    )
+                                  : Column(
+                                      children: [
+                                        Expanded(child: _map(game)),
+                                        if (activePanel) ...[
+                                          const SizedBox(height: 10),
+                                          SizedBox(
+                                            height: math.min(
+                                              270,
+                                              constraints.maxHeight * .32,
+                                            ),
+                                            child: _panel(game),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                            ),
+                            if (_selected != null) _floorView(game),
+                            if (_selected == null &&
+                                _buildMenu &&
+                                (!_drawing || _review))
+                              Material(
+                                color: GameColors.surface,
+                                shape: RoundedRectangleBorder(
+                                  side: const BorderSide(
+                                    color: GameColors.border,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(18),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: _planningPanel(game),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    if (_selected != null)
-                      _floorNavigation()
-                    else if (!_buildMenu &&
-                        !(_collection == 'Decorations' && _drawing))
-                      _districtNavigation(blocked),
-                  ],
-                ),
-              );
-            },
-          );
-        },
+                      const SizedBox(height: 10),
+                      if (_selected != null)
+                        _floorNavigation()
+                      else if (!_buildMenu &&
+                          !(_collection == 'Decorations' && _drawing))
+                        _districtNavigation(blocked),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     ),
   );
 
-  Widget _districtNavigation(bool blocked) => Row(
+  bool get _mobileMapMode {
+    final size = MediaQuery.sizeOf(context);
+    return _model.game != null &&
+        (size.width < 700 || size.height < 500) &&
+        _selected == null &&
+        (!_buildMenu || (_drawing && !_review)) &&
+        !(_collection == 'Decorations' && _drawing);
+  }
+
+  Widget _soundButton({required bool blocked}) => IconButton(
+    tooltip: _audio.enabled
+        ? 'Mute sound'
+        : _model.game?.soundEnabled == true
+        ? 'Resume sound'
+        : 'Enable sound',
+    onPressed: blocked || _audioBusy ? null : _toggleSound,
+    icon: Icon(_audio.enabled ? Icons.volume_up : Icons.volume_off),
+  );
+
+  Widget _initialFloorStepper({required bool disabled}) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      IconButton(
+        key: const ValueKey('initial-floor-minus'),
+        tooltip: 'Fewer floors',
+        onPressed: disabled || _initialFloors == 1
+            ? null
+            : () => setState(() => _initialFloors--),
+        icon: const Icon(Icons.remove),
+      ),
+      Text('$_initialFloors', key: const ValueKey('initial-floor-count')),
+      IconButton(
+        key: const ValueKey('initial-floor-plus'),
+        tooltip: 'More floors',
+        onPressed: disabled || _initialFloors == 10
+            ? null
+            : () => setState(() => _initialFloors++),
+        icon: const Icon(Icons.add),
+      ),
+    ],
+  );
+
+  Widget _cashEffect(double size) =>
+      _cashFeedback > 0 && !MediaQuery.disableAnimationsOf(context)
+      ? AssetAnimation(
+          key: ValueKey('cash-$_cashFeedback'),
+          path: ProductionAssets.effectsCoin,
+          sequence: 'play',
+          width: size,
+          height: size,
+          hideWhenComplete: true,
+        )
+      : const SizedBox.shrink();
+
+  String? _constructionError(DistrictGame game, Footprint site) =>
+      DistrictSimulation.placementError(
+        game,
+        site,
+        type: _buildType,
+        floors: _initialFloors,
+      );
+
+  Widget _mobileHud(DistrictGame game, bool blocked) => Material(
+    color: GameColors.surface,
+    borderRadius: BorderRadius.circular(14),
+    elevation: 2,
+    child: Row(
+      children: [
+        IconButton(
+          tooltip: 'Back',
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.profile.areaName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      Semantics(
+                        label: 'Balance ${formatMoney(game.balance)}',
+                        excludeSemantics: true,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox.square(
+                              dimension: 22,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Image.asset(
+                                    ProductionAssets.iconsDollar,
+                                    width: 18,
+                                    height: 18,
+                                    excludeFromSemantics: true,
+                                  ),
+                                  _cashEffect(22),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              formatMoney(game.balance),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Day ${game.day} · ${_model.clockLabel}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      const SizedBox(width: 10),
+                      Semantics(
+                        label: 'Gems ${game.gems}',
+                        excludeSemantics: true,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              ProductionAssets.iconsGem,
+                              width: 16,
+                              height: 16,
+                              excludeFromSemantics: true,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${game.gems}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        _soundButton(blocked: blocked),
+      ],
+    ),
+  );
+
+  Widget _mobileMapActions(
+    DistrictGame game,
+    bool blocked, {
+    required bool planning,
+  }) => Material(
+    color: GameColors.surface,
+    borderRadius: BorderRadius.circular(14),
+    elevation: 2,
+    child: Padding(
+      padding: const EdgeInsets.all(6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_model.error case final error?)
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    error,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: GameColors.danger,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _model.busy
+                      ? null
+                      : () => unawaited(_model.save()),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          if (planning) ...[
+            Row(
+              children: [
+                if (!_mobilePlanDetails) ...[
+                  const Text('Floors', style: TextStyle(fontSize: 12)),
+                  _initialFloorStepper(disabled: blocked),
+                ] else
+                  const Expanded(
+                    child: Text('Plan details', style: TextStyle(fontSize: 12)),
+                  ),
+                if (!_mobilePlanDetails) const Spacer(),
+                if (_preview case final site?)
+                  Flexible(
+                    child: Text(
+                      '${site.width} × ${site.length} tiles',
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+                IconButton(
+                  tooltip: _mobilePlanDetails ? 'Back to map' : 'Plan details',
+                  onPressed: () =>
+                      setState(() => _mobilePlanDetails = !_mobilePlanDetails),
+                  icon: Icon(
+                    _mobilePlanDetails ? Icons.expand_more : Icons.tune,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Expanded(child: _planningActions(game)),
+                const SizedBox(width: 6),
+                Tooltip(
+                  message: 'Close panel',
+                  child: TextButton(
+                    onPressed: blocked ? null : _closePanel,
+                    child: const Text('Close'),
+                  ),
+                ),
+              ],
+            ),
+          ] else
+            _districtNavigation(blocked, compact: true),
+        ],
+      ),
+    ),
+  );
+
+  Widget _mobileMap(DistrictGame game, bool blocked) {
+    final top = MediaQuery.textScalerOf(context).scale(44) + 24;
+    final footer = kIsWeb ? 56.0 : 8.0;
+    final planning = _buildMenu && _drawing;
+    final bottom = planning ? 126.0 : 72.0;
+    final panel =
+        _finance ||
+        _tenants ||
+        _districtUpgrades ||
+        _collection != null ||
+        (planning && _mobilePlanDetails);
+    return Stack(
+      key: const ValueKey('mobile-map-area'),
+      fit: StackFit.expand,
+      children: [
+        _map(
+          game,
+          immersive: true,
+          controlInsets: EdgeInsets.only(top: top, bottom: footer + bottom),
+        ),
+        Positioned(top: 8, left: 8, right: 8, child: _mobileHud(game, blocked)),
+        if (panel)
+          Positioned(
+            top: planning ? 8 : top + 8,
+            left: 8,
+            right: 8,
+            bottom: footer + bottom + 8,
+            child: _panel(game, showPlanningActions: !planning),
+          ),
+        Positioned(
+          key: const ValueKey('mobile-map-actions'),
+          left: 8,
+          right: 8,
+          bottom: footer,
+          child: _mobileMapActions(game, blocked, planning: planning),
+        ),
+      ],
+    );
+  }
+
+  Widget _districtNavigation(bool blocked, {bool compact = false}) => Row(
     children: [
       Expanded(
         child: Scrollbar(
@@ -436,20 +715,24 @@ class _DistrictScreenState extends State<DistrictScreen>
                 for (final button in [
                   GameButton(
                     label: 'Build',
+                    compact: compact,
                     onPressed: blocked ? null : _chooseBuild,
                   ),
                   GameButton(
                     label: 'Tenants',
+                    compact: compact,
                     secondary: true,
                     onPressed: () => _showDirectory(tenants: true),
                   ),
                   GameButton(
                     label: 'Upgrades',
+                    compact: compact,
                     secondary: true,
                     onPressed: () => _showDirectory(tenants: false),
                   ),
                   GameButton(
                     label: 'Finances',
+                    compact: compact,
                     secondary: true,
                     onPressed: () => setState(() {
                       _closePlanning();
@@ -648,6 +931,7 @@ class _DistrictScreenState extends State<DistrictScreen>
   });
 
   void _closePlanning() {
+    _mobilePlanDetails = false;
     _buildMenu = false;
     _drawing = false;
     _review = false;
@@ -663,7 +947,11 @@ class _DistrictScreenState extends State<DistrictScreen>
         _upgrades = upgrades;
       });
 
-  Widget _map(DistrictGame game) {
+  Widget _map(
+    DistrictGame game, {
+    bool immersive = false,
+    EdgeInsets controlInsets = EdgeInsets.zero,
+  }) {
     final ready = game.buildings
         .where((b) => b.stage == ConstructionStage.parkingDone)
         .firstOrNull;
@@ -674,6 +962,8 @@ class _DistrictScreenState extends State<DistrictScreen>
           Positioned.fill(
             child: DistrictMap(
               camera: _mapCamera,
+              immersive: immersive,
+              controlInsets: controlInsets,
               game: game,
               elapsedMilliseconds: _model.elapsedMilliseconds,
               drawing: _drawing && !_review && _model.error == null,
@@ -682,13 +972,7 @@ class _DistrictScreenState extends State<DistrictScreen>
                   ? null
                   : _collection == 'Decorations'
                   ? _decorationError(game, _preview!) == null
-                  : DistrictSimulation.placementError(
-                          game,
-                          _preview!,
-                          type: _buildType,
-                          floors: _initialFloors,
-                        ) ==
-                        null,
+                  : _constructionError(game, _preview!) == null,
               decorationPreview: _collection == 'Decorations',
               selected: _selected,
               reset: _reset,
@@ -713,7 +997,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           if (ready != null && !_drawing && !_buildMenu)
             Positioned(
               left: 12,
-              bottom: 12,
+              bottom: immersive ? controlInsets.bottom + 68 : 12,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 260),
                 child: GameButton(
@@ -910,21 +1194,8 @@ class _DistrictScreenState extends State<DistrictScreen>
                 height: 25,
                 excludeFromSemantics: true,
               ),
-              if (label == 'Balance' &&
-                  _cashFeedback > 0 &&
-                  !MediaQuery.disableAnimationsOf(context))
-                Positioned(
-                  left: -4,
-                  top: -4,
-                  child: AssetAnimation(
-                    key: ValueKey('cash-$_cashFeedback'),
-                    path: ProductionAssets.effectsCoin,
-                    sequence: 'play',
-                    width: 32,
-                    height: 32,
-                    hideWhenComplete: true,
-                  ),
-                ),
+              if (label == 'Balance')
+                Positioned(left: -4, top: -4, child: _cashEffect(32)),
             ],
           ),
         ),
@@ -968,26 +1239,27 @@ class _DistrictScreenState extends State<DistrictScreen>
     ),
   );
 
-  Widget _panel(DistrictGame game) => Material(
-    color: GameColors.surface,
-    clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(
-      side: const BorderSide(color: GameColors.border, width: 2),
-      borderRadius: BorderRadius.circular(18),
-    ),
-    child: _buildMenu
-        ? _planningPanel(game)
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: _finance
-                ? _financePanel(game)
-                : _collection != null
-                ? _collectionPanel(game)
-                : _tenants || _districtUpgrades
-                ? _directoryPanel(game)
-                : _welcome(game),
-          ),
-  );
+  Widget _panel(DistrictGame game, {bool showPlanningActions = true}) =>
+      Material(
+        color: GameColors.surface,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          side: const BorderSide(color: GameColors.border, width: 2),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: _buildMenu
+            ? _planningPanel(game, showActions: showPlanningActions)
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: _finance
+                    ? _financePanel(game)
+                    : _collection != null
+                    ? _collectionPanel(game)
+                    : _tenants || _districtUpgrades
+                    ? _directoryPanel(game)
+                    : _welcome(game),
+              ),
+      );
 
   Widget _heading(String title, {Widget? action}) => Row(
     children: [
@@ -1282,7 +1554,7 @@ class _DistrictScreenState extends State<DistrictScreen>
     ],
   );
 
-  Widget _planningPanel(DistrictGame game) => Column(
+  Widget _planningPanel(DistrictGame game, {bool showActions = true}) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       Expanded(
@@ -1292,7 +1564,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           child: _buildPanel(game),
         ),
       ),
-      if (_drawing) ...[
+      if (_drawing && showActions) ...[
         const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.all(10),
@@ -1304,14 +1576,7 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _planningActions(DistrictGame game) {
     final site = _preview;
-    final error = site == null
-        ? null
-        : DistrictSimulation.placementError(
-            game,
-            site,
-            type: _buildType,
-            floors: _initialFloors,
-          );
+    final error = site == null ? null : _constructionError(game, site);
     final blocked = _model.busy || _model.error != null;
     final horizontal =
         _review &&
@@ -1385,14 +1650,7 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _buildPanel(DistrictGame game) {
     final site = _preview;
-    final error = site == null
-        ? null
-        : DistrictSimulation.placementError(
-            game,
-            site,
-            type: _buildType,
-            floors: _initialFloors,
-          );
+    final error = site == null ? null : _constructionError(game, site);
     final blocked = _model.busy || _model.error != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1432,26 +1690,7 @@ class _DistrictScreenState extends State<DistrictScreen>
           Row(
             children: [
               const Expanded(child: Text('Above-ground floors')),
-              IconButton(
-                key: const ValueKey('initial-floor-minus'),
-                tooltip: 'Fewer floors',
-                onPressed: blocked || _review || _initialFloors == 1
-                    ? null
-                    : () => setState(() => _initialFloors--),
-                icon: const Icon(Icons.remove),
-              ),
-              Text(
-                '$_initialFloors',
-                key: const ValueKey('initial-floor-count'),
-              ),
-              IconButton(
-                key: const ValueKey('initial-floor-plus'),
-                tooltip: 'More floors',
-                onPressed: blocked || _review || _initialFloors == 10
-                    ? null
-                    : () => setState(() => _initialFloors++),
-                icon: const Icon(Icons.add),
-              ),
+              _initialFloorStepper(disabled: blocked || _review),
             ],
           ),
           _line(

@@ -1,5 +1,13 @@
 # Project setup
 
+## Maintainability verification — 2026-10-20
+
+No new dependencies, assets or migration. Formatting of 78 Dart files, Flutter analysis, all 288 Flutter tests, 20 Node tests, asset validation and the 201-resource timestamped Web build pass after shared-control/validation refactoring. Browser portrait/landscape construction/opening/upgrade navigation also passes. Android debug compilation remains blocked by No Android SDK found. See [CodeMaintenance.md](CodeMaintenance.md) and [Deployment.md](Deployment.md).
+
+## Full-area mobile map — 2026-10-18
+
+No dependency, asset regeneration, save migration or hosting configuration change. Validate mobile_map_test.dart with existing camera/gesture/review/catalog regressions, run full Flutter and Node tests and package the normal timestamped offline Web release. Preserve local browser data when activating through Sync. See [MobileMap.md](MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 Always package with dart run tool/build_web.dart to compile APP_BUILD and emit the matching timestamp metadata/bridge/worker. Run node --test tool/offline_worker_test.mjs tool/app_update_test.mjs plus the Flutter suite. Retain site storage; pre-feature cached clients need one initial close-all-tabs/reopen to receive this updater. See [AppVersionSync.md](AppVersionSync.md). Formatting (77 Dart files), analyzer, all 272 Flutter tests, 20 Node tests, asset validation and the 201-resource release Web build pass. Two-release browser Sync preserves the local profile/game. Android debug compilation remains blocked by the missing SDK.

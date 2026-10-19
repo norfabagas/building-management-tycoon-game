@@ -1,5 +1,13 @@
 # Project Overview
 
+## Preserve features and simplify implementation — 2026-10-20
+
+The user requests DRY, YAGNI and KISS without removing existing features. Complete the mobile map/rotation work and consolidate concrete presentation duplication; retain local saves, game mechanics and platform support. See [CodeMaintenance.md](CodeMaintenance.md).
+
+## Full-area mobile map — 2026-10-18
+
+Mobile/small-screen overview and footprint drawing now use the full safe-area map with floating HUD/actions. Compass turns animate smoothly; direct two-finger twist/pinch/pan remains anchored to the fingers. See [MobileMap.md](MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 Web releases use a shared UTC timestamp code and a home-screen Sync action for mismatched static app versions. Gameplay and all five saves remain local/offline; same-origin update metadata/assets are the only added requests. See [AppVersionSync.md](AppVersionSync.md).

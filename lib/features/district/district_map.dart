@@ -31,6 +31,8 @@ class DistrictMap extends StatefulWidget {
     this.previewValid,
     this.decorationPreview = false,
     this.camera,
+    this.controlInsets = EdgeInsets.zero,
+    this.immersive = false,
   });
   final DistrictGame game;
   final bool drawing;
@@ -41,6 +43,8 @@ class DistrictMap extends StatefulWidget {
   final bool? previewValid;
   final bool decorationPreview;
   final MapCameraViewModel? camera;
+  final EdgeInsets controlInsets;
+  final bool immersive;
   final ValueChanged<Footprint> onFootprint;
   final VoidCallback? onCancelFootprint;
   final ValueChanged<int> onSelect;
@@ -49,7 +53,10 @@ class DistrictMap extends StatefulWidget {
 }
 
 class _DistrictMapState extends State<DistrictMap>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
+  late final AnimationController _rotationAnimation;
+  double _rotationFrom = 0, _rotationDelta = 0;
+  Offset _rotationOrigin = Offset.zero;
   final _activityClock = ValueNotifier<double>(0);
   late final Ticker _activityTicker;
   double _carriedSeconds = 0;
@@ -73,6 +80,22 @@ class _DistrictMapState extends State<DistrictMap>
   @override
   void initState() {
     super.initState();
+    _rotationAnimation =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 320),
+        )..addListener(() {
+          _camera.transform(
+            zoom: _camera.zoom,
+            rotation:
+                _rotationFrom +
+                _rotationDelta *
+                    Curves.easeInOutCubic.transform(_rotationAnimation.value),
+            fromFocal: Offset.zero,
+            toFocal: Offset.zero,
+            originOffset: _rotationOrigin,
+          );
+        });
     _activityTicker = createTicker((elapsed) {
       final seconds = _carriedSeconds + elapsed.inMicroseconds / 1000000;
       if (seconds - _lastActivitySeconds >= 1 / 30) {
@@ -81,6 +104,18 @@ class _DistrictMapState extends State<DistrictMap>
       }
     });
     _load();
+  }
+
+  void _rotate(double delta, Offset origin) {
+    _rotationAnimation.stop();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _camera.rotateBy(delta, originOffset: origin);
+      return;
+    }
+    _rotationFrom = _camera.rotation;
+    _rotationDelta = delta;
+    _rotationOrigin = origin;
+    _rotationAnimation.forward(from: 0);
   }
 
   @override
@@ -141,13 +176,17 @@ class _DistrictMapState extends State<DistrictMap>
   @override
   void didUpdateWidget(DistrictMap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.reset != widget.reset) _camera.center();
+    if (oldWidget.reset != widget.reset) {
+      _rotationAnimation.stop();
+      _camera.center();
+    }
     _syncActivity();
   }
 
   @override
   void dispose() {
     _activityTicker.dispose();
+    _rotationAnimation.dispose();
     _activityClock.dispose();
     if (widget.camera == null) _ownedCamera.dispose();
     super.dispose();
@@ -159,6 +198,9 @@ class _DistrictMapState extends State<DistrictMap>
     builder: (context, _) => LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.biggest;
+        final leftZoom =
+            widget.immersive &&
+            size.height - widget.controlInsets.vertical < 180;
         final projection = MapProjection(
           size,
           _camera.pan,
@@ -174,6 +216,7 @@ class _DistrictMapState extends State<DistrictMap>
                   : 'District map. Drag to pan, pinch to zoom, tap a building.',
               child: Listener(
                 onPointerDown: (event) {
+                  _rotationAnimation.stop();
                   if (_pointers.isEmpty) {
                     _hadMultiTouch = false;
                     _previousPreview = widget.preview;
@@ -390,37 +433,38 @@ class _DistrictMapState extends State<DistrictMap>
                                       widget.elapsedMilliseconds)
                                   .toDouble(),
                         ),
-                        Positioned(
-                          left: 14,
-                          top: 12,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: GameColors.surface,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
+                        if (!widget.immersive)
+                          Positioned(
+                            left: 14,
+                            top: 12,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: GameColors.surface,
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              child: SizedBox(
-                                width: math.max(
-                                  40,
-                                  math.min(310, size.width - 164),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
-                                child: Text(
-                                  widget.drawing
-                                      ? 'Road access required · Pinch / twist'
-                                      : 'Drag to pan · Pinch / twist · Tap a building',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: GameColors.ink,
+                                child: SizedBox(
+                                  width: math.max(
+                                    40,
+                                    math.min(310, size.width - 164),
+                                  ),
+                                  child: Text(
+                                    widget.drawing
+                                        ? 'Road access required · Pinch / twist'
+                                        : 'Drag to pan · Pinch / twist · Tap a building',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: GameColors.ink,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -429,7 +473,7 @@ class _DistrictMapState extends State<DistrictMap>
             ),
             Positioned(
               right: 68,
-              top: 12,
+              top: 12 + widget.controlInsets.top,
               child: Material(
                 color: GameColors.surface,
                 borderRadius: BorderRadius.circular(8),
@@ -443,13 +487,14 @@ class _DistrictMapState extends State<DistrictMap>
                   ),
                   onSelected: (value) {
                     if (value == 'reset') {
-                      _camera.resetRotation(
-                        originOffset: projection.originOffset,
-                      );
+                      final delta =
+                          (-_camera.rotation + math.pi) % (2 * math.pi) -
+                          math.pi;
+                      _rotate(delta, projection.originOffset);
                     } else {
-                      _camera.rotateBy(
+                      _rotate(
                         (value == 'left' ? -1 : 1) * math.pi / 2,
-                        originOffset: projection.originOffset,
+                        projection.originOffset,
                       );
                     }
                   },
@@ -491,7 +536,7 @@ class _DistrictMapState extends State<DistrictMap>
             ),
             Positioned(
               right: 12,
-              top: 12,
+              top: 12 + widget.controlInsets.top,
               child: Material(
                 color: GameColors.surface,
                 borderRadius: BorderRadius.circular(8),
@@ -499,6 +544,7 @@ class _DistrictMapState extends State<DistrictMap>
                   key: const ValueKey('map-main-road'),
                   tooltip: 'Main road',
                   onPressed: () {
+                    _rotationAnimation.stop();
                     final road = projection.point(
                       0,
                       widget.game.roadNetwork.mainRow + 1,
@@ -514,8 +560,9 @@ class _DistrictMapState extends State<DistrictMap>
               ),
             ),
             Positioned(
-              right: 12,
-              bottom: 12,
+              left: leftZoom ? 12 : null,
+              right: leftZoom ? null : 12,
+              bottom: 12 + widget.controlInsets.bottom,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
@@ -543,7 +590,12 @@ class _DistrictMapState extends State<DistrictMap>
                           width: 48,
                           height: 48,
                         ),
-                        onPressed: _camera.canZoomOut ? _camera.zoomOut : null,
+                        onPressed: _camera.canZoomOut
+                            ? () {
+                                _rotationAnimation.stop();
+                                _camera.zoomOut();
+                              }
+                            : null,
                         icon: const Icon(Icons.remove),
                       ),
                       SizedBox(
@@ -568,7 +620,12 @@ class _DistrictMapState extends State<DistrictMap>
                           width: 48,
                           height: 48,
                         ),
-                        onPressed: _camera.canZoomIn ? _camera.zoomIn : null,
+                        onPressed: _camera.canZoomIn
+                            ? () {
+                                _rotationAnimation.stop();
+                                _camera.zoomIn();
+                              }
+                            : null,
                         icon: const Icon(Icons.add),
                       ),
                     ],

@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Full-area mobile map — 2026-10-18
+
+Map sizing, rotating, viewing/collapsing plan details and closing overlays do not purchase or modify saved plots. Keep all existing five-slot, phase, catalog, road and financial rules. See [MobileMap.md](MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 Sync updates application files only. It does not alter saves, five slots, time, economy or schema. Keep playing offline when checks fail; refuse activation while another same-scope game tab is open. See [AppVersionSync.md](AppVersionSync.md).

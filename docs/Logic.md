@@ -1,5 +1,13 @@
 # Game Logic & Architecture
 
+## Maintainability — 2026-10-20
+
+Preserve current game features while applying DRY, YAGNI and KISS. Shared private presentation helpers cover audio, initial floors, coin feedback and construction validation; separate compact HUD/actions from map composition and remove a redundant listener. Keep existing domain/persistence boundaries without new frameworks, dependencies or speculative state. See [CodeMaintenance.md](CodeMaintenance.md).
+
+## Full-area mobile map — 2026-10-18
+
+DistrictScreen uses a full SafeArea map Stack for compact overview/drawing, preserving the external camera while floating cards open/close. DistrictMap animates compass commands through the existing centre-anchored transform; pointer/zoom/focus input cancels that animation. Direct two-pointer transforms remain unsmoothed per event. See [MobileMap.md](MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 AppUpdateViewModel and a conditional AppUpdateGateway separate home UI state from the bundled Web update bridge. Metadata bypasses caches; installation validates release boundaries; explicit version-checked activation reloads only after a matching controller is confirmed. IndexedDB and local preferences are never cleared. See [AppVersionSync.md](AppVersionSync.md).

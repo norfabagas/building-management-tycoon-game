@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Full-area mobile map — 2026-10-18
+
+Full-area map presentation applies below 700px width or 500px height. Shared camera session state survives overlays and layout transitions. A presentation AnimationController drives 320ms compass turns without a new engine/dependency; reduced motion is immediate. See [MobileMap.md](MobileMap.md).
+
 ## Timestamp version and Sync — 2026-10-18
 
 The production Web pack shares one yyyyMMddHHmmssSSS UTC build identifier across Dart, bridge, worker and uncached app-version.json. Explicit Sync activates a fully installed matching worker then reloads; native Android performs no Web version check. See [AppVersionSync.md](AppVersionSync.md).
