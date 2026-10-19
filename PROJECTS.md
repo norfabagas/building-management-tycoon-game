@@ -4,6 +4,8 @@
 
 Consolidate repeated district controls/validation and simplify the full-area mobile map composition without new dependencies or stored fields. Existing gameplay, local saves and timestamp Sync remain intact. See [CodeMaintenance.md](docs/CodeMaintenance.md).
 
+Source `047c3d5` is pushed and published as ready/current deploy `6ad6aa98a30de942bcf6ba0c` on 2026-10-20 at 06:41:19 WIB with build timestamp `20261019233239245` UTC. Formatting/analyzer, 288 Flutter tests, 20 Node tests, assets and the 201-resource release Web build pass. Browser portrait/landscape construction/opening/upgrade navigation and primary-file hashes are verified. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Full-area mobile map and smooth rotation — 2026-10-18
 
 Compact overview/drawing now uses the full safe viewport under floating HUD/actions. Compass rotation animates smoothly and remains interruptible; two-finger rotation/pinch/pan stays directly anchored. See [MobileMap.md](docs/MobileMap.md).
