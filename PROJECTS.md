@@ -4,6 +4,8 @@
 
 Temporary animated worksites cover new construction/upgrades. Buildings can be renamed locally through a themed review; schema 9 retains old progress. Permanent rooftop blocks are removed from the shared renderer. See [BuildingWorkAndNames.md](docs/BuildingWorkAndNames.md).
 
+Source `f9a5e67` is pushed and published as ready/current deploy `6ad80344299aa3a59c111c40` on 2026-10-21 at 07:11:53 WIB, timestamp `20261021000050448` UTC. Formatting/analysis, all 306 Flutter tests, 20 Node tests, asset validation and the 201-resource Web build pass. Browser construction/upgrade/rename/roof checks and five primary-file hashes match the tested release. Android SDK/device and remote CI remain verification limits. See [Deployment.md](docs/Deployment.md).
+
 ## Preserve features and simplify implementation — 2026-10-20
 
 Consolidate repeated district controls/validation and simplify the full-area mobile map composition without new dependencies or stored fields. Existing gameplay, local saves and timestamp Sync remain intact. See [CodeMaintenance.md](docs/CodeMaintenance.md).
