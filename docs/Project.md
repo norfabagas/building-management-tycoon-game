@@ -1,5 +1,9 @@
 # Project Overview
 
+## Construction activity and building names — 2026-10-21
+
+Animate initial construction and upgrades, support local rename for every building and remove the permanent rooftop block. Existing economy, controls, five local saves and approved artwork remain intact. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Preserve features and simplify implementation — 2026-10-20
 
 The user requests DRY, YAGNI and KISS without removing existing features. Complete the mobile map/rotation work and consolidate concrete presentation duplication; retain local saves, game mechanics and platform support. See [CodeMaintenance.md](CodeMaintenance.md).

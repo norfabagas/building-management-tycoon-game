@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sembast/sembast_memory.dart';
 
+import 'helpers/game_test_store.dart';
+
 void main() {
   for (final size in [
     const Size(390, 844),
@@ -51,7 +53,10 @@ void main() {
                 areaName: 'Riverside',
                 createdAt: DateTime(2020),
               ),
-              repository: GameRepository(open: () async => database),
+              repository: FixedClockGameRepository(
+                open: () async => database,
+                fixedNow: state.watermark,
+              ),
             ),
           ),
         );

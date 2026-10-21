@@ -1,5 +1,9 @@
 # Game Logic & Architecture
 
+## Construction activity and building names — 2026-10-21
+
+ApartmentBuilding.name resolves optional validated customName or its original type/ID label. DistrictSimulation.renameBuilding commits through DistrictViewModel/save and existing repository transactions. Schema 9 preserves schema-8 road data. BuildingWork maps actual jobs to a separate clock-driven construction painter; rooftop utility geometry is removed. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Maintainability — 2026-10-20
 
 Preserve current game features while applying DRY, YAGNI and KISS. Shared private presentation helpers cover audio, initial floors, coin feedback and construction validation; separate compact HUD/actions from map composition and remove a redundant listener. Keep existing domain/persistence boundaries without new frameworks, dependencies or speculative state. See [CodeMaintenance.md](CodeMaintenance.md).
@@ -34,12 +38,12 @@ Resolve a full-screen interior by stable building/unit IDs from every DistrictVi
 
 ## Volumetric figures and visible floors — 2026-10-17
 
-Exterior height derives from completedFloors, not footprint alone or the upgrade order. Initial shell completion exposes its completed storeys; a floor upgrade raises the roof only when domain completion increments the saved floor count. Cancel/pending upgrades, basements, lifts and luxury do not add height. Bounds, picking, occlusion and rendering use the same floor-aware projection. Snapshot schema 8/catalog 2 and economy remain unchanged. See [VolumeAndHeight.md](VolumeAndHeight.md).
+Exterior height derives from completedFloors, not footprint alone or the upgrade order. Initial shell completion exposes its completed storeys; a floor upgrade raises the roof only when domain completion increments the saved floor count. Cancel/pending upgrades, basements, lifts and luxury do not add height. Bounds, picking, occlusion and rendering use the same floor-aware projection. Floor counts remain authoritative in schema 9/catalog 2; building names do not change the economy. See [VolumeAndHeight.md](VolumeAndHeight.md).
 
 
 ## Road network and animation — 2026-10-17
 
-Schema **8**, catalog 2 persists `roadNetwork.mainRow` and inclusive axis-aligned public street segments. Schemas 1–7 derive a safe highway/access network on import; their existing financial and clock catch-up order remains intact. Sparse routing uses obstacle boundary coordinates instead of allocating every tile between distant plots. Connectivity floods public segments and building rings from the highway; isolated public segments never seed access. Placement validates road reservations, occupied plots/decorations and connected-ring access before debiting money. Cancellation preserves a bridge ring if removing it would disconnect an existing building. Repository transactions continue to cover migration, actions and rollback. Old clients reject schema 8. Earlier schema-7 statements describe the previous release.
+Schema **9**, catalog 2 retains the schema-8 road fields: `roadNetwork.mainRow` and inclusive axis-aligned public street segments. Schemas 1–7 derive a safe highway/access network on import; their existing financial and clock catch-up order remains intact. Sparse routing uses obstacle boundary coordinates instead of allocating every tile between distant plots. Connectivity floods public segments and building rings from the highway; isolated public segments never seed access. Placement validates road reservations, occupied plots/decorations and connected-ring access before debiting money. Cancellation preserves a bridge ring if removing it would disconnect an existing building. Repository transactions continue to cover migration, actions and rollback. Clients limited to schema 8 reject schema 9. Earlier schema-7 statements describe the previous release.
 
 Map traffic uses a separate presentation ticker and repaint boundary, never simulation time or saved counters. TickerMode and reduced-motion settings suspend its clock; changing days does not reset movement. Terrain, picking, traffic and highway share MapProjection. See [DistrictRoads.md](DistrictRoads.md).
 

@@ -87,6 +87,9 @@ class DistrictViewModel extends ChangeNotifier {
   Future<bool> cancelUpgrade(int id) =>
       save((state) => DistrictSimulation.cancelUpgrade(state, id));
 
+  Future<bool> renameBuilding(int id, String name) =>
+      save((state) => DistrictSimulation.renameBuilding(state, id, name));
+
   double upgradeProgress(ApartmentBuilding building) =>
       DistrictSimulation.upgradeProgress(
         game!,

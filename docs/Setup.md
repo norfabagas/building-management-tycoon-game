@@ -1,5 +1,9 @@
 # Project setup
 
+## Construction activity and building names — 2026-10-21
+
+No new package, asset export or database installation is required. Preserve site storage; normal profile load imports schema 1–8 into schema 9. Run rename/worksite and existing regressions, Node updater tests and normal dart run tool/build_web.dart packaging, then use Sync with old game tabs closed. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Maintainability verification — 2026-10-20
 
 No new dependencies, assets or migration. Formatting of 78 Dart files, Flutter analysis, all 288 Flutter tests, 20 Node tests, asset validation and the 201-resource timestamped Web build pass after shared-control/validation refactoring. Browser portrait/landscape construction/opening/upgrade navigation also passes. Android debug compilation remains blocked by No Android SDK found. See [CodeMaintenance.md](CodeMaintenance.md) and [Deployment.md](Deployment.md).
@@ -39,7 +43,7 @@ No dependency, SDK, network service or asset regeneration step is added. Outdoor
 
 ## Connected district release — 2026-10-17
 
-Current saves use schema 8/catalog 2. Schemas 1–7 gain safe local road access during transactional import; preserve browser/app storage and close older tabs before reopening. No dependency or asset installation change is required. Run `./tool/flutter.ps1 test --no-pub` for road, animation and existing gameplay regressions. Use `dart run tool/build_web.dart` for the normal offline production entry point; ignored review fixtures remain local only. See [DistrictRoads.md](DistrictRoads.md) for behavior and final verification. The final 152-test suite, analyzer, formatting, asset validation and 201-resource Web build pass; Android debug compilation reports No Android SDK found. Close/reopen existing offline tabs after publication without clearing site data.
+Current saves use schema 9/catalog 2. Schemas 1–7 gain safe local road access during transactional import, and schema 8 retains its existing network; preserve browser/app storage and close older tabs before reopening. No dependency or asset installation change is required. Run `./tool/flutter.ps1 test --no-pub` for road, animation and existing gameplay regressions. Use `dart run tool/build_web.dart` for the normal offline production entry point; ignored review fixtures remain local only. See [DistrictRoads.md](DistrictRoads.md) for behavior and final verification. The final 152-test suite, analyzer, formatting, asset validation and 201-resource Web build pass; Android debug compilation reports No Android SDK found. Close/reopen existing offline tabs after publication without clearing site data.
 
 
 ## Self-test additions — 2026-10-17

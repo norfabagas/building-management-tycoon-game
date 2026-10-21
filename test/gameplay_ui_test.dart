@@ -57,7 +57,10 @@ void main() {
           theme: buildGameTheme(),
           home: DistrictScreen(
             profile: localProfile,
-            repository: GameRepository(open: () async => database),
+            repository: FixedClockGameRepository(
+              open: () async => database,
+              fixedNow: state.watermark,
+            ),
           ),
         ),
       );

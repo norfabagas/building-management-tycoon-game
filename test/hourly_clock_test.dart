@@ -128,7 +128,7 @@ void main() {
     expect(state.day, 8);
     expect(state.lastClosing, 7);
     expect(state.balance, 4000000);
-    expect(state.toJson()['version'], 8);
+    expect(state.toJson()['version'], 9);
     final saved = state.toJson();
     DistrictSimulation.advance(state, 1000);
     expect(state.toJson(), saved);

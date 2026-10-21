@@ -1,5 +1,9 @@
 # Game Rules & Mechanics
 
+## Construction activity and building names — 2026-10-21
+
+Renaming is free and changes only display names, never stable IDs, rent, costs, road access, construction timing or limits. Initial/upgrade work visuals reflect existing job stages and stop at completion/cancel. Save migration preserves the five local profiles. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Full-area mobile map — 2026-10-18
 
 Map sizing, rotating, viewing/collapsing plan details and closing overlays do not purchase or modify saved plots. Keep all existing five-slot, phase, catalog, road and financial rules. See [MobileMap.md](MobileMap.md).

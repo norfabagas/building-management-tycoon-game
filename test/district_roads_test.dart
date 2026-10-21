@@ -127,7 +127,7 @@ void main() {
     final legacy = seed.toJson()..['version'] = 7;
     legacy.remove('roadNetwork');
     final game = DistrictGame.fromJson(legacy);
-    expect(game.toJson()['version'], 8);
+    expect(game.toJson()['version'], 9);
     expect(game.balance, seed.balance);
     expect(
       game.buildings.map((b) => b.toJson()),

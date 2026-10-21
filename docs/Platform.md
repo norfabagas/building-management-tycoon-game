@@ -1,5 +1,9 @@
 # Platform & Tech Stack
 
+## Construction activity and building names — 2026-10-21
+
+Use the existing cosmetic activity clock and canvas layers for temporary worksites. Save schema 9 adds custom building names and imports schemas 1–8; close old tabs and activate through timestamp Sync without clearing local data. No dependency, server or asset addition. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Full-area mobile map — 2026-10-18
 
 Full-area map presentation applies below 700px width or 500px height. Shared camera session state survives overlays and layout transitions. A presentation AnimationController drives 320ms compass turns without a new engine/dependency; reduced motion is immediate. See [MobileMap.md](MobileMap.md).
@@ -22,7 +26,7 @@ A native Flutter review route reuses the existing district view model, local rep
 
 ## Delete saved profiles — 2026-10-17
 
-The local Sembast database now owns a version-1 five-slot profile catalog, imported once from validated SharedPreferences metadata. Delete the catalog entry and full game snapshot in one database transaction; preferences remain a repairable compatibility mirror. SQLite/IndexedDB, local-only saves and game schema 8/catalog 2 remain unchanged. See [DeleteProfiles.md](DeleteProfiles.md).
+The local Sembast database now owns a version-1 five-slot profile catalog, imported once from validated SharedPreferences metadata. Delete the catalog entry and full game snapshot in one database transaction; preferences remain a repairable compatibility mirror. Local-only saves retain catalog 2; game schema 9 adds optional building names without changing the profile catalog. See [DeleteProfiles.md](DeleteProfiles.md).
 
 ## Full-screen tenant activity — 2026-10-17
 
@@ -35,7 +39,7 @@ Use small local XYZ meshes, CPU-projected into the existing Flutter isometric ca
 
 ## Road save update — 2026-10-17
 
-Current snapshots use schema 8/catalog 2 for a compact, entirely local highway/public-street network. Android/Web, five slots, offline progression and MVVM remain unchanged. Ambient map activity uses Flutter canvas/ticker and bundled assets, without external services. Close older tabs before reopening this release; older clients cannot load schema 8. See [DistrictRoads.md](DistrictRoads.md).
+Current snapshots use schema 9/catalog 2, retaining the compact local highway/public-street network introduced in schema 8. Android/Web, five slots, offline progression and MVVM remain unchanged. Ambient map activity uses Flutter canvas/ticker and bundled assets, without external services. Close older tabs before reopening this release; clients limited to schema 8 cannot load schema 9. See [DistrictRoads.md](DistrictRoads.md).
 
 
 ## Catalog 2 runtime — 2026-10-16

@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/scheduler.dart';
@@ -14,6 +16,7 @@ import 'daylight.dart';
 import 'building_presentation.dart';
 
 part 'map_activity.dart';
+part 'construction_activity.dart';
 part 'city_figure.dart';
 
 class DistrictMap extends StatefulWidget {
@@ -128,7 +131,11 @@ class _DistrictMapState extends State<DistrictMap>
     final active =
         TickerMode.valuesOf(context).enabled &&
         !MediaQuery.disableAnimationsOf(context) &&
-        widget.game.buildings.any((b) => b.stage == ConstructionStage.ready);
+        widget.game.buildings.any(
+          (b) =>
+              b.stage == ConstructionStage.ready ||
+              BuildingWork.forBuilding(b) != null,
+        );
     if (active && !_activityTicker.isActive) _activityTicker.start();
     if (!active && _activityTicker.isActive) {
       _carriedSeconds = _activityClock.value;
@@ -403,6 +410,18 @@ class _DistrictMapState extends State<DistrictMap>
                                   _images,
                                   _activityClock,
                                 ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        IgnorePointer(
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              key: const ValueKey('map-construction-activity'),
+                              painter: ConstructionActivityPainter(
+                                widget.game,
+                                projection,
+                                _activityClock,
                               ),
                             ),
                           ),
@@ -1046,7 +1065,9 @@ class _DistrictPainter extends CustomPainter {
           ),
         ),
         textDirection: TextDirection.ltr,
-      )..layout();
+        maxLines: 2,
+        ellipsis: '…',
+      )..layout(maxWidth: math.min(220, math.max(40, projection.size.width - 24)));
       final landBounds = projection.footprint(site).getBounds();
       final position = Offset(
         landBounds.center.dx - label.width / 2,
@@ -1297,44 +1318,6 @@ class _DistrictPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 5 * projection.zoom,
       );
-      // A compact service unit keeps its own proportions on either long axis.
-      final unit = math.min(site.width, site.length) * .28;
-      final x = site.x + site.width / 2 - unit / 2;
-      final y = site.y + site.length / 2 - unit / 2;
-      final bottom = projection.buildingCorners(Footprint(0, 0, 1, 1));
-      for (var i = 0; i < 4; i++) {
-        final dx = i == 1 || i == 2 ? unit : 0;
-        final dy = i == 2 || i == 3 ? unit : 0;
-        bottom[i] =
-            projection.point(x + dx, y + dy) -
-            Offset(
-              0,
-              projection.buildingHeight(
-                site,
-                type: building.type,
-                floors: building.completedFloors,
-              ),
-            );
-      }
-      bottom.setAll(0, projection.orderCorners(bottom));
-      final top = bottom
-          .map((p) => p - Offset(0, projection.tile * .22))
-          .toList();
-      void face(List<Offset> points, Color color) {
-        final path = Path()..addPolygon(points, true);
-        canvas.drawPath(path, Paint()..color = color);
-        canvas.drawPath(
-          path,
-          Paint()
-            ..color = GameColors.ink
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = projection.zoom,
-        );
-      }
-
-      face([top[3], top[2], bottom[2], bottom[3]], const Color(0xFFD8C796));
-      face([top[2], top[1], bottom[1], bottom[2]], const Color(0xFFB7AB84));
-      face(top, const Color(0xFFFFFCF1));
     }
   }
 

@@ -1,5 +1,9 @@
 # Design Document
 
+## Construction activity and building names — 2026-10-21
+
+Show temporary scaffold/crane/hoist activity and soft dust during construction/upgrade, with a gentle queued safety marker and reduced-motion support. Keep flat clean roofs on every building. A labelled Rename building pencil in the fixed building header opens the themed, keyboard-safe rename review with Cancel/Save name and inline validation/retry. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Full-area mobile map — 2026-10-18
 
 Mobile map fills the safe viewport behind compact floating HUD/actions. Place compass/road controls below the HUD and zoom above actions. Use compact footprint/floor controls with expandable Plan details; interiors and final cost reviews retain pinned full-area layouts. Compass left/right turns ease over 320ms; Reset follows the shortest path and two-finger twisting follows the fingers. See [MobileMap.md](MobileMap.md).

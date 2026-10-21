@@ -1,5 +1,9 @@
 # Building Management Tycoon
 
+## Construction activity, rename and clean roofs — 2026-10-21
+
+Temporary animated worksites cover new construction/upgrades. Buildings can be renamed locally through a themed review; schema 9 retains old progress. Permanent rooftop blocks are removed from the shared renderer. See [BuildingWorkAndNames.md](docs/BuildingWorkAndNames.md).
+
 ## Preserve features and simplify implementation — 2026-10-20
 
 Consolidate repeated district controls/validation and simplify the full-area mobile map composition without new dependencies or stored fields. Existing gameplay, local saves and timestamp Sync remain intact. See [CodeMaintenance.md](docs/CodeMaintenance.md).

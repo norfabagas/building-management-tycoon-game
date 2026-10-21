@@ -406,7 +406,7 @@ void main() {
     ); // Old demand, not new 70% penalty.
     expect(legacy.pendingRent, 12345);
     expect(legacy.catalogVersion, 2);
-    expect(legacy.toJson()['version'], 8);
+    expect(legacy.toJson()['version'], 9);
     DistrictSimulation.advance(legacy, 48000);
     expect(
       legacy.buildings.single.occupied.length,

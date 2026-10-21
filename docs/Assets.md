@@ -1,5 +1,9 @@
 # Repository game assets
 
+## Construction activity and building names — 2026-10-21
+
+Construction worksite effects use native vector canvas over the unchanged facade/road assets. The shared generated rooftop service cuboid is removed for all types; roof surfaces/trim and BM master remain unchanged. No catalog or asset-byte regeneration is required. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
+
 ## Camera rotation and building actions — 2026-10-18
 
 Camera yaw reuses existing land/road textures through an isometric ground-plane affine transform. Choose front-facing facade edges from projected geometry; reuse approved facade strips on the visible sides, retaining actual completed height and upright labels. No asset bytes, references, catalog hashes or BM master change. See [CameraAndActions.md](CameraAndActions.md) for opposite-side artwork limitations.

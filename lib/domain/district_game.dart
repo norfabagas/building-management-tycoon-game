@@ -243,6 +243,20 @@ class ApartmentBuilding {
   int pendingRent;
   int aboveGroundFloors, undergroundFloors, standardLifts, executiveLifts;
   UpgradeOrder? upgrade;
+  String? _customName;
+  static const maximumNameLength = 40;
+  static String? nameError(String value) {
+    final name = value.trim();
+    if (name.isEmpty) return 'Enter a building name.';
+    if (name.runes.length > maximumNameLength) {
+      return 'Use at most 40 characters.';
+    }
+    if (RegExp(r'[\x00-\x1f\x7f]').hasMatch(name)) {
+      return 'Use a single-line name.';
+    }
+    return null;
+  }
+
   final Set<int> occupied;
   bool get shellComplete => stage.index >= ConstructionStage.shellDone.index;
   bool get parkingComplete =>
@@ -263,7 +277,7 @@ class ApartmentBuilding {
               (standardLifts + executiveLifts) * 10)
           .clamp(0, 30);
   int get initialShellDays => type.shellDays * initialFloors;
-  String get name => '${type.label} $id';
+  String get name => _customName ?? '${type.label} $id';
   String get status => stage == ConstructionStage.shell
       ? 'Building ${type.label.toLowerCase()}'
       : stage.label;
@@ -280,6 +294,7 @@ class ApartmentBuilding {
       executiveLifts * BuildingUpgrade.executiveLift.maintenance;
   Map<String, Object?> toJson() => {
     'id': id,
+    if (_customName != null) 'customName': _customName,
     'type': type.name,
     'initialFloors': initialFloors,
     'originalQuote': originalQuote,
@@ -306,6 +321,11 @@ class ApartmentBuilding {
     Map<String, dynamic> json, {
     bool legacy = false,
   }) {
+    final customName = json['customName'];
+    if (customName != null &&
+        (customName is! String || nameError(customName) != null)) {
+      throw const FormatException('Invalid building name');
+    }
     final building = ApartmentBuilding(
       id: json['id'] as int,
       type: BuildingType.values.byName(json['type'] as String? ?? 'apartment'),
@@ -335,7 +355,7 @@ class ApartmentBuilding {
               Map<String, dynamic>.from(json['upgrade'] as Map),
             ),
       occupied: Set<int>.from(json['occupied'] as List),
-    );
+    ).._customName = (customName as String?)?.trim();
     if (building.id < 1 ||
         building.rushGems < 0 ||
         building.rushed != (building.rushGems > 0) ||
@@ -507,7 +527,7 @@ class DistrictGame {
   Set<LandCell> get roads =>
       buildings.expand((b) => b.footprint.roadRing).toSet();
   Map<String, Object?> toJson() => {
-    'version': hourlyClock ? (catalogVersion == 2 ? 8 : 6) : 5,
+    'version': hourlyClock ? (catalogVersion == 2 ? 9 : 6) : 5,
     'roadNetwork': roadNetwork.toJson(),
     'catalog': catalogVersion,
     'gems': gems,
@@ -536,12 +556,13 @@ class DistrictGame {
             json['version'] != 5 &&
             json['version'] != 6 &&
             json['version'] != 7 &&
-            json['version'] != 8) ||
+            json['version'] != 8 &&
+            json['version'] != 9) ||
         json['catalog'] != ((json['version'] as int) >= 7 ? 2 : 1)) {
       throw const FormatException('Unsupported game save');
     }
     final state = DistrictGame(
-      roadNetwork: json['version'] == 8
+      roadNetwork: (json['version'] as int) >= 8
           ? DistrictRoadNetwork.fromJson(
               Map<String, dynamic>.from(json['roadNetwork'] as Map),
             )
@@ -648,6 +669,18 @@ class GameplayException implements Exception {
 }
 
 abstract final class DistrictSimulation {
+  static void renameBuilding(DistrictGame state, int id, String name) {
+    final error = ApartmentBuilding.nameError(name);
+    if (error != null) throw GameplayException(error);
+    final building = state.buildings
+        .where((building) => building.id == id)
+        .firstOrNull;
+    if (building == null) {
+      throw const GameplayException('Building no longer exists.');
+    }
+    building._customName = name.trim();
+  }
+
   /// A transaction-local preview only; no balance, rewards or time are published.
   static ClosingStatement projectClosing(DistrictGame state) {
     final preview = DistrictGame.fromJson(state.toJson());

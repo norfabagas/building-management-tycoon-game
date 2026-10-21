@@ -17,6 +17,7 @@ import 'building_upgrade_panel.dart';
 import 'district_map.dart';
 import 'district_view_model.dart';
 import 'building_presentation.dart';
+import 'building_rename_dialog.dart';
 import 'building_type_picker.dart';
 import 'district_tools_panel.dart';
 import 'acceleration_button.dart';
@@ -151,6 +152,8 @@ class _DistrictScreenState extends State<DistrictScreen>
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _model,
     builder: (context, _) => Scaffold(
+      // Rename dialogs handle keyboard insets; keep the map behind them stable.
+      resizeToAvoidBottomInset: false,
       appBar: _mobileMapMode
           ? null
           : AppBar(
@@ -1131,6 +1134,18 @@ class _DistrictScreenState extends State<DistrictScreen>
                       fontWeight: FontWeight.w700,
                     ),
                   ),
+                ),
+                IconButton(
+                  tooltip: 'Rename building',
+                  onPressed: () => showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => BuildingRenameDialog(
+                      model: _model,
+                      building: _model.selectedBuilding!,
+                    ),
+                  ),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
                 ),
                 const SizedBox(width: 8),
                 ConstrainedBox(

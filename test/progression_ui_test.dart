@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sembast/sembast_memory.dart';
 
+import 'helpers/game_test_store.dart';
+
 Future<void> press(WidgetTester tester, String text) async {
   await tester.ensureVisible(find.text(text));
   await tester.tap(find.text(text));
@@ -67,7 +69,10 @@ void main() {
                   areaName: 'Test',
                   createdAt: DateTime(2020),
                 ),
-                repository: GameRepository(open: () async => db),
+                repository: FixedClockGameRepository(
+                  open: () async => db,
+                  fixedNow: state.watermark,
+                ),
               ),
             ),
           );
