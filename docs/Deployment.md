@@ -1,5 +1,23 @@
 # Netlify Web deployment
 
+## Tenant animation and varied traffic — 2026-10-23
+
+Source [`987d5ce`](https://github.com/norfabagas/building-management-tycoon-game/commit/987d5ce18677b213861f9b32c16ab8760b0bb10c) is pushed to **main** and published at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). Netlify deploy [`6adb303a63cd840abe32757a`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6adb303a63cd840abe32757a) is **ready/current**, published **2026-10-23 at 17:00:30 WIB**. Shared UTC build timestamp: **20261023094710809**. The existing Netlify connector required authentication; the already authenticated local CLI uploaded the validated normal-entry bundle to the same project. Git continuous deployment remains unconnected. Local linkage/build output/credentials are ignored and are not pushed.
+
+Tenant sprite walk/rest switches retain their painted frame and layout while loading. Continuous unit-specific movement and rest indicators no longer jump with saved phase changes. Cars, buses, trucks and vans add varied activity to open-business rings and both highway directions, including an empty district. All activity is cosmetic; schema 9/catalog 2, five saves, economy and approved artwork remain unchanged. See [AmbientActivity.md](AmbientActivity.md) for implementation and limitations.
+
+- Formatting of **86 Dart files**, Flutter analysis, all **309 Flutter tests**, **20 Node worker/bridge tests**, the **158-asset / 124-frame** validator and the timestamped Web build pass. Wasm dry run succeeds and all **201 offline resources** exist. Android debug build reports **No Android SDK found**; no device/GPU or remote-CI certification is claimed.
+- Final compiled-package QA on isolated localhost:8783 verifies new-profile construction/opening/admission, visible highway/ring vehicle variety and movement, tenant entry, walking/rest through phase updates, Back/Exit context and empty browser error logs. Existing player origins/saves are preserved. QA tab/server are closed; proof remains ignored at `.tools/ambient-tenant.png` and `.tools/ambient-traffic.png`.
+- The production primary origin returns **HTTP 200** with exact local-release SHA-256 for all five release files:
+  - `main.dart.js`: `aea06712b4dd9605c6a6eab884020ac0a5be0669133a1d5ec3ba603b621aa1c1`.
+  - `offline_worker.js`: `3b80040f0a798ea138ed174cd4d88c9538f8e7780fdea8bc09a31cf1849f6e86`.
+  - `offline-assets.json`: `bdb5d4b1197d7da381791f86e125baa39634941a29e41ec6fd4e5963db8c3c21`.
+  - `app_update.js`: `4e73de50001e3acf6d5fbd199f200dae7d75e898535ec309f4c61d74789f5ad1`.
+  - `app-version.json`: `8a35c915d784844300302fa3ec48dc4bd74edfd077cef0d332a705ba7e1c8b46`.
+
+The worker and version metadata return **Cache-Control: no-store**. The live version matches the compiled timestamp. Use **Sync** on home after closing other game tabs; preserve browser/app storage. Manual deploy metadata has no Git commit field, so its title records the full source SHA and the five matching hashes verify the uploaded bundle. This documentation-only receipt commit does not change the deployed application.
+
+
 ## Construction activity, rename and clean roofs — 2026-10-21
 
 Source [`f9a5e67`](https://github.com/norfabagas/building-management-tycoon-game/commit/f9a5e67d618839a5d5a1aaa8dbc395a6c68333fd) is pushed to main and published at the [primary site](https://bmt.niceblue.biz.id). Netlify deploy [`6ad80344299aa3a59c111c40`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6ad80344299aa3a59c111c40) is **ready/current**, published **2026-10-21 at 07:11:53 WIB**. Build timestamp **20261021000050448 UTC** matches Dart, bridge, worker and metadata; the manual upload records the full source hash and uses the normal-entry release Web build.

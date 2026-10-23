@@ -1,5 +1,12 @@
 # Building Management Tycoon
 
+## Tenant animation and varied ambient traffic — 2026-10-23
+
+Source `987d5ce` is pushed to main and published as ready/current Netlify deploy `6adb303a63cd840abe32757a` at **17:00:30 WIB**, timestamp **20261023094710809 UTC**. Walk/rest transitions keep the actor visible with varied seeded stops/rest indicators; two-way highway traffic includes cars, buses, box trucks and vans before any business opens. See [AmbientActivity.md](docs/AmbientActivity.md).
+
+All 309 Flutter tests, 20 Node tests, formatting (86 files), analyzer, catalog validation and the 201-resource Web build pass. Final compiled browser QA verifies traffic, occupied interior entry/rest/phase continuity and Back/Exit with no console errors. Five primary release hashes match production; worker/metadata are no-store. Android SDK/device and remote CI remain verification limits. Source is prepared from current main in `.tools/activity-release`, preserving the stale initial checkout. See [Deployment.md](docs/Deployment.md).
+
+
 ## Construction activity, rename and clean roofs — 2026-10-21
 
 Temporary animated worksites cover new construction/upgrades. Buildings can be renamed locally through a themed review; schema 9 retains old progress. Permanent rooftop blocks are removed from the shared renderer. See [BuildingWorkAndNames.md](docs/BuildingWorkAndNames.md).
