@@ -12,7 +12,8 @@ void main() {
       for (final zoom in [.5, 1.0, 2.0]) {
         final tile = 80 * zoom;
         final figures = [
-          CityFigure.car(heading),
+          for (final kind in CityVehicle.values)
+            CityFigure.car(heading, kind: kind),
           for (final type in BuildingType.values)
             CityFigure.walker(type, heading, i / 5),
         ];

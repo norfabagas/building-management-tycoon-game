@@ -1,5 +1,7 @@
 part of 'district_map.dart';
 
+enum CityVehicle { car, bus, truck, van }
+
 /// Actual XYZ geometry, projected by the same isometric camera as the streets.
 class CityVertex {
   const CityVertex(this.x, this.y, this.z);
@@ -117,9 +119,69 @@ class CityFigure {
     return model.finish(heading);
   }
 
-  factory CityFigure.car(double heading) {
+  factory CityFigure.car(
+    double heading, {
+    CityVehicle kind = CityVehicle.car,
+    Color color = const Color(0xFF328FAE),
+  }) {
     final model = _FigureBuilder();
-    const blue = Color(0xFF328FAE), glass = Color(0xFFA6D7D5);
+    final blue = color;
+    const glass = Color(0xFFA6D7D5);
+    if (kind != CityVehicle.car) {
+      final length = kind == CityVehicle.bus ? 1.12 : .94;
+      model.box(
+        const CityVertex(0, 0, .15),
+        CityVertex(length, .36, .18),
+        blue,
+      );
+      if (kind == CityVehicle.truck) {
+        model.box(
+          const CityVertex(-.14, 0, .36),
+          const CityVertex(.62, .35, .35),
+          const Color(0xFFF2E8CD),
+        );
+        model.box(
+          const CityVertex(.33, 0, .31),
+          const CityVertex(.27, .33, .24),
+          blue,
+        );
+      } else {
+        model.box(
+          const CityVertex(-.02, 0, .35),
+          CityVertex(length - .08, .33, .30),
+          blue,
+        );
+      }
+      model.box(
+        CityVertex(length / 2 - .035, 0, .39),
+        const CityVertex(.014, .28, .13),
+        glass,
+      );
+      for (final side in [-1.0, 1.0]) {
+        for (var i = 0; i < (kind == CityVehicle.bus ? 5 : 1); i++) {
+          model.box(
+            CityVertex(length / 2 - .15 - i * .18, side * .173, .40),
+            const CityVertex(.13, .012, .13),
+            glass,
+          );
+        }
+        for (final x in [-length * .32, length * .32]) {
+          model.limb(
+            CityVertex(x, side * .18 - .025, .08),
+            CityVertex(x, side * .18 + .025, .08),
+            .08,
+            const Color(0xFF243D3E),
+          );
+        }
+        model.box(
+          CityVertex(length / 2, side * .11, .18),
+          const CityVertex(.016, .07, .045),
+          const Color(0xFFFFF1BE),
+        );
+      }
+      return model.finish(heading);
+    }
+
     model.box(
       const CityVertex(0, 0, .12),
       const CityVertex(.78, .35, .15),

@@ -1,5 +1,10 @@
 # Game Logic & Architecture
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 ## Construction activity and building names — 2026-10-21
 
 ApartmentBuilding.name resolves optional validated customName or its original type/ID label. DistrictSimulation.renameBuilding commits through DistrictViewModel/save and existing repository transactions. Schema 9 preserves schema-8 road data. BuildingWork maps actual jobs to a separate clock-driven construction painter; rooftop utility geometry is removed. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).

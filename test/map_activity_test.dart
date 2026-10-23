@@ -9,6 +9,29 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('highway lanes move continuously in opposite directions with varied vehicles', () {
+    final kinds = <CityVehicle>{};
+    for (var lane = 0; lane < 2; lane++) {
+      for (var slot = -20; slot < 20; slot++) {
+        final a = HighwayTraffic.sample(-3, lane, slot, 100);
+        final b = HighwayTraffic.sample(-3, lane, slot, 100.1);
+        expect(a.position.dy, -2.5 + lane);
+        expect(
+          (b.position.dx - a.position.dx),
+          closeTo(lane == 0 ? .15 : -.15, .00001),
+        );
+        expect(a.direction.dx, lane == 0 ? 1 : -1);
+        expect(
+          (HighwayTraffic.sample(-3, lane, slot + 1, 100).position.dx -
+              a.position.dx),
+          greaterThan(5),
+        );
+        kinds.add(a.kind);
+      }
+    }
+    expect(kinds, CityVehicle.values.toSet());
+  });
+
   test('walk and vehicle paths stay on the ring, wrap continuously and follow long plots', () {
     for (final site in [
       const Footprint(0, 0, 2, 2),
@@ -60,7 +83,7 @@ void main() {
   });
 
   testWidgets(
-    'only open businesses tick; reduced motion and hidden maps suspend activity',
+    'highway ticks before opening; reduced motion and hidden maps suspend activity',
     (tester) async {
       final building = ApartmentBuilding(
         id: 1,
@@ -88,7 +111,7 @@ void main() {
       );
       await tester.pumpWidget(app());
       await tester.pump();
-      expect(tester.binding.transientCallbackCount, 0);
+      expect(tester.binding.transientCallbackCount, greaterThan(0));
       DistrictSimulation.openBusiness(game, 1);
       await tester.pumpWidget(app());
       await tester.pump(const Duration(milliseconds: 100));

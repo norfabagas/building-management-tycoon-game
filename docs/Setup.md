@@ -1,5 +1,10 @@
 # Project setup
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 ## Construction activity and building names — 2026-10-21
 
 No new package, asset export or database installation is required. Preserve site storage; normal profile load imports schema 1–8 into schema 9. Run rename/worksite and existing regressions, Node updater tests and normal dart run tool/build_web.dart packaging, then use Sync with old game tabs closed. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).
@@ -205,3 +210,8 @@ The subsequent mouse navigation update adds native bottom-right map zoom control
 The later user-approved starter release implements apartment construction and daily/weekly simulation; it supersedes the bootstrap-only scope in the historical checks above. Full game storage now uses locked Sembast 3.8.11, SQLite adapter 2.2.3/sqflite 2.4.4+1 on Android, IndexedDB adapter 2.4.6 on Web and path_provider 2.1.6. Android's existing backup/transfer exclusions cover the database. The Android toolchain installed CMake 3.22.1 from the SDK's already accepted license while building the new native dependencies.
 
 Formatting, analysis and all 28 tests pass. The four gameplay UI tests were repeated after final map fixes. Both final Android debug and offline release Web builds pass. The asset validator still passes all 158 resources/124 referenced frames; no BM master or production asset bytes changed. Browser review confirmed real pointer planning, price review, reservations, roads and saved-game reload/catch-up. An in-memory mature-building review fixture checked one-floor facade/roof and room composition. See [Gameplay.md](Gameplay.md) for coverage and remaining release limits. Android execution remains untested without a connected device; remote CI was not verified in this local pass.
+
+
+## Ambient release validation — 2026-10-23
+
+A fresh writable clone of current main at `.tools/activity-release` resolves the stale parent-file/generated-output problems seen in the initial checkout. Its ignored local Flutter wrapper delegates to the already installed pinned SDK's `flutter_tools.snapshot`; an ignored pub-cache junction reuses installed dependencies. No global Git trust or SDK ownership was changed. Formatting (86 Dart files), analyzer, all 309 Flutter tests, 20 Node tests, catalog validation and the timestamped offline Web build pass. Android still reports no SDK. [AmbientActivity.md](AmbientActivity.md) records behavior and browser evidence; [Deployment.md](Deployment.md) records publication. Original checkout edits remain preserved.

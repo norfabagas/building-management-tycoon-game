@@ -1,5 +1,10 @@
 # Project Overview
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 ## Construction activity and building names — 2026-10-21
 
 Animate initial construction and upgrades, support local rename for every building and remove the permanent rooftop block. Existing economy, controls, five local saves and approved artwork remain intact. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).

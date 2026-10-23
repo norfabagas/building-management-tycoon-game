@@ -42,23 +42,24 @@ class _AssetAnimationState extends State<AssetAnimation>
 
   Future<void> _load() async {
     final generation = ++_generation;
+    final path = widget.path, sequence = widget.sequence;
     final catalog = await (_catalog ??= rootBundle
         .loadString(ProductionAssets.manifest)
         .then((text) => jsonDecode(text)['assets'] as List));
     final asset = catalog.cast<Map<String, dynamic>>().firstWhere(
-      (a) => a['path'] == widget.path,
+      (a) => a['path'] == path,
     );
-    final animation = asset['animations'][widget.sequence] as Map;
-    final image = await (_images[widget.path] ??= rootBundle
-        .load(widget.path)
-        .then((bytes) async {
-          final codec = await ui.instantiateImageCodec(
-            bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
-          );
-          final frame = await codec.getNextFrame();
-          codec.dispose();
-          return frame.image;
-        }));
+    final animation = asset['animations'][sequence] as Map;
+    final image = await (_images[path] ??= rootBundle.load(path).then((
+      bytes,
+    ) async {
+      final codec = await ui.instantiateImageCodec(
+        bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      return frame.image;
+    }));
     if (!mounted || generation != _generation) return;
     setState(() {
       _image = image;
@@ -98,8 +99,6 @@ class _AssetAnimationState extends State<AssetAnimation>
         oldWidget.sequence != widget.sequence) {
       _controller.stop();
       _controller.value = 0;
-      _frames = [];
-      _image = null;
       _load();
     }
   }
@@ -127,7 +126,9 @@ class _AssetAnimationState extends State<AssetAnimation>
           return const SizedBox.shrink();
         }
         final image = _image;
-        if (image == null || _frames.isEmpty) return const SizedBox.shrink();
+        if (image == null || _frames.isEmpty) {
+          return SizedBox(width: widget.width, height: widget.height);
+        }
         final frame =
             _frames[(_controller.value * _frames.length).floor().clamp(
               0,
@@ -165,5 +166,6 @@ class _FramePainter extends CustomPainter {
     Paint()..filterQuality = FilterQuality.low,
   );
   @override
-  bool shouldRepaint(_FramePainter oldDelegate) => oldDelegate.source != source;
+  bool shouldRepaint(_FramePainter oldDelegate) =>
+      oldDelegate.source != source || oldDelegate.image != image;
 }

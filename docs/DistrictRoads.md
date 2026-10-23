@@ -1,5 +1,10 @@
 # Connected district streets and outdoor activity
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 Implementation decisions, 2026-10-17. The user approved strict connected-network placement.
 
 ## Access rules

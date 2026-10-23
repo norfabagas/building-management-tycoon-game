@@ -130,12 +130,7 @@ class _DistrictMapState extends State<DistrictMap>
   void _syncActivity() {
     final active =
         TickerMode.valuesOf(context).enabled &&
-        !MediaQuery.disableAnimationsOf(context) &&
-        widget.game.buildings.any(
-          (b) =>
-              b.stage == ConstructionStage.ready ||
-              BuildingWork.forBuilding(b) != null,
-        );
+        !MediaQuery.disableAnimationsOf(context);
     if (active && !_activityTicker.isActive) _activityTicker.start();
     if (!active && _activityTicker.isActive) {
       _carriedSeconds = _activityClock.value;

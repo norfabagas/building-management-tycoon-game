@@ -35,6 +35,15 @@ class _FailingDeleteRepository extends GameRepository {
 }
 
 void main() {
+  setUp(() {
+    final dispatcher =
+        TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher;
+    dispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
+      disableAnimations: true,
+    );
+    addTearDown(dispatcher.clearAccessibilityFeaturesTestValue);
+  });
+
   testWidgets(
     'deletion disables duplicate/back actions and supports retry after failure',
     (tester) async {

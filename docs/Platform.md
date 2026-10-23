@@ -1,5 +1,10 @@
 # Platform & Tech Stack
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 ## Construction activity and building names — 2026-10-21
 
 Use the existing cosmetic activity clock and canvas layers for temporary worksites. Save schema 9 adds custom building names and imports schemas 1–8; close old tabs and activate through timestamp Sync without clearing local data. No dependency, server or asset addition. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).

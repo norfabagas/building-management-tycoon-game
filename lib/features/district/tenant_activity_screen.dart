@@ -8,6 +8,7 @@ import '../../shared/widgets/asset_animation.dart';
 import 'building_presentation.dart';
 import 'district_view_model.dart';
 import 'tenant_activity_view_model.dart';
+import 'interior_motion.dart';
 
 /// An opaque route keeps the building/floor and map camera intact underneath.
 class TenantActivityScreen extends StatelessWidget {
@@ -330,7 +331,7 @@ class _InteriorSceneState extends State<_InteriorScene>
     with SingleTickerProviderStateMixin {
   late final _motion = AnimationController(
     vsync: this,
-    duration: const Duration(seconds: 12),
+    duration: const Duration(seconds: 48),
   );
   @override
   void didChangeDependencies() {
@@ -363,16 +364,13 @@ class _InteriorSceneState extends State<_InteriorScene>
               final view = widget.view;
               final width = constraints.maxWidth,
                   height = constraints.maxHeight;
-              final t = _motion.value;
-              final walking = t < .25 || t > .75;
-              final position = t < .25
-                  ? t * 4
-                  : t > .75
-                  ? (1 - t) * 4
-                  : 1.0;
-              final x =
-                  .12 +
-                  (view.current.x - .12) * Curves.easeInOut.transform(position);
+              final pose = InteriorMotion.sample(
+                _motion.value * 48,
+                view.building.id * 31 + view.unit,
+              );
+              final walking =
+                  pose.walking && !MediaQuery.disableAnimationsOf(context);
+              final x = pose.x;
               return Semantics(
                 label: view.active
                     ? '${view.current.label} in ${view.current.zone}'
@@ -389,6 +387,19 @@ class _InteriorSceneState extends State<_InteriorScene>
                         excludeFromSemantics: true,
                       ),
                     ),
+                    if (view.showPeople && !walking)
+                      Positioned(
+                        left: width * x - 14,
+                        bottom: height * .085 + width * .24,
+                        child: Tooltip(
+                          message: pose.activity,
+                          child: Icon(
+                            pose.icon,
+                            size: 22,
+                            color: GameColors.primary,
+                          ),
+                        ),
+                      ),
                     if (view.showPeople)
                       for (
                         var i = 0;
@@ -401,7 +412,7 @@ class _InteriorSceneState extends State<_InteriorScene>
                               width * .085,
                           bottom: height * .085,
                           child: Transform.flip(
-                            flipX: i == 0 && t > .75,
+                            flipX: i == 0 && pose.facingLeft,
                             child: AssetAnimation(
                               path: view.building.type.actor,
                               sequence: i == 0 && walking ? 'walk' : 'idle',

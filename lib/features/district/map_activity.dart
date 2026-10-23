@@ -24,6 +24,27 @@ class MapActivityRoute {
       _metric.getTangentForOffset(distance % length)!;
 }
 
+/// Infinite, stable lane slots; panning never respawns or teleports a vehicle.
+class HighwayTraffic {
+  static ({Offset position, Offset direction, CityVehicle kind}) sample(
+    int mainRow,
+    int lane,
+    int slot,
+    double seconds,
+  ) {
+    final direction = lane == 0 ? 1.0 : -1.0;
+    final jitter = ((slot * 37 + lane * 19) % 11) / 10;
+    return (
+      position: Offset(
+        slot * 7 + jitter + seconds * direction * 1.5,
+        mainRow + .5 + lane,
+      ),
+      direction: Offset(direction, 0),
+      kind: CityVehicle.values[(slot * 13 + lane) % CityVehicle.values.length],
+    );
+  }
+}
+
 class _MapActivityPainter extends CustomPainter {
   _MapActivityPainter(this.game, this.projection, this.images, this.clock)
     : super(repaint: clock);
@@ -107,15 +128,17 @@ class _MapActivityPainter extends CustomPainter {
             Offset point,
             Offset direction,
             Offset world,
-            ApartmentBuilding building,
+            ApartmentBuilding? building,
             int actor,
           })
         >[];
     for (final building in _open) {
-      for (var actor = 0; actor < 3; actor++) {
-        final car = actor == 2;
+      for (var actor = 0; actor < 5; actor++) {
+        final car = actor >= 2;
         final route = _routes[building.id]![car ? 1 : 0];
-        final speed = car ? 1.2 : .42;
+        final speed = car
+            ? .85 + ((building.id * 7 + actor * 3) % 6) * .12
+            : .42;
         final reverse = actor == 1 ? -1 : 1;
         final tangent = route.pose(
           route.length * ((building.id * .173 + actor * .37) % 1) +
@@ -131,9 +154,46 @@ class _MapActivityPainter extends CustomPainter {
         ));
       }
     }
+    final corners = [
+      Offset.zero,
+      Offset(size.width, 0),
+      Offset(0, size.height),
+      Offset(size.width, size.height),
+    ].map(projection.worldAt);
+    final minX = corners.map((p) => p.dx).reduce(math.min) - 2;
+    final maxX = corners.map((p) => p.dx).reduce(math.max) + 2;
+    for (var lane = 0; lane < 2; lane++) {
+      final shift = clock.value * (lane == 0 ? 1.5 : -1.5);
+      final first = ((minX - shift - 1) / 7).floor();
+      final last = ((maxX - shift) / 7).ceil();
+      for (var slot = first; slot <= last && slot < first + 64; slot++) {
+        final pose = HighwayTraffic.sample(
+          game.roadNetwork.mainRow,
+          lane,
+          slot,
+          clock.value,
+        );
+        final point = projection.point(pose.position.dx, pose.position.dy);
+        if (!Rect.fromLTWH(
+          -80,
+          -80,
+          size.width + 160,
+          size.height + 160,
+        ).contains(point)) {
+          continue;
+        }
+        actors.add((
+          point: point,
+          direction: pose.direction,
+          world: pose.position,
+          building: null,
+          actor: 2 + pose.kind.index,
+        ));
+      }
+    }
     actors.sort((a, b) => a.point.dy.compareTo(b.point.dy));
     for (final actor in actors) {
-      final car = actor.actor == 2;
+      final car = actor.actor >= 2;
       final zoom = projection.zoom;
       canvas.save();
       // A front-side pedestrian must stay in front of the facade. Clip only
@@ -145,9 +205,19 @@ class _MapActivityPainter extends CustomPainter {
           math.atan2(actor.direction.dy, actor.direction.dx) +
           projection.rotation;
       final mesh = car
-          ? CityFigure.car(heading)
+          ? CityFigure.car(
+              heading,
+              kind: CityVehicle
+                  .values[((actor.building?.id ?? 0) + actor.actor - 2) % 4],
+              color: const [
+                Color(0xFF328FAE),
+                Color(0xFFEBAA55),
+                Color(0xFFCE745D),
+                Color(0xFF65A284),
+              ][((actor.building?.id ?? 0) * 3 + actor.actor) % 4],
+            )
           : CityFigure.walker(
-              actor.building.type,
+              actor.building!.type,
               heading,
               clock.value * 6 + actor.actor * math.pi,
             );

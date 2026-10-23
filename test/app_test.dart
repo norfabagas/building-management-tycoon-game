@@ -9,6 +9,15 @@ import 'helpers/memory_save_store.dart';
 import 'helpers/game_test_store.dart';
 
 void main() {
+  setUp(() {
+    final dispatcher =
+        TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher;
+    dispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(
+      disableAnimations: true,
+    );
+    addTearDown(dispatcher.clearAccessibilityFeaturesTestValue);
+  });
+
   for (final size in [
     const Size(390, 844),
     const Size(844, 390),

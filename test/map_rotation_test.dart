@@ -7,6 +7,8 @@ import 'package:building_management_tycoon/features/district/map_camera_view_mod
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'helpers/pump_map_controls.dart';
+
 void main() {
   testWidgets('desktop camera controls retain 48px touch targets', (
     tester,
@@ -25,21 +27,21 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await pumpMapControls(tester);
     for (final label in ['Rotate map', 'Main road', 'Zoom out', 'Zoom in']) {
       final rect = tester.getRect(find.byTooltip(label));
       expect(rect.width, greaterThanOrEqualTo(48), reason: label);
       expect(rect.height, greaterThanOrEqualTo(48), reason: label);
     }
     await tester.tap(find.byTooltip('Rotate map'));
-    await tester.pumpAndSettle();
+    await pumpMapControls(tester);
     await tester.tap(find.text('Rotate left'));
-    await tester.pumpAndSettle();
+    await pumpMapControls(tester);
     await tester.tap(find.byTooltip('Rotate map'));
-    await tester.pumpAndSettle();
+    await pumpMapControls(tester);
     expect(find.text('Map bearing 270°'), findsOneWidget);
     await tester.tap(find.text('Reset rotation'));
-    await tester.pumpAndSettle();
+    await pumpMapControls(tester);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
@@ -226,16 +228,16 @@ void main() {
           ),
         );
         await tester.pumpWidget(app(false));
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         await tester.tapAt(projection.point(1, 1));
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         expect(selected, 1);
         await tester.pumpWidget(app(true));
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         final gesture = await tester.startGesture(projection.point(.5, .5));
         await gesture.moveTo(projection.point(1.5, 1.5));
         await gesture.up();
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         expect(preview?.toJson(), const Footprint(0, 0, 2, 2).toJson());
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
@@ -266,7 +268,7 @@ void main() {
               ),
             ),
           );
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           final map = tester.getRect(
             find.byKey(const ValueKey('district-map')),
           );
@@ -297,7 +299,7 @@ void main() {
           }
           await b.up();
           await a.up();
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           expect(camera.rotation, closeTo(math.pi / 2, .04));
           expect(camera.zoom, closeTo(scale, .01));
           final finalProjection = MapProjection(
@@ -317,9 +319,9 @@ void main() {
           expect(selections, 0);
           expect(preview, original);
           await tester.tap(find.byTooltip('Rotate map'));
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           await tester.tap(find.text('Reset rotation'));
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           expect(camera.rotation, 0);
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox());

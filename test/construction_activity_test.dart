@@ -41,7 +41,7 @@ void main() {
   });
 
   testWidgets(
-    'initial construction animates, pauses when hidden/reduced and stops when complete',
+    'construction animates and pauses; highway continues after work completes',
     (tester) async {
       final building = ApartmentBuilding(
         id: 1,
@@ -89,7 +89,7 @@ void main() {
       building.stage = ConstructionStage.parkingDone;
       await tester.pumpWidget(app());
       await tester.pump();
-      expect(tester.binding.transientCallbackCount, 0);
+      expect(tester.binding.transientCallbackCount, greaterThan(0));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },

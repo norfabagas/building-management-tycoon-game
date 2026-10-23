@@ -1,5 +1,10 @@
 # Design Document
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 ## Construction activity and building names — 2026-10-21
 
 Show temporary scaffold/crane/hoist activity and soft dust during construction/upgrade, with a gentle queued safety marker and reduced-motion support. Keep flat clean roofs on every building. A labelled Rename building pencil in the fixed building header opens the themed, keyboard-safe rename review with Cancel/Save name and inline validation/retry. See [BuildingWorkAndNames.md](BuildingWorkAndNames.md).

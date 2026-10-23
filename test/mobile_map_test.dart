@@ -10,6 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'four_types_ui_test.dart' as game;
 import 'helpers/game_test_store.dart';
 
+import 'helpers/pump_map_controls.dart';
+
 void main() {
   testWidgets(
     'shallow Web drawing insets keep zoom clear of compass controls',
@@ -28,7 +30,7 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await pumpMapControls(tester);
       for (final zoom in ['Zoom in', 'Zoom out']) {
         final rect = tester.getRect(find.byTooltip(zoom));
         expect(find.byTooltip(zoom).hitTestable(), findsOneWidget);
@@ -55,7 +57,7 @@ void main() {
           tester.platformDispatcher.textScaleFactorTestValue = scale;
           addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
           await tester.pumpWidget(game.gameApp(testGameRepository()));
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           final mapFinder = find.byKey(const ValueKey('district-map'));
           expect(tester.getRect(mapFinder), Offset.zero & size);
           for (final tooltip in [
@@ -83,15 +85,15 @@ void main() {
           final draw = await tester.startGesture(projection.point(.5, .5));
           await draw.moveTo(projection.point(1.5, 1.5));
           await draw.up();
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           expect(find.text('2 × 2 tiles'), findsOneWidget);
           expect(find.text('Review cost').hitTestable(), findsOneWidget);
           expect(find.byTooltip('Plan details').hitTestable(), findsOneWidget);
           await tester.tap(find.byTooltip('Plan details'));
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           expect(find.text('Draw your footprint'), findsOneWidget);
           await tester.tap(find.byTooltip('Back to map'));
-          await tester.pumpAndSettle();
+          await pumpMapControls(tester);
           expect(tester.getRect(mapFinder), Offset.zero & size);
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox());
@@ -121,14 +123,14 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         final map = tester.getRect(find.byKey(const ValueKey('district-map')));
         final world = MapProjection(
           map.size,
           camera.pan,
         ).worldAt(map.size.center(Offset.zero));
         await tester.tap(find.byTooltip('Rotate map'));
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         await tester.tap(find.text('Rotate right'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 80));
@@ -147,7 +149,7 @@ void main() {
           (during.worldAt(map.size.center(Offset.zero)) - world).distance,
           lessThan(1e-8),
         );
-        await tester.pumpAndSettle();
+        await pumpMapControls(tester);
         expect(camera.rotation, closeTo(math.pi / 2, 1e-8));
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
@@ -171,9 +173,9 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await pumpMapControls(tester);
       await tester.tap(find.byTooltip('Rotate map'));
-      await tester.pumpAndSettle();
+      await pumpMapControls(tester);
       await tester.tap(find.text('Rotate right'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 80));
@@ -184,7 +186,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(camera.rotation, bearing);
       await finger.up();
-      await tester.pumpAndSettle();
+      await pumpMapControls(tester);
       expect(camera.rotation, bearing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());

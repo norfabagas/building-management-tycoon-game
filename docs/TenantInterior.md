@@ -1,5 +1,10 @@
 # Full-screen tenant interiors
 
+## Tenant animation and ambient traffic — 2026-10-23
+
+Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.
+
+
 The 2026-10-17 follow-up replaces the default Manage confirmation with the custom [tenant management review](TenantManagement.md). The full-screen interior and underlying vacancy/finance rules are unchanged; earlier references to the default confirmation dialog describe the preceding release.
 
 The 2026-10-17 user request replaces the immediate room-management dialog with an interior that occupies the full application viewport. Tap/click a room or whole-floor lease, or a saved tenant in the district directory. Food courts expose their dining floor from the floor artwork and the directory's dining-activity entry. Vacant rooms can also be inspected.
