@@ -4,6 +4,8 @@ Implemented 2026-10-17 in response to inaccessible popups/buttons, especially bu
 
 ## Layout decisions
 
+The 2026-10-26 activities update places a labelled trophy Activities menu at the fixed left edge of the district toolbar, before the independently scrolling actions. Both its trigger and menu rows retain 48px targets. See [ActivitiesNavigation.md](ActivitiesNavigation.md); this supersedes the former far-right icon placement.
+
 - Final construction review takes the content area instead of competing with the map. Hide the redundant district HUD/navigation during this step. Scroll the rules, dimensions, floor count, B1 capacity, cost breakdown, revenue and upkeep independently; pin the current total, balance after purchase, confirm, cancel and redraw actions. Short landscape puts these three actions in one row to recover reading space. The domain still validates at commit. Cancel/redraw never charge the player.
 - During land drawing, keep Review cost pinned below scrollable planning details. Narrow portrait allocates 32% of the body to its detail panel. Short landscape at widths from 500 uses a side panel. Hide unrelated district navigation during construction/decorating. The camera and preview remain mounted for redraw/resize.
 - On narrow portrait phones use a two-row HUD with district/weekday and balance/day-clock/gems, allocating more width to large money values. Short landscape uses a horizontally scrollable compact HUD. The district toolbar is one horizontally scrollable row with a visible scrollbar; District activities is fixed. On short narrow landscape the welcome sidebar collapses, while explicit directories/planning remain available. Existing wide-screen welcome lists remain present.

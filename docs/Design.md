@@ -1,5 +1,9 @@
 # Design Document
 
+## Activities reachability — 2026-10-26
+
+Pin a visibly labelled trophy **Activities** control at the left of the main district action bar, using the concise label **Goals** below 400px width. It remains fixed while the adjacent Build/Tenants/Upgrades/Finances controls scroll, in portrait, landscape and desktop/tablet layouts. Retain 48px minimum touch/menu targets, normal text scaling and footer/safe-area clearance. Existing achievement goals/rewards and decoration destinations remain intact. See [ActivitiesNavigation.md](ActivitiesNavigation.md). This supersedes the former bottom-right icon-only activities entry.
+
 ## Tenant animation and ambient traffic — 2026-10-23
 
 Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.

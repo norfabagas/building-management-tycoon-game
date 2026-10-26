@@ -705,6 +705,45 @@ class _DistrictScreenState extends State<DistrictScreen>
 
   Widget _districtNavigation(bool blocked, {bool compact = false}) => Row(
     children: [
+      PopupMenuButton<String>(
+        key: const ValueKey('district-activities'),
+        tooltip: 'District activities',
+        position: PopupMenuPosition.over,
+        onSelected: (value) => setState(() {
+          _closePlanning();
+          _tenants = false;
+          _districtUpgrades = false;
+          _collection = value;
+        }),
+        itemBuilder: (_) => const [
+          PopupMenuItem(value: 'Achievements', child: Text('Achievements')),
+          PopupMenuItem(value: 'Decorations', child: Text('Decorations')),
+        ],
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: GameColors.surface,
+            border: Border.all(color: GameColors.ink, width: 2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.emoji_events_outlined, size: 22),
+              const SizedBox(width: 6),
+              Text(
+                MediaQuery.sizeOf(context).width < 400 ? 'Goals' : 'Activities',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(width: 8),
       Expanded(
         child: Scrollbar(
           controller: _navigationScroll,
@@ -760,19 +799,6 @@ class _DistrictScreenState extends State<DistrictScreen>
             ),
           ),
         ),
-      ),
-      PopupMenuButton<String>(
-        tooltip: 'District activities',
-        onSelected: (value) => setState(() {
-          _closePlanning();
-          _tenants = false;
-          _districtUpgrades = false;
-          _collection = value;
-        }),
-        itemBuilder: (_) => const [
-          PopupMenuItem(value: 'Achievements', child: Text('Achievements')),
-          PopupMenuItem(value: 'Decorations', child: Text('Decorations')),
-        ],
       ),
     ],
   );

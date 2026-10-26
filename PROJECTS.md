@@ -1,5 +1,13 @@
 # Building Management Tycoon
 
+## Activities menu reachability — 2026-10-26
+
+Moved the district activities menu from the bottom-right icon to a fixed, labelled **Activities** trophy control at the left of the main action bar (**Goals** below 400px width). It stays visible while the adjacent action strip scrolls, with normal text scaling and 48px minimum touch/menu targets in portrait, landscape, tablet and desktop. Existing achievements/objectives/rewards and decorations open the same panels; game data, schema 9/catalog 2 and five local saves are unchanged. See [ActivitiesNavigation.md](docs/ActivitiesNavigation.md) for layout decisions and verification. The clean but stale local main was fast-forwarded to current remote source `da7bf91` before implementation.
+
+Formatting of 87 Dart files, Flutter analysis, all 325 Flutter tests, 20 Node worker/bridge tests, asset validation (158 resources/124 frames) and the timestamped release Web build pass. The final package contains 201 offline resources, version `20261026032440925` UTC. Android debug compilation reports No Android SDK found; no physical-device or remote-CI certification is claimed.
+
+Compiled-package browser QA on isolated localhost:8796 confirms the new left control in desktop, 320×568 portrait and 568×320 landscape, both menu destinations, achievement progress and Close/return. No purchases are made and the original player origin is untouched; browser error logs are empty. Ignored proof is retained at `.tools/activities-desktop.png`, `activities-portrait.png`, `activities-phone-menu.png` and `activities-landscape.png`. QA tab is closed and viewport override reset.
+
 ## Tenant animation and varied ambient traffic — 2026-10-23
 
 Source `987d5ce` is pushed to main and published as ready/current Netlify deploy `6adb303a63cd840abe32757a` at **17:00:30 WIB**, timestamp **20261023094710809 UTC**. Walk/rest transitions keep the actor visible with varied seeded stops/rest indicators; two-way highway traffic includes cars, buses, box trucks and vans before any business opens. See [AmbientActivity.md](docs/AmbientActivity.md).
