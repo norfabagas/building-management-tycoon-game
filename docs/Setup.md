@@ -1,5 +1,11 @@
 # Project setup
 
+## GitHub Actions manual-only — 2026-10-26
+
+At the user's request, Flutter checks uses only `workflow_dispatch`. Pushes and pull requests do not run it automatically; all validation/build steps remain available through GitHub Actions → Flutter checks → Run workflow. Normal local checks and the manual Netlify deployment workflow are unchanged. There is no application change or redeployment for this setting.
+
+The latest investigated [run 40264689094](https://github.com/norfabagas/building-management-tycoon-game/actions/runs/40264689094) failed before any steps ran. GitHub's annotation states that the account is locked due to a billing issue; it is not evidence of a Flutter/compiler/test failure. Billing resolution and another run are deferred. If manual CI is needed later, the account owner must first resolve the lock; [GitHub's locked-account guidance](https://docs.github.com/en/billing/how-tos/troubleshooting/locked-account) also covers requesting Support review when no billing issue is shown. Do not infer that local validation proves a remote run passed.
+
 ## Tenant animation and ambient traffic — 2026-10-23
 
 Continuous interior walk/rest transitions and varied ambient vehicles now cover the highway and open-business rings. Presentation only; five local saves, economy, artwork and schema stay unchanged. See [AmbientActivity.md](AmbientActivity.md) for behavior, implementation decisions and validation.

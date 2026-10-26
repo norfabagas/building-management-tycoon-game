@@ -1,5 +1,13 @@
 # Building Management Tycoon
 
+## GitHub Flutter checks made manual — 2026-10-26
+
+The user requested stopping the non-urgent workflow after its failure emails. `.github/workflows/flutter.yml` now triggers only through `workflow_dispatch`; pushes and pull requests no longer start Flutter checks automatically. All existing check/build steps remain available for a future manual run. No game code, saves, Netlify configuration or deployed files change, so no game redeployment is required.
+
+Validation: YAML parses successfully, its only event is `workflow_dispatch`, and the jobs, permissions and environment exactly match the previous workflow. `git diff --check` passes. Application tests/builds are not rerun for this CI-trigger/documentation-only change.
+
+Diagnosis: [run 40264689094](https://github.com/norfabagas/building-management-tycoon-game/actions/runs/40264689094), source `8624c2a`, failed before runner allocation: zero steps, empty runner name and a one-second job. Its failure annotation says, "The job was not started because your account is locked due to a billing issue." The second annotation is an informational ubuntu-latest migration notice. Changing Flutter code cannot clear the account lock. The workflow was already completed, so there was no active job to cancel. Billing changes and reruns are deferred at the user's request; historical failed runs remain in GitHub.
+
 ## Activities menu reachability — 2026-10-26
 
 Moved the district activities menu from the bottom-right icon to a fixed, labelled **Activities** trophy control at the left of the main action bar (**Goals** below 400px width). It stays visible while the adjacent action strip scrolls, with normal text scaling and 48px minimum touch/menu targets in portrait, landscape, tablet and desktop. Existing achievements/objectives/rewards and decorations open the same panels; game data, schema 9/catalog 2 and five local saves are unchanged. See [ActivitiesNavigation.md](docs/ActivitiesNavigation.md) for layout decisions and verification. The clean but stale local main was fast-forwarded to current remote source `da7bf91` before implementation.
