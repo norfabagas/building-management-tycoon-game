@@ -1,5 +1,22 @@
 # Netlify Web deployment
 
+## Reachable Goals and Activities menu — 2026-10-26
+
+Source [`0043c52`](https://github.com/norfabagas/building-management-tycoon-game/commit/0043c52d35cd745a28a49e8932a47d7cd3eeddfb) is pushed to **main** and published at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). Netlify deploy [`6adec98a0a7a813f9dfb3e80`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6adec98a0a7a813f9dfb3e80) is the **published ready** deployment, verified through the authenticated CLI site API on **2026-10-26**. Shared UTC build timestamp: **20261026032440925**. Git continuous deployment remains unconnected; this is an upload of the tested normal-entry Web bundle.
+
+The former bottom-right activities icon is now a fixed labelled trophy control at the **left** of the district action bar: **Goals** below 400px width, **Activities** on wider screens. Adjacent actions scroll independently. Existing achievement objectives/rewards and decoration destinations remain intact; schema 9/catalog 2, money and five local saves are unchanged. See [ActivitiesNavigation.md](ActivitiesNavigation.md).
+
+- Formatting of **87 Dart files**, Flutter analysis, all **325 Flutter tests** (`--concurrency=1`), **20 Node worker/bridge tests**, asset validation (**158 assets / 124 frames**) and the release Web build pass. Wasm dry run succeeds; **201 offline resources** are packaged. Android debug compilation reports **No Android SDK found**; physical-device and remote-CI validation remain unverified.
+- Compiled-package QA on isolated localhost:8796 verifies desktop, 320×568 portrait and 568×320 landscape, the fixed visible label, both menu destinations, achievement progress and Close/return. No purchases are made, the balance remains $40,000, and browser error logs are empty. Existing player origins/saves are untouched. The review tab/server are closed and viewport reset. Ignored proof files are listed in ActivitiesNavigation.md.
+- Production returns **HTTP 200**, with exact local-release SHA-256 for all five primary files:
+  - `main.dart.js`: `ca0f05cada15eaccc4458ce4b90dad1ab5e096331c48696765c8f3ad0d831635`.
+  - `offline_worker.js`: `09b5369280ef3a14861d740d68c02d469065282ed7bd36b1839f87e28417fa6a`.
+  - `offline-assets.json`: `bdb5d4b1197d7da381791f86e125baa39634941a29e41ec6fd4e5963db8c3c21`.
+  - `app_update.js`: `92fbcb125cb5c59b01caef7208d4b7c78ae58598bd09f7b329a360c9ad0c02ff`.
+  - `app-version.json`: `e200aff8c512812c5884d2d093200323e8248aae15c8b20c2fd682e2aaa3758d`.
+
+Live metadata matches **20261026032440925** and the offline manifest contains 201 resources. Worker/version metadata retain **Cache-Control: no-store**. Use **Sync** on home after closing other game tabs; preserve site storage. The following documentation-only receipt does not change the deployed bundle.
+
 ## Tenant animation and varied traffic — 2026-10-23
 
 Source [`987d5ce`](https://github.com/norfabagas/building-management-tycoon-game/commit/987d5ce18677b213861f9b32c16ab8760b0bb10c) is pushed to **main** and published at [bmt.niceblue.biz.id](https://bmt.niceblue.biz.id). Netlify deploy [`6adb303a63cd840abe32757a`](https://app.netlify.com/projects/building-management-tycoon-game/deploys/6adb303a63cd840abe32757a) is **ready/current**, published **2026-10-23 at 17:00:30 WIB**. Shared UTC build timestamp: **20261023094710809**. The existing Netlify connector required authentication; the already authenticated local CLI uploaded the validated normal-entry bundle to the same project. Git continuous deployment remains unconnected. Local linkage/build output/credentials are ignored and are not pushed.

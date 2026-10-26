@@ -8,6 +8,8 @@ Formatting of 87 Dart files, Flutter analysis, all 325 Flutter tests, 20 Node wo
 
 Compiled-package browser QA on isolated localhost:8796 confirms the new left control in desktop, 320×568 portrait and 568×320 landscape, both menu destinations, achievement progress and Close/return. No purchases are made and the original player origin is untouched; browser error logs are empty. Ignored proof is retained at `.tools/activities-desktop.png`, `activities-portrait.png`, `activities-phone-menu.png` and `activities-landscape.png`. QA tab is closed and viewport override reset.
 
+Source `0043c52` is pushed to main and published as ready deploy `6adec98a0a7a813f9dfb3e80` on 2026-10-26. The authenticated Netlify site API confirms it is the published deploy; all five primary production files return HTTP 200 and exactly match the tested release hashes. Live version is `20261026032440925`; the offline manifest has 201 resources and worker/version metadata remain no-store. The QA server is stopped. Use Sync on home with other game tabs closed; retain site storage. See [Deployment.md](docs/Deployment.md).
+
 ## Tenant animation and varied ambient traffic — 2026-10-23
 
 Source `987d5ce` is pushed to main and published as ready/current Netlify deploy `6adb303a63cd840abe32757a` at **17:00:30 WIB**, timestamp **20261023094710809 UTC**. Walk/rest transitions keep the actor visible with varied seeded stops/rest indicators; two-way highway traffic includes cars, buses, box trucks and vans before any business opens. See [AmbientActivity.md](docs/AmbientActivity.md).
